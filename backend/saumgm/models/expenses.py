@@ -5,10 +5,10 @@ from sqlalchemy import BigInteger, Date, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
-from saumgm.models.base import LegacyMixin, Money, OrgScopedMixin, fk
+from saumgm.models.base import ArchivableMixin, LegacyMixin, Money, OrgScopedMixin, fk
 
 
-class Expense(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
+class Expense(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):
     """A purchase or cost, split over one or more accounts."""
 
     __tablename__ = "expense"

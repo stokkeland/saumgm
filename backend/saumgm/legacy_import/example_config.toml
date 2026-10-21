@@ -2,6 +2,10 @@
 # git-ignored), fill in the business details, and pass it with --config.
 # These values seed the organization row; everything can be changed later in the app.
 
+[import]
+# Optional: archive invoices, payments, deposits and expenses dated on or before this day.
+# archive_through = 2016-12-31
+
 [organization]
 legal_name = "Example Consulting"          # legal name / DBA shown on documents
 display_name = "Example Consulting"

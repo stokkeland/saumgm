@@ -29,6 +29,8 @@ class ImportConfig:
     organization: OrganizationSetup
     self_party_no: str
     addresses: list[AddressConfig] = field(default_factory=list)
+    # Archive records dated on or before this day right after the import.
+    archive_through: date | None = None
 
 
 def load_config(path: Path) -> ImportConfig:
@@ -44,4 +46,5 @@ def load_config(path: Path) -> ImportConfig:
         organization=OrganizationSetup(**org),
         self_party_no=self_party_no,
         addresses=addresses,
+        archive_through=raw.get("import", {}).get("archive_through"),
     )

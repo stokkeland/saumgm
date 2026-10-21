@@ -19,6 +19,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
 from saumgm.models.base import (
     ZERO,
+    ArchivableMixin,
     LegacyMixin,
     Money,
     OrgScopedMixin,
@@ -30,7 +31,7 @@ from saumgm.models.base import (
 from saumgm.models.enums import InvoiceKind, InvoiceStatus
 
 
-class Invoice(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
+class Invoice(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):
     """An invoice or credit note. Paid / partially paid / overdue are computed from payment
     allocations and the due date, not stored."""
 

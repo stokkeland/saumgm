@@ -1,10 +1,11 @@
 """Shared column types and mixins for all models."""
 
 import enum
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import JSON, BigInteger, Enum, ForeignKey, Numeric
+from sqlalchemy import JSON, BigInteger, DateTime, Enum, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, declared_attr, mapped_column
 
 # Money: 4 decimals keeps unit prices with fractions of a cent exact; totals are rounded to the
@@ -42,6 +43,13 @@ class OrgScopedMixin:
     @declared_attr
     def organization_id(cls) -> Mapped[int]:
         return mapped_column(BigInteger, fk("organization.id"), index=True, nullable=False)
+
+
+class ArchivableMixin:
+    """Records can be archived: kept in place, but hidden from everyday lists unless asked for.
+    NULL means current; otherwise when it was archived."""
+
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime, index=True)
 
 
 class LegacyMixin:

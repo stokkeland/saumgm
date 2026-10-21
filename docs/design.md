@@ -238,6 +238,13 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   The database needs the same treatment for multi-region (MariaDB replication or Galera, or a managed service) — files and DB should be planned together.
 - Storing files as DB BLOBs was considered: simplest (one backup, replicates with the DB) but bloats backups and doesn't fit cloud scaling; rejected in favour of the interface above.
 
+### 4.11 Archiving
+- Invoices, payments, deposits and expenses have `archived_at` (NULL = current). Archived records stay in their tables, keep all links, and count in every report; they are only hidden from everyday lists.
+- Lists default to current records, with a "show archived" toggle (and an `include_archived` / `archived_only` filter on the API). Archived records open read-only; unarchiving is allowed for the owner role.
+- `archive_through(cutoff)` (`saumgm/services/archive.py`) archives everything dated on or before a day; drafts are never archived; an undated payment follows its invoices. Each run writes one audit entry with the counts.
+- Contacts and catalog items use their existing active/inactive flag instead.
+- The initial import archived everything dated 2016 or earlier.
+
 ---
 
 ## 5. Screens (v1)
@@ -246,13 +253,13 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 - **Contacts** — searchable list with role filters; contact page with addresses, people, subscriptions, invoices, payments, expenses, balance.
 - **Catalog** — items by type, inactive toggle, merge duplicates.
 - **Subscriptions** — list, upcoming renewals, billing run.
-- **Invoices** — list (default: unpaid), editor (line entry with catalog search, live totals and tax), issue/void/credit note, PDF.
+- **Invoices** — list (default: unpaid, not archived), editor (line entry with catalog search, live totals and tax), issue/void/credit note, PDF.
 - **Payments** — receive payment, undeposited funds, deposits + slip.
 - **Expenses** — list by period/account/vendor, quick entry with receipts.
 - **Reports** — invoice listing, sales by period/client/revenue category, sales tax, expenses by account/vendor/summary, receivables aging; all exportable to CSV/PDF.
 - **Settings** — business profile and locale, tax setup, terms, numbering, accounts, users.
 
-Interaction expectations: global search, sortable/filterable tables, keyboard-friendly forms, inline validation, unsaved-changes warnings, light/dark mode.
+Interaction expectations: archived records hidden unless "show archived" is on, global search, sortable/filterable tables, keyboard-friendly forms, inline validation, unsaved-changes warnings, light/dark mode.
 
 ---
 

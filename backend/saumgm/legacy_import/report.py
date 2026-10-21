@@ -36,6 +36,10 @@ def render_report(
         f"| {_cell(c.name)} | {c.expected} | {c.actual} | {'✓' if c.ok else '✗'} |" for c in checks
     ]
 
+    if result.archived:
+        out += ["", "## Archived after import", ""]
+        out += [f"- {kind}: {count}" for kind, count in result.archived.items()]
+
     out += ["", "## Data issues (imported as-is, review)", ""]
     out += [f"- {_cell(issue)}" for issue in result.issues] or ["- none"]
 

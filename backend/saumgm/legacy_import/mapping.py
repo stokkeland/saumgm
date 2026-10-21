@@ -47,6 +47,7 @@ from saumgm.models.enums import (
     PartyRoleType,
 )
 from saumgm.seed import create_organization, jurisdiction_code
+from saumgm.services.archive import archive_through
 
 FILE_TYPE_ROLES = {
     "B": PartyRoleType.SELF,
@@ -78,6 +79,7 @@ class ImportResult:
     orphan_deposit_items: list[Row] = field(default_factory=list)
     catalog_review: list[CatalogItem] = field(default_factory=list)
     unparsed_terms: dict[str, int] = field(default_factory=dict)
+    archived: dict[str, int] = field(default_factory=dict)
 
 
 def _datetime(value: Any) -> datetime | None:
@@ -113,6 +115,13 @@ class AccessImporter:
         self.import_payments()
         self.import_deposits()
         self.import_expenses()
+        if self.config.archive_through:
+            self.result.archived = archive_through(
+                self.session,
+                self.org_id,
+                self.config.archive_through,
+                batch_id=self.result.batch_id,
+            )
         self.session.add(
             AuditLog(
                 organization_id=self.org_id,

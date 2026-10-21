@@ -5,11 +5,11 @@ from sqlalchemy import BigInteger, Boolean, Date, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
-from saumgm.models.base import LegacyMixin, Money, OrgScopedMixin, fk, str_enum
+from saumgm.models.base import ArchivableMixin, LegacyMixin, Money, OrgScopedMixin, fk, str_enum
 from saumgm.models.enums import PaymentChannel, PaymentMethod
 
 
-class Deposit(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
+class Deposit(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):
     """A bank deposit (one deposit slip)."""
 
     __tablename__ = "deposit"
@@ -42,7 +42,7 @@ class DepositItem(IdMixin, Base):
     deposit: Mapped[Deposit] = relationship(back_populates="items")
 
 
-class Payment(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
+class Payment(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):
     """Money received. Applied to invoices through allocations; waits as "undeposited funds"
     until it is put on a deposit."""
 
