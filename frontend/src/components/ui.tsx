@@ -31,7 +31,7 @@ export function PageHeader({
       <Stack gap={2}>
         <Title order={2}>{title}</Title>
         {subtitle && (
-          <Text c="dimmed" size="sm">
+          <Text c="dimmed" size="sm" component="div">
             {subtitle}
           </Text>
         )}

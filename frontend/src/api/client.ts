@@ -77,4 +77,24 @@ export function unwrap<T>(result: { data?: T; error?: unknown; response: Respons
   return result.data as T
 }
 
+/**
+ * A request by URL, for the few places that build paths dynamically (e.g. generic deletes).
+ * Same CSRF and error handling as the typed client.
+ */
+export async function send(method: string, url: string, body?: unknown): Promise<unknown> {
+  const headers: Record<string, string> = {}
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  const token = cookie(CSRF_COOKIE)
+  if (!SAFE_METHODS.has(method) && token) headers['X-CSRF-Token'] = decodeURIComponent(token)
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (response.status === 401) sessionListeners.forEach((listener) => listener())
+  const data = response.status === 204 ? undefined : await response.json().catch(() => undefined)
+  if (!response.ok) throw new ApiError(response.status, message(response.status, data))
+  return data
+}
+
 export type Health = Schemas['Health']

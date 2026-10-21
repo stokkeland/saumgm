@@ -5,6 +5,8 @@ import { RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './components/AppLayout'
 import { PageHeader } from './components/ui'
 import { AccountPage } from './pages/AccountPage'
+import { ContactPage } from './pages/contacts/ContactPage'
+import { ContactsPage } from './pages/contacts/ContactsPage'
 import { LoginPage } from './pages/LoginPage'
 
 function NotFound() {
@@ -39,7 +41,8 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: '/', element: <Placeholder title="Dashboard" /> },
-      { path: '/contacts/*', element: <Placeholder title="Contacts" /> },
+      { path: '/contacts', element: <ContactsPage /> },
+      { path: '/contacts/:id', element: <ContactPage /> },
       { path: '/invoices/*', element: <Placeholder title="Invoices" /> },
       { path: '/payments/*', element: <Placeholder title="Payments" /> },
       { path: '/deposits/*', element: <Placeholder title="Deposits" /> },
