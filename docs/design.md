@@ -150,6 +150,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   - `status`: active, paused, cancelled
   - `vendor_party_id`, `vendor_renewal_date`, `unit_cost` — e.g. the registrar and the renewal date there, so upcoming vendor renewals and margin are visible
   - `notes`
+- **Pricing**: each billing period bills `quantity` × unit price (the subscription's override or the catalog price); periods are billed in advance unless the catalog item says arrears.
 - **Billing run**: "Generate invoices for subscriptions due through date X" → one **draft** invoice per client, a line per subscription with the period in the description (e.g. `example.com — 2026-11-01 to 2027-10-31`), then `next_bill_date` advances. You review and issue drafts manually.
 - **Views**: upcoming renewals (next 30/60/90 days), per-client subscription list on the contact page, vendor renewals due.
 - **Import aid**: the importer proposes subscriptions from recent recurring invoice lines (same client + recurring product within the last ~13 months) as a review list — not created automatically.
@@ -176,6 +177,8 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   - The invoice number never changes. Void remains for invoices that should not exist at all.
   - A setting can restrict revising to the owner role.
 
+- Implementation notes: totals are rounded to the currency's minor units (2 for USD) and always returned with 4 decimals in JSON; an invoice counts as settled when within half a cent of its total (old totals had fractions of a cent); credit notes are numbered `CN-1`, `CN-2`, ...; imported invoices keep their stored tax when revised.
+
 ### 4.5 Payments and deposits (replaces tblInvoicePayment, tblPaymentReceived, tblDeposit*)
 - `payment` — `party_id`, `received_date`, `method` (check, cash, card, bank transfer, PayPal, …), `channel` (mail, in person, electronic), `reference` (check no.), `amount`, `notes`, `deposit_id` (nullable = undeposited funds).
 - `payment_allocation` — `payment_id`, `invoice_id`, `amount`. One payment can cover several invoices; one invoice can have several payments.
@@ -198,12 +201,14 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 | `taxability_rule` | Jurisdiction × category → taxable yes/no (inherits down the tree; overridable at lower levels). |
 | `tax_exemption` | Per client (optionally per jurisdiction): certificate type and number, valid from/to, uploaded copy. |
 
-**Calculation** (pluggable `TaxEngine` interface; built-in table engine for v1):
+**Calculation** (pluggable `TaxEngine` interface; built-in table engine for v1, `saumgm/services/tax_engine.py`):
 1. Resolve the invoice's tax location → the chain of jurisdictions (e.g. US → NY → Cattaraugus → Salamanca).
 2. Skip jurisdictions the business isn't registered in; skip entirely if the client has a valid exemption.
 3. For each line, use its tax category to decide taxable or not per jurisdiction.
 4. Sum the taxable base per jurisdiction rate, multiply, and round per jurisdiction to the currency's minor units.
 5. Store the result as `invoice_tax` rows (snapshot).
+
+Defaults chosen while building: a line with no tax category, or a category without any rule up the tree, is taxable; freight and adjustments are not taxed; new organizations get a "Non-taxable" rule at country level.
 
 **Reporting**: sales tax by jurisdiction and period — gross sales, non-taxable, exempt, taxable, tax collected (shaped like NY ST-100/ST-101). Basis is a setting: invoice date (accrual) or payment date (cash; what the old app did).
 
@@ -296,7 +301,11 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
 
 1. **Foundation** ✅ — repo layout, backend skeleton (FastAPI, settings, DB session, Alembic, health endpoint, request-id logging), frontend skeleton (Vite + React + TS + Mantine + TanStack Query + typed API client), CI (ruff, mypy, pytest on MariaDB 10.11; oxlint + build).
 2. **Schema + import** ✅ — 34-table schema for §4 (initial Alembic migration), seed data (US states + DC + PR, Canadian provinces/territories, starter tax categories, number sequences), raw archive, mapped import, reconciliation report; importer tested in CI with a synthetic dataset. *Exit met: reconciliation 535/535.*
-3. **API** — auth (local), contacts, catalog, subscriptions, invoices (with tax engine), payments, deposits, expenses, settings.
+3. **API** ✅ — 69 endpoints, 100 tests (interactive docs at `/api/docs`):
+   - Auth: local accounts, server-side sessions in an HttpOnly cookie, double-submit CSRF token, throttled failed logins; roles owner / bookkeeper / viewer; `python -m saumgm create-user`.
+   - Automatic audit hook on every ORM flush (field-level changes, user, request id, IP, parent record for child rows); History endpoint per record; audit log + CSV export for the owner.
+   - Contacts, catalog, categories, accounts, settings, users, tax setup, invoices + credit notes + revisions, payments, deposits, expenses, subscriptions + billing run, archiving.
+   - Smoke-tested on the imported data: every list responds in under 100 ms.
 4. **Frontend** — app shell, login, screens in §5.
 5. **Documents + reports** — invoice/receipt/deposit-slip PDFs, reports, CSV export.
 6. **Deploy** — Apache vhost, systemd, TLS, backups on the Ubuntu server; cut over from Access.

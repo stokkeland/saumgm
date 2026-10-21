@@ -24,10 +24,1852 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_api_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["me_api_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Password */
+        post: operations["change_password_api_auth_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Contacts */
+        get: operations["list_contacts_api_contacts_get"];
+        put?: never;
+        /** Create Contact */
+        post: operations["create_contact_api_contacts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Contact */
+        get: operations["get_contact_api_contacts__party_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Contact */
+        patch: operations["update_contact_api_contacts__party_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Contact */
+        post: operations["archive_contact_api_contacts__party_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Contact */
+        post: operations["unarchive_contact_api_contacts__party_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Address */
+        post: operations["add_address_api_contacts__party_id__addresses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/addresses/{address_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Address */
+        delete: operations["delete_address_api_contacts__party_id__addresses__address_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Address */
+        patch: operations["update_address_api_contacts__party_id__addresses__address_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Person */
+        post: operations["add_person_api_contacts__party_id__people_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/people/{person_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Person */
+        delete: operations["delete_person_api_contacts__party_id__people__person_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Person */
+        patch: operations["update_person_api_contacts__party_id__people__person_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/tax-exemptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Exemption */
+        post: operations["add_exemption_api_contacts__party_id__tax_exemptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/tax-exemptions/{exemption_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Exemption */
+        delete: operations["delete_exemption_api_contacts__party_id__tax_exemptions__exemption_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Exemption */
+        patch: operations["update_exemption_api_contacts__party_id__tax_exemptions__exemption_id__patch"];
+        trace?: never;
+    };
+    "/api/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Items */
+        get: operations["list_items_api_catalog_get"];
+        put?: never;
+        /** Create Item */
+        post: operations["create_item_api_catalog_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Item */
+        get: operations["get_item_api_catalog__item_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Item */
+        delete: operations["delete_item_api_catalog__item_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Item */
+        patch: operations["update_item_api_catalog__item_id__patch"];
+        trace?: never;
+    };
+    "/api/revenue-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Revenue Categories */
+        get: operations["list_revenue_categories_api_revenue_categories_get"];
+        put?: never;
+        /** Create Revenue Category */
+        post: operations["create_revenue_category_api_revenue_categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/revenue-categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Revenue Category */
+        patch: operations["update_revenue_category_api_revenue_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/api/tax/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tax Categories */
+        get: operations["list_tax_categories_api_tax_categories_get"];
+        put?: never;
+        /** Create Tax Category */
+        post: operations["create_tax_category_api_tax_categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Tax Category */
+        patch: operations["update_tax_category_api_tax_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/api/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Accounts */
+        get: operations["list_accounts_api_accounts_get"];
+        put?: never;
+        /** Create Account */
+        post: operations["create_account_api_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Account */
+        delete: operations["delete_account_api_accounts__account_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Account */
+        patch: operations["update_account_api_accounts__account_id__patch"];
+        trace?: never;
+    };
+    "/api/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invoices */
+        get: operations["list_invoices_api_invoices_get"];
+        put?: never;
+        /** Create Invoice */
+        post: operations["create_invoice_api_invoices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calculate
+         * @description Totals and tax for a draft being edited, without saving anything.
+         */
+        post: operations["calculate_api_invoices_calculate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Invoice */
+        get: operations["get_invoice_api_invoices__invoice_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Invoice */
+        delete: operations["delete_invoice_api_invoices__invoice_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Invoice */
+        patch: operations["update_invoice_api_invoices__invoice_id__patch"];
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue Invoice */
+        post: operations["issue_invoice_api_invoices__invoice_id__issue_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void Invoice */
+        post: operations["void_invoice_api_invoices__invoice_id__void_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/revise": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revise Invoice */
+        post: operations["revise_invoice_api_invoices__invoice_id__revise_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/revisions/{revision_no}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Revision */
+        get: operations["get_revision_api_invoices__invoice_id__revisions__revision_no__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/credit-note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Credit Note */
+        post: operations["create_credit_note_api_invoices__invoice_id__credit_note_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Invoice */
+        post: operations["archive_invoice_api_invoices__invoice_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Invoice */
+        post: operations["unarchive_invoice_api_invoices__invoice_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Payments */
+        get: operations["list_payments_api_payments_get"];
+        put?: never;
+        /** Receive Payment */
+        post: operations["receive_payment_api_payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/{payment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Payment */
+        get: operations["get_payment_api_payments__payment_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Payment */
+        delete: operations["delete_payment_api_payments__payment_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Payment */
+        patch: operations["update_payment_api_payments__payment_id__patch"];
+        trace?: never;
+    };
+    "/api/payments/{payment_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Payment */
+        post: operations["archive_payment_api_payments__payment_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payments/{payment_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Payment */
+        post: operations["unarchive_payment_api_payments__payment_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Contact Balance */
+        get: operations["contact_balance_api_contacts__party_id__balance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/deposits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Deposits */
+        get: operations["list_deposits_api_deposits_get"];
+        put?: never;
+        /** Create Deposit */
+        post: operations["create_deposit_api_deposits_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/deposits/{deposit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Deposit */
+        get: operations["get_deposit_api_deposits__deposit_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Deposit */
+        delete: operations["delete_deposit_api_deposits__deposit_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Deposit */
+        patch: operations["update_deposit_api_deposits__deposit_id__patch"];
+        trace?: never;
+    };
+    "/api/deposits/{deposit_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Deposit */
+        post: operations["archive_deposit_api_deposits__deposit_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/deposits/{deposit_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Deposit */
+        post: operations["unarchive_deposit_api_deposits__deposit_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Expenses */
+        get: operations["list_expenses_api_expenses_get"];
+        put?: never;
+        /** Create Expense */
+        post: operations["create_expense_api_expenses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expenses/{expense_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Expense */
+        get: operations["get_expense_api_expenses__expense_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Expense */
+        delete: operations["delete_expense_api_expenses__expense_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Expense */
+        patch: operations["update_expense_api_expenses__expense_id__patch"];
+        trace?: never;
+    };
+    "/api/expenses/{expense_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Expense */
+        post: operations["archive_expense_api_expenses__expense_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expenses/{expense_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Expense */
+        post: operations["unarchive_expense_api_expenses__expense_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Subscriptions */
+        get: operations["list_subscriptions_api_subscriptions_get"];
+        put?: never;
+        /** Create Subscription */
+        post: operations["create_subscription_api_subscriptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subscriptions/{subscription_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Subscription */
+        get: operations["get_subscription_api_subscriptions__subscription_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Subscription */
+        delete: operations["delete_subscription_api_subscriptions__subscription_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Subscription */
+        patch: operations["update_subscription_api_subscriptions__subscription_id__patch"];
+        trace?: never;
+    };
+    "/api/subscriptions/billing-run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Billing Run
+         * @description Create draft invoices for everything due through a date. With dry_run nothing is saved.
+         */
+        post: operations["billing_run_api_subscriptions_billing_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/jurisdictions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Jurisdictions */
+        get: operations["list_jurisdictions_api_tax_jurisdictions_get"];
+        put?: never;
+        /** Create Jurisdiction */
+        post: operations["create_jurisdiction_api_tax_jurisdictions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/jurisdictions/{jurisdiction_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Jurisdiction */
+        patch: operations["update_jurisdiction_api_tax_jurisdictions__jurisdiction_id__patch"];
+        trace?: never;
+    };
+    "/api/tax/jurisdictions/{jurisdiction_id}/rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rates */
+        get: operations["list_rates_api_tax_jurisdictions__jurisdiction_id__rates_get"];
+        put?: never;
+        /** Add Rate */
+        post: operations["add_rate_api_tax_jurisdictions__jurisdiction_id__rates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/rates/{rate_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Rate */
+        delete: operations["delete_rate_api_tax_rates__rate_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Rate */
+        patch: operations["update_rate_api_tax_rates__rate_id__patch"];
+        trace?: never;
+    };
+    "/api/tax/registrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Registrations */
+        get: operations["list_registrations_api_tax_registrations_get"];
+        put?: never;
+        /** Add Registration */
+        post: operations["add_registration_api_tax_registrations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/registrations/{registration_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Registration */
+        delete: operations["delete_registration_api_tax_registrations__registration_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Registration */
+        patch: operations["update_registration_api_tax_registrations__registration_id__patch"];
+        trace?: never;
+    };
+    "/api/tax/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rules */
+        get: operations["list_rules_api_tax_rules_get"];
+        /**
+         * Set Rule
+         * @description Create or replace the rule for a jurisdiction and tax category.
+         */
+        put: operations["set_rule_api_tax_rules_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Rule */
+        delete: operations["delete_rule_api_tax_rules__rule_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/organization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Organization */
+        get: operations["get_organization_api_settings_organization_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Organization */
+        patch: operations["update_organization_api_settings_organization_patch"];
+        trace?: never;
+    };
+    "/api/settings/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Org Addresses */
+        get: operations["list_org_addresses_api_settings_addresses_get"];
+        put?: never;
+        /** Add Org Address */
+        post: operations["add_org_address_api_settings_addresses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/addresses/{address_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Org Address */
+        delete: operations["delete_org_address_api_settings_addresses__address_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Org Address */
+        patch: operations["update_org_address_api_settings_addresses__address_id__patch"];
+        trace?: never;
+    };
+    "/api/settings/numbering": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sequences */
+        get: operations["list_sequences_api_settings_numbering_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings/numbering/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Sequence */
+        patch: operations["update_sequence_api_settings_numbering__name__patch"];
+        trace?: never;
+    };
+    "/api/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Users */
+        get: operations["list_users_api_users_get"];
+        put?: never;
+        /** Create User */
+        post: operations["create_user_api_users_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/users/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update User */
+        patch: operations["update_user_api_users__user_id__patch"];
+        trace?: never;
+    };
+    "/api/users/{user_id}/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset Password */
+        post: operations["reset_password_api_users__user_id__password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/history/{entity_type}/{entity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * History
+         * @description Everything that happened to a record, including its lines, addresses and other parts.
+         */
+        get: operations["history_api_history__entity_type___entity_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit Log */
+        get: operations["audit_log_api_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Audit Log */
+        get: operations["export_audit_log_api_audit_export_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive
+         * @description Archive invoices, payments, deposits and expenses dated on or before a day.
+         */
+        post: operations["archive_api_archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountIn */
+        AccountIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** @default expense */
+            account_type: components["schemas"]["AccountType"];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** AccountOut */
+        AccountOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** @default expense */
+            account_type: components["schemas"]["AccountType"];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Id */
+            id: number;
+        };
+        /** AccountPatch */
+        AccountPatch: {
+            /** Code */
+            code?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            account_type?: components["schemas"]["AccountType"] | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /**
+         * AccountType
+         * @enum {string}
+         */
+        AccountType: "expense" | "cogs" | "revenue";
+        /** AddressIn */
+        AddressIn: {
+            /** @default billing */
+            address_type: components["schemas"]["AddressType"];
+            /**
+             * Is Default
+             * @default false
+             */
+            is_default: boolean;
+            /** Line1 */
+            line1?: string | null;
+            /** Line2 */
+            line2?: string | null;
+            /** City */
+            city?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+        };
+        /** AddressOut */
+        AddressOut: {
+            /** @default billing */
+            address_type: components["schemas"]["AddressType"];
+            /**
+             * Is Default
+             * @default false
+             */
+            is_default: boolean;
+            /** Line1 */
+            line1?: string | null;
+            /** Line2 */
+            line2?: string | null;
+            /** City */
+            city?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+            /** Id */
+            id: number;
+        };
+        /** AddressPatch */
+        AddressPatch: {
+            address_type?: components["schemas"]["AddressType"] | null;
+            /** Is Default */
+            is_default?: boolean | null;
+            /** Line1 */
+            line1?: string | null;
+            /** Line2 */
+            line2?: string | null;
+            /** City */
+            city?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+        };
+        /**
+         * AddressType
+         * @enum {string}
+         */
+        AddressType: "billing" | "service" | "remit" | "physical" | "other";
+        /** AllocationIn */
+        AllocationIn: {
+            /** Invoice Id */
+            invoice_id: number;
+            /** Amount */
+            amount: number | string;
+        };
+        /** AllocationOut */
+        AllocationOut: {
+            /** Invoice Id */
+            invoice_id: number;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Amount */
+            amount: string;
+        };
+        /**
+         * ArchiveFilter
+         * @enum {string}
+         */
+        ArchiveFilter: "current" | "archived" | "all";
+        /** ArchiveRequest */
+        ArchiveRequest: {
+            /**
+             * Through
+             * Format: date
+             */
+            through: string;
+        };
+        /** ArchiveResult */
+        ArchiveResult: {
+            /**
+             * Through
+             * Format: date
+             */
+            through: string;
+            /** Archived */
+            archived: {
+                [key: string]: number;
+            };
+        };
+        /**
+         * AuditActor
+         * @enum {string}
+         */
+        AuditActor: "user" | "system";
+        /** AuditEntry */
+        AuditEntry: {
+            /** Id */
+            id: number;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            actor: components["schemas"]["AuditActor"];
+            /** User Id */
+            user_id: number | null;
+            /** User Name */
+            user_name: string | null;
+            /** Action */
+            action: string;
+            /** Entity Type */
+            entity_type: string | null;
+            /** Entity Id */
+            entity_id: string | null;
+            /** Parent Type */
+            parent_type: string | null;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Changes */
+            changes: {
+                [key: string]: unknown;
+            } | null;
+            /** Reason */
+            reason: string | null;
+            /** Request Id */
+            request_id: string | null;
+            /** Ip Address */
+            ip_address: string | null;
+        };
+        /** BillingRunRequest */
+        BillingRunRequest: {
+            /**
+             * Through
+             * Format: date
+             */
+            through: string;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+        };
+        /** BillingRunResult */
+        BillingRunResult: {
+            /** Dry Run */
+            dry_run: boolean;
+            /** Subscriptions Billed */
+            subscriptions_billed: number;
+            /** Lines Created */
+            lines_created: number;
+            /** Invoices */
+            invoices: components["schemas"]["InvoiceListItem"][];
+        };
+        /**
+         * BillingTiming
+         * @enum {string}
+         */
+        BillingTiming: "advance" | "arrears";
+        /** CalculateRequest */
+        CalculateRequest: {
+            /** Party Id */
+            party_id: number;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+            /** Issue Date */
+            issue_date?: string | null;
+            /**
+             * Freight
+             * @default 0
+             */
+            freight: number | string;
+            /**
+             * Adjustment
+             * @default 0
+             */
+            adjustment: number | string;
+            /** Lines */
+            lines: components["schemas"]["LineIn"][];
+        };
+        /** CalculateResult */
+        CalculateResult: {
+            /** Lines */
+            lines: components["schemas"]["LineOut"][];
+            /** Subtotal */
+            subtotal: string;
+            /** Taxes */
+            taxes: components["schemas"]["TaxOut"][];
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+        };
+        /** CatalogItemCreate */
+        CatalogItemCreate: {
+            /** Sku */
+            sku?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Unit */
+            unit?: string | null;
+            /**
+             * Price
+             * @default 0
+             */
+            price: number | string;
+            /**
+             * Default Discount Pct
+             * @default 0
+             */
+            default_discount_pct: number | string;
+            /** Tax Category Id */
+            tax_category_id?: number | null;
+            /** Revenue Category Id */
+            revenue_category_id?: number | null;
+            /** Billing Interval Months */
+            billing_interval_months?: number | null;
+            billing_timing?: components["schemas"]["BillingTiming"] | null;
+            /** Default Vendor Id */
+            default_vendor_id?: number | null;
+            /** Unit Cost */
+            unit_cost?: number | string | null;
+            /** Cogs Account Id */
+            cogs_account_id?: number | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            item_type: components["schemas"]["ItemType"];
+        };
+        /** CatalogItemOut */
+        CatalogItemOut: {
+            /** Sku */
+            sku?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Unit */
+            unit?: string | null;
+            /**
+             * Price
+             * @default 0.0000
+             */
+            price: string;
+            /**
+             * Default Discount Pct
+             * @default 0.0000
+             */
+            default_discount_pct: string;
+            /** Tax Category Id */
+            tax_category_id?: number | null;
+            /** Revenue Category Id */
+            revenue_category_id?: number | null;
+            /** Billing Interval Months */
+            billing_interval_months?: number | null;
+            billing_timing?: components["schemas"]["BillingTiming"] | null;
+            /** Default Vendor Id */
+            default_vendor_id?: number | null;
+            /** Unit Cost */
+            unit_cost?: string | null;
+            /** Cogs Account Id */
+            cogs_account_id?: number | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            item_type: components["schemas"]["ItemType"];
+            /** Legacy Data */
+            legacy_data: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CatalogItemPatch */
+        CatalogItemPatch: {
+            /** Sku */
+            sku?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            item_type?: components["schemas"]["ItemType"] | null;
+            /** Unit */
+            unit?: string | null;
+            /** Price */
+            price?: number | string | null;
+            /** Default Discount Pct */
+            default_discount_pct?: number | string | null;
+            /** Tax Category Id */
+            tax_category_id?: number | null;
+            /** Revenue Category Id */
+            revenue_category_id?: number | null;
+            /** Billing Interval Months */
+            billing_interval_months?: number | null;
+            billing_timing?: components["schemas"]["BillingTiming"] | null;
+            /** Default Vendor Id */
+            default_vendor_id?: number | null;
+            /** Unit Cost */
+            unit_cost?: number | string | null;
+            /** Cogs Account Id */
+            cogs_account_id?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** CreditNoteCreate */
+        CreditNoteCreate: {
+            /** Lines */
+            lines: components["schemas"]["LineIn"][];
+            /** Notes */
+            notes?: string | null;
+        };
+        /** DepositCreate */
+        DepositCreate: {
+            /**
+             * Deposit Date
+             * Format: date
+             */
+            deposit_date: string;
+            /** Bank Party Id */
+            bank_party_id?: number | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Payment Ids
+             * @default []
+             */
+            payment_ids: number[];
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["DepositItemIn"][];
+        };
+        /** DepositItemIn */
+        DepositItemIn: {
+            /** Amount */
+            amount: number | string;
+            /** Description */
+            description?: string | null;
+        };
+        /** DepositItemOut */
+        DepositItemOut: {
+            /** Amount */
+            amount: string;
+            /** Description */
+            description?: string | null;
+            /** Id */
+            id: number;
+        };
+        /** DepositOut */
+        DepositOut: {
+            /** Id */
+            id: number;
+            /** Deposit Date */
+            deposit_date: string | null;
+            /** Bank Party Id */
+            bank_party_id: number | null;
+            /** Notes */
+            notes: string | null;
+            /** Total */
+            total: string;
+            /** Payments */
+            payments: components["schemas"]["PaymentOut"][];
+            /** Items */
+            items: components["schemas"]["DepositItemOut"][];
+            /** Archived At */
+            archived_at: string | null;
+        };
+        /** DepositPatch */
+        DepositPatch: {
+            /** Deposit Date */
+            deposit_date?: string | null;
+            /** Bank Party Id */
+            bank_party_id?: number | null;
+            /** Notes */
+            notes?: string | null;
+            /** Payment Ids */
+            payment_ids?: number[] | null;
+            /** Items */
+            items?: components["schemas"]["DepositItemIn"][] | null;
+        };
+        /**
+         * ExemptionIn
+         * @description A tax exemption; jurisdiction_id None means it applies everywhere.
+         */
+        ExemptionIn: {
+            /** Jurisdiction Id */
+            jurisdiction_id?: number | null;
+            /** Certificate Type */
+            certificate_type: string;
+            /** Certificate Number */
+            certificate_number?: string | null;
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid To */
+            valid_to?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** ExemptionOut */
+        ExemptionOut: {
+            /** Jurisdiction Id */
+            jurisdiction_id?: number | null;
+            /** Certificate Type */
+            certificate_type: string;
+            /** Certificate Number */
+            certificate_number?: string | null;
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid To */
+            valid_to?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Id */
+            id: number;
+            /** File Id */
+            file_id: number | null;
+        };
+        /** ExemptionPatch */
+        ExemptionPatch: {
+            /** Jurisdiction Id */
+            jurisdiction_id?: number | null;
+            /** Certificate Type */
+            certificate_type?: string | null;
+            /** Certificate Number */
+            certificate_number?: string | null;
+            /** Valid From */
+            valid_from?: string | null;
+            /** Valid To */
+            valid_to?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** ExpenseCreate */
+        ExpenseCreate: {
+            /**
+             * Expense Date
+             * Format: date
+             */
+            expense_date: string;
+            /** Entered Date */
+            entered_date?: string | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /**
+             * For Party Id
+             * @description Defaults to the business itself
+             */
+            for_party_id?: number | null;
+            /** Reference */
+            reference?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Lines */
+            lines: components["schemas"]["ExpenseLineIn"][];
+        };
+        /** ExpenseLineIn */
+        ExpenseLineIn: {
+            /** Account Id */
+            account_id: number;
+            /** Amount */
+            amount: number | string;
+            /** Description */
+            description?: string | null;
+        };
+        /** ExpenseLineOut */
+        ExpenseLineOut: {
+            /** Id */
+            id: number;
+            /** Account Id */
+            account_id: number;
+            /** Account Code */
+            account_code: string;
+            /** Account Name */
+            account_name: string;
+            /** Amount */
+            amount: string;
+            /** Description */
+            description: string | null;
+        };
+        /** ExpenseOut */
+        ExpenseOut: {
+            /** Id */
+            id: number;
+            /**
+             * Expense Date
+             * Format: date
+             */
+            expense_date: string;
+            /** Entered Date */
+            entered_date: string | null;
+            /** Vendor Party Id */
+            vendor_party_id: number | null;
+            /** Vendor Name */
+            vendor_name: string | null;
+            /** For Party Id */
+            for_party_id: number | null;
+            /** For Name */
+            for_name: string | null;
+            /** Reference */
+            reference: string | null;
+            /** Description */
+            description: string | null;
+            /** Total */
+            total: string;
+            /** Lines */
+            lines: components["schemas"]["ExpenseLineOut"][];
+            /** Archived At */
+            archived_at: string | null;
+            /** Legacy Data */
+            legacy_data: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** ExpensePatch */
+        ExpensePatch: {
+            /** Expense Date */
+            expense_date?: string | null;
+            /** Entered Date */
+            entered_date?: string | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /** For Party Id */
+            for_party_id?: number | null;
+            /** Reference */
+            reference?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Lines */
+            lines?: components["schemas"]["ExpenseLineIn"][] | null;
+        };
+        /**
+         * FilingFrequency
+         * @enum {string}
+         */
+        FilingFrequency: "monthly" | "quarterly" | "annual";
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** Health */
         Health: {
             /**
@@ -44,6 +1886,1476 @@ export interface components {
             database: "ok" | "error";
             /** Database Version */
             database_version?: string | null;
+        };
+        /** InvoiceCreate */
+        InvoiceCreate: {
+            /** Issue Date */
+            issue_date?: string | null;
+            /** Terms Days */
+            terms_days?: number | null;
+            /** Terms Text */
+            terms_text?: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+            /** Bill To Company */
+            bill_to_company?: string | null;
+            /** Bill To Name */
+            bill_to_name?: string | null;
+            /** Bill To Line1 */
+            bill_to_line1?: string | null;
+            /** Bill To Line2 */
+            bill_to_line2?: string | null;
+            /** Bill To City */
+            bill_to_city?: string | null;
+            /** Bill To Region */
+            bill_to_region?: string | null;
+            /** Bill To Postal Code */
+            bill_to_postal_code?: string | null;
+            /** Bill To Country */
+            bill_to_country?: string | null;
+            /** Bill To Phone */
+            bill_to_phone?: string | null;
+            /** Bill To Email */
+            bill_to_email?: string | null;
+            /** Freight */
+            freight?: number | string | null;
+            /** Adjustment */
+            adjustment?: number | string | null;
+            /** Adjustment Note */
+            adjustment_note?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Party Id */
+            party_id: number;
+            /**
+             * Lines
+             * @default []
+             */
+            lines: components["schemas"]["LineIn"][];
+        };
+        /**
+         * InvoiceKind
+         * @enum {string}
+         */
+        InvoiceKind: "invoice" | "credit_note";
+        /** InvoiceListItem */
+        InvoiceListItem: {
+            /** Amount Paid */
+            amount_paid: string;
+            /** Amount Credited */
+            amount_credited: string;
+            /** Balance Due */
+            balance_due: string;
+            payment_status: components["schemas"]["PaymentStatus"];
+            /** Is Overdue */
+            is_overdue: boolean;
+            /** Id */
+            id: number;
+            kind: components["schemas"]["InvoiceKind"];
+            /** Number */
+            number: string | null;
+            status: components["schemas"]["InvoiceStatus"];
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Issue Date */
+            issue_date: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Total */
+            total: string;
+            /** Is Historical */
+            is_historical: boolean;
+            /** Archived At */
+            archived_at: string | null;
+        };
+        /** InvoiceOut */
+        InvoiceOut: {
+            /** Amount Paid */
+            amount_paid: string;
+            /** Amount Credited */
+            amount_credited: string;
+            /** Balance Due */
+            balance_due: string;
+            payment_status: components["schemas"]["PaymentStatus"];
+            /** Is Overdue */
+            is_overdue: boolean;
+            /** Id */
+            id: number;
+            kind: components["schemas"]["InvoiceKind"];
+            /** Number */
+            number: string | null;
+            status: components["schemas"]["InvoiceStatus"];
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Issue Date */
+            issue_date: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Total */
+            total: string;
+            /** Is Historical */
+            is_historical: boolean;
+            /** Archived At */
+            archived_at: string | null;
+            /** Credited Invoice Id */
+            credited_invoice_id: number | null;
+            /** Terms Days */
+            terms_days: number | null;
+            /** Terms Text */
+            terms_text: string | null;
+            /** Bill To Company */
+            bill_to_company: string | null;
+            /** Bill To Name */
+            bill_to_name: string | null;
+            /** Bill To Line1 */
+            bill_to_line1: string | null;
+            /** Bill To Line2 */
+            bill_to_line2: string | null;
+            /** Bill To City */
+            bill_to_city: string | null;
+            /** Bill To Region */
+            bill_to_region: string | null;
+            /** Bill To Postal Code */
+            bill_to_postal_code: string | null;
+            /** Bill To Country */
+            bill_to_country: string | null;
+            /** Bill To Phone */
+            bill_to_phone: string | null;
+            /** Bill To Email */
+            bill_to_email: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id: number | null;
+            /** Tax Location Text */
+            tax_location_text: string | null;
+            /** Freight */
+            freight: string;
+            /** Adjustment */
+            adjustment: string;
+            /** Adjustment Note */
+            adjustment_note: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Revision No */
+            revision_no: number;
+            /** Issued At */
+            issued_at: string | null;
+            /** Voided At */
+            voided_at: string | null;
+            /** Void Reason */
+            void_reason: string | null;
+            /** Lines */
+            lines: components["schemas"]["LineOut"][];
+            /** Taxes */
+            taxes: components["schemas"]["TaxOut"][];
+            /** Payments */
+            payments: components["schemas"]["InvoicePayment"][];
+            /** Credit Note Ids */
+            credit_note_ids: number[];
+            /** Revisions */
+            revisions: components["schemas"]["RevisionSummary"][];
+            /** Legacy Data */
+            legacy_data: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: string[];
+        };
+        /** InvoicePatch */
+        InvoicePatch: {
+            /** Issue Date */
+            issue_date?: string | null;
+            /** Terms Days */
+            terms_days?: number | null;
+            /** Terms Text */
+            terms_text?: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+            /** Bill To Company */
+            bill_to_company?: string | null;
+            /** Bill To Name */
+            bill_to_name?: string | null;
+            /** Bill To Line1 */
+            bill_to_line1?: string | null;
+            /** Bill To Line2 */
+            bill_to_line2?: string | null;
+            /** Bill To City */
+            bill_to_city?: string | null;
+            /** Bill To Region */
+            bill_to_region?: string | null;
+            /** Bill To Postal Code */
+            bill_to_postal_code?: string | null;
+            /** Bill To Country */
+            bill_to_country?: string | null;
+            /** Bill To Phone */
+            bill_to_phone?: string | null;
+            /** Bill To Email */
+            bill_to_email?: string | null;
+            /** Freight */
+            freight?: number | string | null;
+            /** Adjustment */
+            adjustment?: number | string | null;
+            /** Adjustment Note */
+            adjustment_note?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Party Id */
+            party_id?: number | null;
+            /** Lines */
+            lines?: components["schemas"]["LineIn"][] | null;
+        };
+        /** InvoicePayment */
+        InvoicePayment: {
+            /** Payment Id */
+            payment_id: number;
+            /** Amount */
+            amount: string;
+            /** Received Date */
+            received_date: string | null;
+            method: components["schemas"]["PaymentMethod"] | null;
+            channel: components["schemas"]["PaymentChannel"] | null;
+            /** Reference */
+            reference: string | null;
+        };
+        /** InvoiceRevise */
+        InvoiceRevise: {
+            /** Issue Date */
+            issue_date?: string | null;
+            /** Terms Days */
+            terms_days?: number | null;
+            /** Terms Text */
+            terms_text?: string | null;
+            /** Tax Jurisdiction Id */
+            tax_jurisdiction_id?: number | null;
+            /** Bill To Company */
+            bill_to_company?: string | null;
+            /** Bill To Name */
+            bill_to_name?: string | null;
+            /** Bill To Line1 */
+            bill_to_line1?: string | null;
+            /** Bill To Line2 */
+            bill_to_line2?: string | null;
+            /** Bill To City */
+            bill_to_city?: string | null;
+            /** Bill To Region */
+            bill_to_region?: string | null;
+            /** Bill To Postal Code */
+            bill_to_postal_code?: string | null;
+            /** Bill To Country */
+            bill_to_country?: string | null;
+            /** Bill To Phone */
+            bill_to_phone?: string | null;
+            /** Bill To Email */
+            bill_to_email?: string | null;
+            /** Freight */
+            freight?: number | string | null;
+            /** Adjustment */
+            adjustment?: number | string | null;
+            /** Adjustment Note */
+            adjustment_note?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Reason */
+            reason: string;
+            /** Lines */
+            lines?: components["schemas"]["LineIn"][] | null;
+        };
+        /**
+         * InvoiceStatus
+         * @enum {string}
+         */
+        InvoiceStatus: "draft" | "issued" | "void";
+        /** IssueRequest */
+        IssueRequest: {
+            /** Issue Date */
+            issue_date?: string | null;
+        };
+        /**
+         * ItemType
+         * @enum {string}
+         */
+        ItemType: "goods" | "service_hourly" | "service_fixed" | "subscription";
+        /** JurisdictionIn */
+        JurisdictionIn: {
+            /** Parent Id */
+            parent_id: number;
+            level: components["schemas"]["JurisdictionLevel"];
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Reporting Code */
+            reporting_code?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /**
+         * JurisdictionLevel
+         * @enum {string}
+         */
+        JurisdictionLevel: "country" | "state" | "county" | "city" | "other";
+        /** JurisdictionOut */
+        JurisdictionOut: {
+            /** Id */
+            id: number;
+            /** Parent Id */
+            parent_id: number | null;
+            level: components["schemas"]["JurisdictionLevel"];
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Reporting Code */
+            reporting_code: string | null;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** JurisdictionPatch */
+        JurisdictionPatch: {
+            /** Name */
+            name?: string | null;
+            /** Reporting Code */
+            reporting_code?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /**
+         * LineIn
+         * @description An invoice line. With a catalog item, missing fields come from the item.
+         */
+        LineIn: {
+            /** Catalog Item Id */
+            catalog_item_id?: number | null;
+            /** Subscription Id */
+            subscription_id?: number | null;
+            /** Description */
+            description?: string | null;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number | string;
+            /** Unit */
+            unit?: string | null;
+            /** Unit Price */
+            unit_price?: number | string | null;
+            /** Unit Discount */
+            unit_discount?: number | string | null;
+            /** Discount Pct */
+            discount_pct?: number | string | null;
+            /** Tax Category Id */
+            tax_category_id?: number | null;
+            /** Revenue Category Id */
+            revenue_category_id?: number | null;
+        };
+        /** LineOut */
+        LineOut: {
+            /** Id */
+            id?: number | null;
+            /** Sort Order */
+            sort_order: number;
+            /** Catalog Item Id */
+            catalog_item_id: number | null;
+            /** Subscription Id */
+            subscription_id: number | null;
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: string;
+            /** Unit */
+            unit: string | null;
+            /** Unit Price */
+            unit_price: string;
+            /** Unit Discount */
+            unit_discount: string;
+            /** Line Total */
+            line_total: string;
+            /** Tax Category Id */
+            tax_category_id: number | null;
+            /** Revenue Category Id */
+            revenue_category_id: number | null;
+            /** Legacy Unit Tax */
+            legacy_unit_tax?: string | null;
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /** Me */
+        Me: {
+            user: components["schemas"]["UserOut"];
+            organization: components["schemas"]["OrganizationBrief"];
+            role: components["schemas"]["UserRoleType"];
+        };
+        /** OrgAddressIn */
+        OrgAddressIn: {
+            address_type: components["schemas"]["AddressType"];
+            /** Line1 */
+            line1?: string | null;
+            /** Line2 */
+            line2?: string | null;
+            /** City */
+            city?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Effective From */
+            effective_from?: string | null;
+            /** Effective To */
+            effective_to?: string | null;
+        };
+        /** OrgAddressOut */
+        OrgAddressOut: {
+            address_type: components["schemas"]["AddressType"];
+            /** Line1 */
+            line1?: string | null;
+            /** Line2 */
+            line2?: string | null;
+            /** City */
+            city?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Effective From */
+            effective_from?: string | null;
+            /** Effective To */
+            effective_to?: string | null;
+            /** Id */
+            id: number;
+        };
+        /** OrgAddressPatch */
+        OrgAddressPatch: {
+            address_type?: components["schemas"]["AddressType"] | null;
+            /** Line1 */
+            line1?: string | null;
+            /** Line2 */
+            line2?: string | null;
+            /** City */
+            city?: string | null;
+            /** Region */
+            region?: string | null;
+            /** Postal Code */
+            postal_code?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Effective From */
+            effective_from?: string | null;
+            /** Effective To */
+            effective_to?: string | null;
+        };
+        /** OrganizationBrief */
+        OrganizationBrief: {
+            /** Id */
+            id: number;
+            /** Display Name */
+            display_name: string;
+            /** Country Code */
+            country_code: string;
+            /** Currency Code */
+            currency_code: string;
+            /** Locale */
+            locale: string;
+            /** Timezone */
+            timezone: string;
+        };
+        /** OrganizationOut */
+        OrganizationOut: {
+            /** Id */
+            id: number;
+            /** Legal Name */
+            legal_name: string;
+            /** Display Name */
+            display_name: string;
+            /** Payable To */
+            payable_to: string | null;
+            /** Tagline */
+            tagline: string | null;
+            /** Footer Text */
+            footer_text: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Website */
+            website: string | null;
+            /** Tax Id */
+            tax_id: string | null;
+            /** Self Party Id */
+            self_party_id: number | null;
+            /** Logo File Id */
+            logo_file_id: number | null;
+            /** Country Code */
+            country_code: string;
+            /** Currency Code */
+            currency_code: string;
+            /** Locale */
+            locale: string;
+            /** Timezone */
+            timezone: string;
+            /** Date Format */
+            date_format: string | null;
+            /** Fiscal Year Start Month */
+            fiscal_year_start_month: number;
+            /** Tax Label */
+            tax_label: string;
+            /** Prices Include Tax */
+            prices_include_tax: boolean;
+            tax_basis: components["schemas"]["TaxBasis"];
+            /** Default Terms Days */
+            default_terms_days: number;
+            /** Invoice Revision Owner Only */
+            invoice_revision_owner_only: boolean;
+        };
+        /** OrganizationPatch */
+        OrganizationPatch: {
+            /** Legal Name */
+            legal_name?: string | null;
+            /** Display Name */
+            display_name?: string | null;
+            /** Payable To */
+            payable_to?: string | null;
+            /** Tagline */
+            tagline?: string | null;
+            /** Footer Text */
+            footer_text?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
+            /** Country Code */
+            country_code?: string | null;
+            /** Currency Code */
+            currency_code?: string | null;
+            /** Locale */
+            locale?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+            /** Date Format */
+            date_format?: string | null;
+            /** Fiscal Year Start Month */
+            fiscal_year_start_month?: number | null;
+            /** Tax Label */
+            tax_label?: string | null;
+            /** Prices Include Tax */
+            prices_include_tax?: boolean | null;
+            tax_basis?: components["schemas"]["TaxBasis"] | null;
+            /** Default Terms Days */
+            default_terms_days?: number | null;
+            /** Invoice Revision Owner Only */
+            invoice_revision_owner_only?: boolean | null;
+        };
+        /** Page[AuditEntry] */
+        Page_AuditEntry_: {
+            /** Items */
+            items: components["schemas"]["AuditEntry"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[CatalogItemOut] */
+        Page_CatalogItemOut_: {
+            /** Items */
+            items: components["schemas"]["CatalogItemOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[DepositOut] */
+        Page_DepositOut_: {
+            /** Items */
+            items: components["schemas"]["DepositOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[ExpenseOut] */
+        Page_ExpenseOut_: {
+            /** Items */
+            items: components["schemas"]["ExpenseOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[InvoiceListItem] */
+        Page_InvoiceListItem_: {
+            /** Items */
+            items: components["schemas"]["InvoiceListItem"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[PartySummary] */
+        Page_PartySummary_: {
+            /** Items */
+            items: components["schemas"]["PartySummary"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[PaymentOut] */
+        Page_PaymentOut_: {
+            /** Items */
+            items: components["schemas"]["PaymentOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[SubscriptionOut] */
+        Page_SubscriptionOut_: {
+            /** Items */
+            items: components["schemas"]["SubscriptionOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** PartyBalanceOut */
+        PartyBalanceOut: {
+            /** Receivable */
+            receivable: string;
+            /** Overdue */
+            overdue: string;
+            /** Open Invoices */
+            open_invoices: number;
+            /** Unapplied Credit */
+            unapplied_credit: string;
+            /** Net */
+            net: string;
+        };
+        /** PartyCreate */
+        PartyCreate: {
+            /** Short Code */
+            short_code: string;
+            /** Name */
+            name: string;
+            /** @default company */
+            kind: components["schemas"]["PartyKind"];
+            /** Phone */
+            phone?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Default Terms Days */
+            default_terms_days?: number | null;
+            /** Vendor Account No */
+            vendor_account_no?: string | null;
+            /** Default Expense Account Id */
+            default_expense_account_id?: number | null;
+            /** Roles */
+            roles: components["schemas"]["PartyRoleType"][];
+            /**
+             * Addresses
+             * @default []
+             */
+            addresses: components["schemas"]["AddressIn"][];
+            /**
+             * People
+             * @default []
+             */
+            people: components["schemas"]["PersonIn"][];
+        };
+        /** PartyDetail */
+        PartyDetail: {
+            /** Id */
+            id: number;
+            /** Party No */
+            party_no: string;
+            /** Short Code */
+            short_code: string;
+            /** Name */
+            name: string;
+            kind: components["schemas"]["PartyKind"];
+            /** Roles */
+            roles: components["schemas"]["PartyRoleType"][];
+            /** Is Active */
+            is_active: boolean;
+            /** Archived At */
+            archived_at: string | null;
+            /** Email */
+            email: string | null;
+            /** Phone */
+            phone: string | null;
+            /** City */
+            city: string | null;
+            /** Region */
+            region: string | null;
+            /** Country Code */
+            country_code: string | null;
+            /** Fax */
+            fax: string | null;
+            /** Website */
+            website: string | null;
+            /** Tax Id */
+            tax_id: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Default Terms Days */
+            default_terms_days: number | null;
+            /** Vendor Account No */
+            vendor_account_no: string | null;
+            /** Default Expense Account Id */
+            default_expense_account_id: number | null;
+            /** Addresses */
+            addresses: components["schemas"]["AddressOut"][];
+            /** People */
+            people: components["schemas"]["PersonOut"][];
+            /** Tax Exemptions */
+            tax_exemptions: components["schemas"]["ExemptionOut"][];
+            /** Legacy Data */
+            legacy_data: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * PartyKind
+         * @enum {string}
+         */
+        PartyKind: "company" | "person";
+        /** PartyPatch */
+        PartyPatch: {
+            /** Short Code */
+            short_code?: string | null;
+            /** Name */
+            name?: string | null;
+            kind?: components["schemas"]["PartyKind"] | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Phone */
+            phone?: string | null;
+            /** Fax */
+            fax?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Website */
+            website?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Default Terms Days */
+            default_terms_days?: number | null;
+            /** Vendor Account No */
+            vendor_account_no?: string | null;
+            /** Default Expense Account Id */
+            default_expense_account_id?: number | null;
+            /** Roles */
+            roles?: components["schemas"]["PartyRoleType"][] | null;
+        };
+        /**
+         * PartyRoleType
+         * @enum {string}
+         */
+        PartyRoleType: "self" | "client" | "vendor" | "financial" | "tax_authority" | "resource";
+        /** PartySummary */
+        PartySummary: {
+            /** Id */
+            id: number;
+            /** Party No */
+            party_no: string;
+            /** Short Code */
+            short_code: string;
+            /** Name */
+            name: string;
+            kind: components["schemas"]["PartyKind"];
+            /** Roles */
+            roles: components["schemas"]["PartyRoleType"][];
+            /** Is Active */
+            is_active: boolean;
+            /** Archived At */
+            archived_at: string | null;
+            /** Email */
+            email: string | null;
+            /** Phone */
+            phone: string | null;
+            /** City */
+            city: string | null;
+            /** Region */
+            region: string | null;
+            /** Country Code */
+            country_code: string | null;
+        };
+        /** PasswordChange */
+        PasswordChange: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
+        };
+        /** PasswordReset */
+        PasswordReset: {
+            /** New Password */
+            new_password: string;
+        };
+        /**
+         * PaymentChannel
+         * @enum {string}
+         */
+        PaymentChannel: "mail" | "in_person" | "electronic";
+        /** PaymentCreate */
+        PaymentCreate: {
+            /** Party Id */
+            party_id: number;
+            /**
+             * Received Date
+             * Format: date
+             */
+            received_date: string;
+            /** Amount */
+            amount: number | string;
+            method?: components["schemas"]["PaymentMethod"] | null;
+            channel?: components["schemas"]["PaymentChannel"] | null;
+            /** Reference */
+            reference?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Allocations
+             * @description Apply to these invoices; omit to apply oldest-first automatically
+             */
+            allocations?: components["schemas"]["AllocationIn"][] | null;
+            /**
+             * Auto Allocate
+             * @default true
+             */
+            auto_allocate: boolean;
+        };
+        /**
+         * PaymentFilter
+         * @enum {string}
+         */
+        PaymentFilter: "open" | "overdue" | "paid";
+        /**
+         * PaymentMethod
+         * @enum {string}
+         */
+        PaymentMethod: "check" | "cash" | "card" | "bank_transfer" | "paypal" | "money_order" | "other";
+        /** PaymentOut */
+        PaymentOut: {
+            /** Id */
+            id: number;
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Received Date */
+            received_date: string | null;
+            /** Amount */
+            amount: string;
+            /** Unapplied */
+            unapplied: string;
+            method: components["schemas"]["PaymentMethod"] | null;
+            channel: components["schemas"]["PaymentChannel"] | null;
+            /** Reference */
+            reference: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Deposit Id */
+            deposit_id: number | null;
+            /** Is Historical */
+            is_historical: boolean;
+            /** Archived At */
+            archived_at: string | null;
+            /** Allocations */
+            allocations: components["schemas"]["AllocationOut"][];
+        };
+        /** PaymentPatch */
+        PaymentPatch: {
+            /** Received Date */
+            received_date?: string | null;
+            /** Amount */
+            amount?: number | string | null;
+            method?: components["schemas"]["PaymentMethod"] | null;
+            channel?: components["schemas"]["PaymentChannel"] | null;
+            /** Reference */
+            reference?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Allocations */
+            allocations?: components["schemas"]["AllocationIn"][] | null;
+            /**
+             * Reallocate
+             * @description Re-apply oldest-first automatically
+             * @default false
+             */
+            reallocate: boolean;
+        };
+        /**
+         * PaymentStatus
+         * @description Computed from issued invoices, payments and credit notes; never stored.
+         * @enum {string}
+         */
+        PaymentStatus: "draft" | "unpaid" | "partially_paid" | "paid" | "overpaid" | "void" | "credit";
+        /** PersonIn */
+        PersonIn: {
+            /** Name */
+            name: string;
+            /** Title */
+            title?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Email */
+            email?: string | null;
+            /**
+             * Is Primary
+             * @default false
+             */
+            is_primary: boolean;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** PersonOut */
+        PersonOut: {
+            /** Name */
+            name: string;
+            /** Title */
+            title?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Email */
+            email?: string | null;
+            /**
+             * Is Primary
+             * @default false
+             */
+            is_primary: boolean;
+            /** Notes */
+            notes?: string | null;
+            /** Id */
+            id: number;
+        };
+        /** PersonPatch */
+        PersonPatch: {
+            /** Name */
+            name?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Mobile */
+            mobile?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Is Primary */
+            is_primary?: boolean | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** RegistrationIn */
+        RegistrationIn: {
+            /** Jurisdiction Id */
+            jurisdiction_id: number;
+            /** Registration Number */
+            registration_number?: string | null;
+            filing_frequency?: components["schemas"]["FilingFrequency"] | null;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+            /** Effective To */
+            effective_to?: string | null;
+        };
+        /** RegistrationOut */
+        RegistrationOut: {
+            /** Jurisdiction Id */
+            jurisdiction_id: number;
+            /** Registration Number */
+            registration_number?: string | null;
+            filing_frequency?: components["schemas"]["FilingFrequency"] | null;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+            /** Effective To */
+            effective_to?: string | null;
+            /** Id */
+            id: number;
+        };
+        /** RegistrationPatch */
+        RegistrationPatch: {
+            /** Registration Number */
+            registration_number?: string | null;
+            filing_frequency?: components["schemas"]["FilingFrequency"] | null;
+            /** Effective From */
+            effective_from?: string | null;
+            /** Effective To */
+            effective_to?: string | null;
+        };
+        /** RevenueCategoryIn */
+        RevenueCategoryIn: {
+            /** Name */
+            name: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** RevenueCategoryOut */
+        RevenueCategoryOut: {
+            /** Name */
+            name: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Id */
+            id: number;
+        };
+        /** RevenueCategoryPatch */
+        RevenueCategoryPatch: {
+            /** Name */
+            name?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** RevisionOut */
+        RevisionOut: {
+            /** Revision No */
+            revision_no: number;
+            /** Reason */
+            reason: string;
+            /** Changed By User Id */
+            changed_by_user_id: number | null;
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Snapshot */
+            snapshot: {
+                [key: string]: unknown;
+            };
+        };
+        /** RevisionSummary */
+        RevisionSummary: {
+            /** Revision No */
+            revision_no: number;
+            /** Reason */
+            reason: string;
+            /** Changed By User Id */
+            changed_by_user_id: number | null;
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+        };
+        /** SequenceOut */
+        SequenceOut: {
+            /** Name */
+            name: string;
+            /** Next Value */
+            next_value: number;
+            /** Prefix */
+            prefix: string;
+            /** Pad Width */
+            pad_width: number;
+        };
+        /** SequencePatch */
+        SequencePatch: {
+            /** Next Value */
+            next_value?: number | null;
+            /** Prefix */
+            prefix?: string | null;
+            /** Pad Width */
+            pad_width?: number | null;
+        };
+        /** SubscriptionCreate */
+        SubscriptionCreate: {
+            /** Party Id */
+            party_id: number;
+            /** Catalog Item Id */
+            catalog_item_id: number;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number | string;
+            /** Price Override */
+            price_override?: number | string | null;
+            /** Discount Pct */
+            discount_pct?: number | string | null;
+            /** Service Identifier */
+            service_identifier?: string | null;
+            /** Billing Interval Months */
+            billing_interval_months?: number | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Next Bill Date */
+            next_bill_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Auto Renew
+             * @default true
+             */
+            auto_renew: boolean;
+            /** @default active */
+            status: components["schemas"]["SubscriptionStatus"];
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /** Vendor Renewal Date */
+            vendor_renewal_date?: string | null;
+            /** Unit Cost */
+            unit_cost?: number | string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** SubscriptionOut */
+        SubscriptionOut: {
+            /** Id */
+            id: number;
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Catalog Item Id */
+            catalog_item_id: number;
+            /** Item Name */
+            item_name: string;
+            /** Quantity */
+            quantity: string;
+            /** Price Override */
+            price_override: string | null;
+            /** Unit Price */
+            unit_price: string;
+            /** Discount Pct */
+            discount_pct: string | null;
+            /** Service Identifier */
+            service_identifier: string | null;
+            /** Billing Interval Months */
+            billing_interval_months: number;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Next Bill Date */
+            next_bill_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Auto Renew */
+            auto_renew: boolean;
+            status: components["schemas"]["SubscriptionStatus"];
+            /** Vendor Party Id */
+            vendor_party_id: number | null;
+            /** Vendor Renewal Date */
+            vendor_renewal_date: string | null;
+            /** Unit Cost */
+            unit_cost: string | null;
+            /** Notes */
+            notes: string | null;
+        };
+        /** SubscriptionPatch */
+        SubscriptionPatch: {
+            /** Catalog Item Id */
+            catalog_item_id?: number | null;
+            /** Quantity */
+            quantity?: number | string | null;
+            /** Price Override */
+            price_override?: number | string | null;
+            /** Discount Pct */
+            discount_pct?: number | string | null;
+            /** Service Identifier */
+            service_identifier?: string | null;
+            /** Billing Interval Months */
+            billing_interval_months?: number | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** Next Bill Date */
+            next_bill_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Auto Renew */
+            auto_renew?: boolean | null;
+            status?: components["schemas"]["SubscriptionStatus"] | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /** Vendor Renewal Date */
+            vendor_renewal_date?: string | null;
+            /** Unit Cost */
+            unit_cost?: number | string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * SubscriptionStatus
+         * @enum {string}
+         */
+        SubscriptionStatus: "active" | "paused" | "cancelled";
+        /**
+         * TaxBasis
+         * @enum {string}
+         */
+        TaxBasis: "accrual" | "cash";
+        /** TaxCategoryIn */
+        TaxCategoryIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** TaxCategoryOut */
+        TaxCategoryOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Id */
+            id: number;
+        };
+        /** TaxCategoryPatch */
+        TaxCategoryPatch: {
+            /** Code */
+            code?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** TaxOut */
+        TaxOut: {
+            /** Jurisdiction Id */
+            jurisdiction_id: number | null;
+            /** Name */
+            name: string;
+            /** Rate */
+            rate: string | null;
+            /** Taxable Base */
+            taxable_base: string;
+            /** Amount */
+            amount: string;
+        };
+        /** TaxRateIn */
+        TaxRateIn: {
+            /** Name */
+            name: string;
+            /**
+             * Rate
+             * @description 0.04 = 4%
+             */
+            rate: number | string;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+            /** Effective To */
+            effective_to?: string | null;
+        };
+        /** TaxRateOut */
+        TaxRateOut: {
+            /** Name */
+            name: string;
+            /**
+             * Rate
+             * @description 0.04 = 4%
+             */
+            rate: string;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+            /** Effective To */
+            effective_to?: string | null;
+            /** Id */
+            id: number;
+            /** Jurisdiction Id */
+            jurisdiction_id: number;
+        };
+        /** TaxRatePatch */
+        TaxRatePatch: {
+            /** Name */
+            name?: string | null;
+            /** Rate */
+            rate?: number | string | null;
+            /** Effective From */
+            effective_from?: string | null;
+            /** Effective To */
+            effective_to?: string | null;
+        };
+        /** TaxabilityRuleIn */
+        TaxabilityRuleIn: {
+            /** Jurisdiction Id */
+            jurisdiction_id: number;
+            /** Tax Category Id */
+            tax_category_id: number;
+            /** Is Taxable */
+            is_taxable: boolean;
+        };
+        /** TaxabilityRuleOut */
+        TaxabilityRuleOut: {
+            /** Jurisdiction Id */
+            jurisdiction_id: number;
+            /** Tax Category Id */
+            tax_category_id: number;
+            /** Is Taxable */
+            is_taxable: boolean;
+            /** Id */
+            id: number;
+        };
+        /** UserCreate */
+        UserCreate: {
+            /** Email */
+            email: string;
+            /** Display Name */
+            display_name: string;
+            role: components["schemas"]["UserRoleType"];
+            /** Password */
+            password: string;
+        };
+        /** UserListItem */
+        UserListItem: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Display Name */
+            display_name: string;
+            /** Is Active */
+            is_active: boolean;
+            role: components["schemas"]["UserRoleType"];
+            /** Last Login At */
+            last_login_at: string | null;
+        };
+        /** UserOut */
+        UserOut: {
+            /** Id */
+            id: number;
+            /** Email */
+            email: string;
+            /** Display Name */
+            display_name: string;
+        };
+        /** UserPatch */
+        UserPatch: {
+            /** Display Name */
+            display_name?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            role?: components["schemas"]["UserRoleType"] | null;
+        };
+        /**
+         * UserRoleType
+         * @enum {string}
+         */
+        UserRoleType: "owner" | "bookkeeper" | "viewer";
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /** VoidRequest */
+        VoidRequest: {
+            /** Reason */
+            reason: string;
         };
     };
     responses: never;
@@ -70,6 +3382,3342 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    login_api_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    me_api_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    change_password_api_auth_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_contacts_api_contacts_get: {
+        parameters: {
+            query?: {
+                /** @description Search name, code, number or email */
+                q?: string | null;
+                role?: components["schemas"]["PartyRoleType"] | null;
+                active?: boolean | null;
+                archived?: components["schemas"]["ArchiveFilter"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PartySummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_contact_api_contacts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_contact_api_contacts__party_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_contact_api_contacts__party_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartyPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_contact_api_contacts__party_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_contact_api_contacts__party_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_address_api_contacts__party_id__addresses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_address_api_contacts__party_id__addresses__address_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                address_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_address_api_contacts__party_id__addresses__address_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                address_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_person_api_contacts__party_id__people_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_person_api_contacts__party_id__people__person_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_person_api_contacts__party_id__people__person_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                person_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_exemption_api_contacts__party_id__tax_exemptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExemptionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExemptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_exemption_api_contacts__party_id__tax_exemptions__exemption_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                exemption_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_exemption_api_contacts__party_id__tax_exemptions__exemption_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                exemption_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExemptionPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExemptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_items_api_catalog_get: {
+        parameters: {
+            query?: {
+                /** @description Search name, SKU or description */
+                q?: string | null;
+                item_type?: components["schemas"]["ItemType"] | null;
+                active?: boolean | null;
+                revenue_category_id?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_CatalogItemOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_item_api_catalog_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogItemCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_item_api_catalog__item_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_item_api_catalog__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_item_api_catalog__item_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogItemPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_revenue_categories_api_revenue_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueCategoryOut"][];
+                };
+            };
+        };
+    };
+    create_revenue_category_api_revenue_categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevenueCategoryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_revenue_category_api_revenue_categories__category_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevenueCategoryPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevenueCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tax_categories_api_tax_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxCategoryOut"][];
+                };
+            };
+        };
+    };
+    create_tax_category_api_tax_categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxCategoryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_tax_category_api_tax_categories__category_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxCategoryPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_accounts_api_accounts_get: {
+        parameters: {
+            query?: {
+                active?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_account_api_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_account_api_accounts__account_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_account_api_accounts__account_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_invoices_api_invoices_get: {
+        parameters: {
+            query?: {
+                /** @description Search number, bill-to or contact name */
+                q?: string | null;
+                party_id?: number | null;
+                kind?: components["schemas"]["InvoiceKind"] | null;
+                status?: components["schemas"]["InvoiceStatus"] | null;
+                payment?: components["schemas"]["PaymentFilter"] | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                archived?: components["schemas"]["ArchiveFilter"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_InvoiceListItem_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_invoice_api_invoices_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calculate_api_invoices_calculate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalculateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalculateResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_invoice_api_invoices__invoice_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_invoice_api_invoices__invoice_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_invoice_api_invoices__invoice_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoicePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_invoice_api_invoices__invoice_id__issue_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    void_invoice_api_invoices__invoice_id__void_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revise_invoice_api_invoices__invoice_id__revise_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceRevise"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_revision_api_invoices__invoice_id__revisions__revision_no__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+                revision_no: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_credit_note_api_invoices__invoice_id__credit_note_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditNoteCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_invoice_api_invoices__invoice_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_invoice_api_invoices__invoice_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_payments_api_payments_get: {
+        parameters: {
+            query?: {
+                party_id?: number | null;
+                /** @description Only payments waiting to be deposited */
+                undeposited?: boolean;
+                q?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                archived?: components["schemas"]["ArchiveFilter"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_PaymentOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receive_payment_api_payments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_payment_api_payments__payment_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_payment_api_payments__payment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_payment_api_payments__payment_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_payment_api_payments__payment_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_payment_api_payments__payment_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_balance_api_contacts__party_id__balance_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyBalanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_deposits_api_deposits_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                archived?: components["schemas"]["ArchiveFilter"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_DepositOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_deposit_api_deposits_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DepositCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_deposit_api_deposits__deposit_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deposit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_deposit_api_deposits__deposit_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deposit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_deposit_api_deposits__deposit_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deposit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DepositPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_deposit_api_deposits__deposit_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deposit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_deposit_api_deposits__deposit_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deposit_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepositOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_expenses_api_expenses_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                vendor_party_id?: number | null;
+                for_party_id?: number | null;
+                account_id?: number | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                archived?: components["schemas"]["ArchiveFilter"];
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ExpenseOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_expense_api_expenses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_expense_api_expenses__expense_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expense_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_expense_api_expenses__expense_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expense_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_expense_api_expenses__expense_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expense_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpensePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_expense_api_expenses__expense_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expense_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_expense_api_expenses__expense_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expense_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_subscriptions_api_subscriptions_get: {
+        parameters: {
+            query?: {
+                party_id?: number | null;
+                status?: components["schemas"]["SubscriptionStatus"] | null;
+                /** @description Next bill date on or before this day */
+                due_through?: string | null;
+                vendor_renewal_through?: string | null;
+                /** @description Search the service identifier */
+                q?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SubscriptionOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_subscription_api_subscriptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_subscription_api_subscriptions__subscription_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_subscription_api_subscriptions__subscription_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_subscription_api_subscriptions__subscription_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    billing_run_api_subscriptions_billing_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRunResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_jurisdictions_api_tax_jurisdictions_get: {
+        parameters: {
+            query?: {
+                parent_id?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JurisdictionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_jurisdiction_api_tax_jurisdictions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JurisdictionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JurisdictionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_jurisdiction_api_tax_jurisdictions__jurisdiction_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jurisdiction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JurisdictionPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JurisdictionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rates_api_tax_jurisdictions__jurisdiction_id__rates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jurisdiction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxRateOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_rate_api_tax_jurisdictions__jurisdiction_id__rates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                jurisdiction_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxRateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxRateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_rate_api_tax_rates__rate_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rate_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_rate_api_tax_rates__rate_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rate_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxRatePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxRateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_registrations_api_tax_registrations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationOut"][];
+                };
+            };
+        };
+    };
+    add_registration_api_tax_registrations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_registration_api_tax_registrations__registration_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registration_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_registration_api_tax_registrations__registration_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                registration_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rules_api_tax_rules_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxabilityRuleOut"][];
+                };
+            };
+        };
+    };
+    set_rule_api_tax_rules_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaxabilityRuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxabilityRuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_rule_api_tax_rules__rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rule_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_organization_api_settings_organization_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationOut"];
+                };
+            };
+        };
+    };
+    update_organization_api_settings_organization_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_org_addresses_api_settings_addresses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgAddressOut"][];
+                };
+            };
+        };
+    };
+    add_org_address_api_settings_addresses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrgAddressIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgAddressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_org_address_api_settings_addresses__address_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                address_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_org_address_api_settings_addresses__address_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                address_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrgAddressPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgAddressOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sequences_api_settings_numbering_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SequenceOut"][];
+                };
+            };
+        };
+    };
+    update_sequence_api_settings_numbering__name__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SequencePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SequenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_users_api_users_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserListItem"][];
+                };
+            };
+        };
+    };
+    create_user_api_users_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserListItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_user_api_users__user_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserListItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_api_users__user_id__password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordReset"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    history_api_history__entity_type___entity_id__get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                entity_type: string;
+                entity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AuditEntry_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_log_api_audit_get: {
+        parameters: {
+            query?: {
+                entity_type?: string | null;
+                action?: string | null;
+                user_id?: number | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AuditEntry_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_audit_log_api_audit_export_csv_get: {
+        parameters: {
+            query?: {
+                entity_type?: string | null;
+                action?: string | null;
+                user_id?: number | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_api_archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArchiveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArchiveResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

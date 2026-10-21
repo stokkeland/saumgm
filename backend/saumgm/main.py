@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from saumgm import __version__
 from saumgm.api import (
+    audit,
     auth,
     catalog,
     contacts,
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(subscriptions.router, prefix="/api")
     app.include_router(tax.router, prefix="/api")
     app.include_router(settings_api.router, prefix="/api")
+    app.include_router(audit.router, prefix="/api")
     return app
 
 

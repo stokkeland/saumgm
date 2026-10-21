@@ -33,7 +33,9 @@ from saumgm.services.numbering import next_number
 from saumgm.services.tax_engine import TaxableLine, TaxEngine, default_engine
 from saumgm.timeutil import today_in, utcnow
 
-PAID_TOLERANCE = Decimal("0.004")  # below half a cent counts as settled
+# Up to half a cent either way counts as settled (old totals had fractions of a cent, payments
+# were rounded to cents).
+PAID_TOLERANCE = Decimal("0.005")
 
 BILL_TO_FIELDS = (
     "bill_to_company", "bill_to_name", "bill_to_line1", "bill_to_line2", "bill_to_city",

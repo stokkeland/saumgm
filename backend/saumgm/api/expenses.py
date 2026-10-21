@@ -1,11 +1,13 @@
 """Expenses: purchases and costs split over expense accounts."""
 
+from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
 from fastapi import APIRouter, status
 from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from saumgm.api.common import (
     ArchiveFilter,
@@ -35,13 +37,32 @@ from saumgm.timeutil import today_in
 router = APIRouter(prefix="/expenses", tags=["expenses"])
 
 
-def expense_out(db: Session, expense: Expense) -> ExpenseOut:
-    def name(party_id: int | None) -> str | None:
-        party = db.get(Party, party_id) if party_id else None
-        return party.name if party else None
+@dataclass
+class Lookups:
+    """Names and accounts loaded once for a whole list instead of once per expense."""
 
-    account_ids = [line.account_id for line in expense.lines]
-    accounts = {a.id: a for a in db.scalars(select(Account).where(Account.id.in_(account_ids)))}
+    parties: dict[int, str]
+    accounts: dict[int, Account]
+
+    @classmethod
+    def load(cls, db: Session, expenses: Sequence[Expense]) -> "Lookups":
+        party_ids = {pid for e in expenses for pid in (e.vendor_party_id, e.for_party_id) if pid}
+        account_ids = {line.account_id for e in expenses for line in e.lines}
+        parties = {
+            pid: name
+            for pid, name in db.execute(select(Party.id, Party.name).where(Party.id.in_(party_ids)))
+        }
+        accounts = {a.id: a for a in db.scalars(select(Account).where(Account.id.in_(account_ids)))}
+        return cls(parties, accounts)
+
+
+def expense_out(db: Session, expense: Expense, lookups: Lookups | None = None) -> ExpenseOut:
+    lookups = lookups or Lookups.load(db, [expense])
+    accounts = lookups.accounts
+
+    def name(party_id: int | None) -> str | None:
+        return lookups.parties.get(party_id) if party_id else None
+
     return ExpenseOut(
         id=expense.id,
         expense_date=expense.expense_date,
@@ -125,8 +146,11 @@ def list_expenses(
         stmt = stmt.where(Expense.expense_date >= date_from)
     if date_to is not None:
         stmt = stmt.where(Expense.expense_date <= date_to)
-    items, total = paginate(db, stmt, limit, offset)
-    return Page(items=[expense_out(db, e) for e in items], total=total, limit=limit, offset=offset)
+    items, total = paginate(db, stmt.options(selectinload(Expense.lines)), limit, offset)
+    lookups = Lookups.load(db, items)
+    return Page(
+        items=[expense_out(db, e, lookups) for e in items], total=total, limit=limit, offset=offset
+    )
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

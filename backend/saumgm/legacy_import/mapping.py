@@ -524,6 +524,24 @@ class AccessImporter:
             unmatched.remove(match)
             self.apply_receipt(match, receipt, "matched by client, amount and date")
         self.session.flush()
+        self.check_paid_status(payments)
+
+    def check_paid_status(self, payments: list[Payment]) -> None:
+        """Invoices marked Paid in Access whose recorded payments differ from the total."""
+        paid: dict[int, Decimal] = defaultdict(lambda: Decimal("0.0000"))
+        for payment in payments:
+            for allocation in payment.allocations:
+                paid[allocation.invoice_id] += allocation.amount
+        for number, invoice in sorted(self.invoices.items()):
+            if (invoice.legacy_data or {}).get("status") != "Paid":
+                continue
+            difference = invoice.total - paid[invoice.id]
+            if abs(difference) > Decimal("0.005"):
+                state = "short" if difference > 0 else "over"
+                self.issue(
+                    f"Invoice {number} is marked Paid in Access, but the recorded payments total "
+                    f"{paid[invoice.id]} against {invoice.total} ({abs(difference)} {state})."
+                )
 
     def match_receipt(
         self, receipt: Row, candidates: list[Payment], invoice_numbers: dict[int, int]

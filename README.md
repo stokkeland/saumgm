@@ -33,6 +33,20 @@ uvicorn saumgm.main:app --reload --port 8000
 
 API docs: http://127.0.0.1:8000/api/docs - health check: http://127.0.0.1:8000/api/health
 
+First login (after importing the Access data, or after `python -m saumgm create-organization
+--name "My Company"` on a fresh install):
+
+```sh
+python -m saumgm create-user --email you@example.com --name "Your Name" --role owner
+python -m saumgm set-password --email you@example.com      # later, to reset a password
+```
+
+Roles: **owner** (everything, including settings, users, audit log and unarchiving),
+**bookkeeper** (day-to-day work: contacts, invoices, payments, expenses), **viewer** (read-only).
+
+The API uses a session cookie; requests that change data must also send the `X-CSRF-Token`
+header with the value of the `saumgm_csrf` cookie (the frontend does this automatically).
+
 Checks (the same ones CI runs):
 
 ```sh

@@ -1,11 +1,13 @@
 """Payments received, contact balances and bank deposits."""
 
+from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
 from fastapi import APIRouter, Query, status
 from sqlalchemy import or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from saumgm.api.common import (
     ArchiveFilter,
@@ -43,20 +45,37 @@ def _org(db: Session, auth: Auth) -> Organization:
     return org
 
 
-def payment_out(db: Session, payment: Payment) -> PaymentOut:
-    party = db.get(Party, payment.party_id)
-    numbers = {
-        inv_id: number
-        for inv_id, number in db.execute(
-            select(Invoice.id, Invoice.number).where(
-                Invoice.id.in_([a.invoice_id for a in payment.allocations])
+@dataclass
+class Lookups:
+    """Contact names and invoice numbers loaded once for a whole list."""
+
+    parties: dict[int, str]
+    numbers: dict[int, str | None]
+
+    @classmethod
+    def load(cls, db: Session, payments: Sequence[Payment]) -> "Lookups":
+        party_ids = {p.party_id for p in payments}
+        invoice_ids = {a.invoice_id for p in payments for a in p.allocations}
+        parties = {
+            pid: name
+            for pid, name in db.execute(select(Party.id, Party.name).where(Party.id.in_(party_ids)))
+        }
+        numbers = {
+            iid: number
+            for iid, number in db.execute(
+                select(Invoice.id, Invoice.number).where(Invoice.id.in_(invoice_ids))
             )
-        )
-    }
+        }
+        return cls(parties, numbers)
+
+
+def payment_out(db: Session, payment: Payment, lookups: Lookups | None = None) -> PaymentOut:
+    lookups = lookups or Lookups.load(db, [payment])
+    numbers = lookups.numbers
     return PaymentOut(
         id=payment.id,
         party_id=payment.party_id,
-        party_name=party.name if party else "",
+        party_name=lookups.parties.get(payment.party_id, ""),
         received_date=payment.received_date,
         amount=payment.amount,
         unapplied=service.unapplied(payment),
@@ -115,8 +134,11 @@ def list_payments(
         stmt = stmt.where(Payment.received_date >= date_from)
     if date_to is not None:
         stmt = stmt.where(Payment.received_date <= date_to)
-    items, total = paginate(db, stmt, limit, offset)
-    return Page(items=[payment_out(db, p) for p in items], total=total, limit=limit, offset=offset)
+    items, total = paginate(db, stmt.options(selectinload(Payment.allocations)), limit, offset)
+    lookups = Lookups.load(db, items)
+    return Page(
+        items=[payment_out(db, p, lookups) for p in items], total=total, limit=limit, offset=offset
+    )
 
 
 @router.post("/payments", status_code=status.HTTP_201_CREATED)
