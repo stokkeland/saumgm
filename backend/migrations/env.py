@@ -1,0 +1,46 @@
+from logging.config import fileConfig
+
+from alembic import context
+
+from saumgm.config import get_settings
+from saumgm.db import make_engine
+from saumgm.models import Base
+
+config = context.config
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+target_metadata = Base.metadata
+
+
+def database_url() -> str:
+    # Tests pass their own URL via `config.attributes`; normal runs use the settings.
+    url = config.attributes.get("database_url")
+    return str(url) if url else get_settings().database_url
+
+
+def run_migrations_offline() -> None:
+    """Emit SQL to stdout instead of executing it (alembic upgrade head --sql)."""
+    context.configure(
+        url=database_url(),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        compare_type=True,
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    engine = make_engine(database_url())
+    with engine.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
+        with context.begin_transaction():
+            context.run_migrations()
+    engine.dispose()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()

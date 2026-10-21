@@ -66,10 +66,22 @@ tmp/                (git-ignored) local private files, e.g. the .mdb
 ```
 
 ### Development environment
-- No Docker/WSL on the dev machine: develop against a **remote MariaDB** (dev database on the Ubuntu server), reached through an SSH tunnel rather than opening port 3306.
-- Needed on the server: databases `saumgm_dev` and `saumgm_test`, plus `saumgm_legacy` for the archive; a user with full rights on those three only (migrations need CREATE/ALTER/DROP; tests recreate `saumgm_test`).
-- Credentials live in `backend/.env` (git-ignored), not in chat or code.
-- Install Node.js LTS on Windows for the frontend (`winget install OpenJS.NodeJS.LTS`).
+- Dev machine: Windows 11, Python 3.13, local **MariaDB 13.0** (no Docker/WSL).
+- Databases: `claudesaumgm` (dev; also holds the raw Access archive as `legacy_*` tables) and `test_claudesaumgm` (recreated by automated tests).
+- Credentials live in `backend/.env` (git-ignored), never in code.
+- Node.js 24 (LTS) for the frontend.
+- Portability rules, because dev (Windows, MariaDB 13) differs from production (Linux):
+  - All table and column names lowercase `snake_case` (Windows uses `lower_case_table_names=1`, Linux `0`).
+  - **Production stays on MariaDB 10.11** (Ubuntu 24.04 package). Use nothing newer: no 11.x+ features or syntax. CI runs the test suite against `mariadb:10.11` to enforce this.
+  - Production hardening: remove the default `test_%` grant to `PUBLIC` (`mariadb-secure-installation`).
+
+### Database topology
+- Now: a single MariaDB 10.11 server with backups (nightly `mariadb-dump`, plus binary logs if point-in-time recovery is wanted).
+- Later: a Galera cluster across nodes/locations. Rules followed from day one so this needs no redesign:
+  - InnoDB only; every table has an explicit primary key.
+  - Never rely on `AUTO_INCREMENT` values being contiguous or ordered (Galera interleaves them per node). Invoice and party numbers come from counter rows updated inside the transaction, not from ids.
+  - No `LOCK TABLES`, `GET_LOCK()` or XA transactions; keep transactions short. Writes that can conflict (number counters) are retried on deadlock/certification failure.
+  - No `MyISAM`/`MEMORY` tables and no non-deterministic statements that depend on statement-based replication.
 
 ---
 
@@ -154,7 +166,15 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   - `pdf_file_id` (rendered at issue), `is_historical` (imported, locked as-is)
 - `invoice_line` — `catalog_item_id`, `subscription_id` (nullable), `description`, `quantity`, `unit`, `unit_price`, `unit_discount` (amount; UI accepts % or amount), `tax_category_id`, `line_total`, `revenue_category_id`, `sort_order`.
 - `invoice_tax` — per-jurisdiction tax snapshot: jurisdiction, rate name, rate, taxable base, amount.
-- Credit notes: `invoice` with `kind = credit_note` referencing the original (corrections after issue, instead of editing).
+- Credit notes: `invoice` with `kind = credit_note` referencing the original — for discounts, refunds and write-offs given after the fact.
+- **Editing issued invoices (revisions)** — mistakes can be corrected directly:
+  - Any issued invoice, including imported historical ones, can be edited with **Revise**. A reason is required.
+  - Before the change is saved, the complete invoice (header, bill-to snapshot, lines, tax rows, totals) is copied into `invoice_revision` (`invoice_id`, `revision_no`, `snapshot` JSON, `reason`, `changed_by`, `changed_at`). The invoice's `revision_no` increments.
+  - The PDF is re-rendered; every earlier PDF is kept and linked to its revision, so you can always see exactly what the client was sent.
+  - The invoice page shows a *History* tab with each revision and a field-by-field diff.
+  - Guard rails (warnings, not blocks): the new total is lower than payments already applied (→ suggests leaving the overpayment as client credit); the invoice falls in a sales-tax period marked as filed; the PDF has already been sent.
+  - The invoice number never changes. Void remains for invoices that should not exist at all.
+  - A setting can restrict revising to the owner role.
 
 ### 4.5 Payments and deposits (replaces tblInvoicePayment, tblPaymentReceived, tblDeposit*)
 - `payment` — `party_id`, `received_date`, `method` (check, cash, card, bank transfer, PayPal, …), `channel` (mail, in person, electronic), `reference` (check no.), `amount`, `notes`, `deposit_id` (nullable = undeposited funds).
@@ -194,10 +214,29 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 - Local: argon2 password hashing, optional TOTP 2FA, login rate limiting.
 - SSO: OIDC first (Authlib; Entra ID, Google, Keycloak…); SAML via python3-saml later. Identities link to existing users by email on first SSO login (admin-confirmable).
 - CSRF protection on cookie-authenticated requests; strict CORS.
-- `audit_log`: who, when, entity, before/after (JSON).
+### 4.9 Audit log (everything)
+- Every insert, update and delete on business tables is recorded automatically by a SQLAlchemy session hook, so no feature can forget to log:
+  `audit_log` — `id`, `occurred_at`, `user_id`, `action` (create/update/delete/login/logout/login_failed/export/issue/void/revise/settings_change), `entity_type`, `entity_id`, `changes` (JSON: field → [old, new]), `reason` (when the action asks for one), `request_id`, `ip_address`, `user_agent`.
+- Imports and billing runs log as a system actor, with a batch id.
+- Append-only: the application never updates or deletes audit rows. Optional hardening: a separate DB user that can only `INSERT`/`SELECT` on `audit_log`.
+- UI: a *History* tab on every record (contact, invoice, payment, expense, setting) and a global, filterable Audit screen for the owner role; CSV export.
+- Retention: keep forever by default (volume is small); a setting allows archiving entries older than N years.
 
-### 4.9 Files
-`stored_file` — storage key, original name, content type, size, uploaded_by. Used for logos, receipts, exemption certificates, issued-invoice PDFs.
+### 4.10 Files and storage
+- Metadata in the DB: `stored_file` — `id`, `storage_key`, original name, content type, size, SHA-256 checksum, uploaded_by, created_at. Used for logos, receipts, exemption certificates and issued-invoice PDFs (one per revision).
+- Content goes through a small storage interface (`put`, `get`, `delete`, `exists`, optional `signed_url`). Records only ever store the `storage_key` — never a path — so the backend can be swapped by configuration:
+  - `file://` — local directory (dev; single server).
+  - `s3://` — any S3-compatible service: AWS S3, Google Cloud Storage (S3 interop), Cloudflare R2, Backblaze B2, Wasabi, or self-hosted Garage / SeaweedFS / Ceph.
+  - `azure://` — Azure Blob Storage (native SDK; fits an Entra ID shop).
+- Keys are content-neutral and stable (`{org_id}/{yyyy}/{mm}/{uuid}`); objects are immutable (a new revision is a new object), which makes replication and caching simple.
+- Files are served through the API (permission check + audit), or via short-lived signed URLs for cloud backends.
+- Migrating between backends: one `saumgm storage migrate --to <url>` command copies every object (or `rclone sync`), verifies checksums, then the config is switched. No database changes.
+- Replication/survivability options, smallest step first:
+  1. Single server, `file://` + nightly encrypted offsite backup with restic (to B2/S3/another server). Covers disaster recovery, not uptime.
+  2. Self-hosted, replicated object storage on Ubuntu: **Garage** (lightweight, S3-compatible, built for multi-site geo-distribution on small servers) — start with one node, add nodes in other locations later; the app just uses `s3://`. SeaweedFS is an alternative; Ceph is overkill at this size.
+  3. Cloud object storage (S3/Azure Blob/GCS) with built-in cross-region replication.
+  The database needs the same treatment for multi-region (MariaDB replication or Galera, or a managed service) — files and DB should be planned together.
+- Storing files as DB BLOBs was considered: simplest (one backup, replicates with the DB) but bloats backups and doesn't fit cloud scaling; rejected in favour of the interface above.
 
 ---
 
@@ -245,7 +284,7 @@ Known data issues to report (not silently fix): 2 expense entries with unknown f
 
 ## 7. Phases
 
-1. **Foundation** — repo layout, backend skeleton, config/settings, Alembic, CI (lint, type-check, tests), dev DB connection.
+1. **Foundation** ✅ — repo layout, backend skeleton (FastAPI, settings, DB session, Alembic, health endpoint, request-id logging), frontend skeleton (Vite + React + TS + Mantine + TanStack Query + typed API client), CI (ruff, mypy, pytest on MariaDB 10.11; oxlint + build).
 2. **Schema + import** — models for §4, raw archive, mapped import, reconciliation report. *Exit: reconciliation passes.*
 3. **API** — auth (local), contacts, catalog, subscriptions, invoices (with tax engine), payments, deposits, expenses, settings.
 4. **Frontend** — app shell, login, screens in §5.
@@ -256,8 +295,7 @@ Known data issues to report (not silently fix): 2 expense entries with unknown f
 ---
 
 ## 8. Open items
-- MariaDB dev/test/legacy databases and a user on the Ubuntu server (credentials into `backend/.env`).
-- Install Node.js LTS on the dev machine.
+- Production storage backend (local + restic to start, or Garage from day one).
 - NY sales-tax setup: which localities you deliver to, and your filing frequency.
 - Revenue categories and tax categories: starting lists to be drafted from the current product list.
 - License choice for open-sourcing (e.g. MIT, Apache-2.0, AGPL-3.0).
