@@ -182,7 +182,7 @@ def test_void(owner_client: TestClient, acme: dict[str, Any]) -> None:
     owner_client.post(f"/api/invoices/{draft['id']}/issue", json={})
     voided = owner_client.post(f"/api/invoices/{draft['id']}/void", json={"reason": "Duplicate"})
     assert voided.json()["status"] == "void" and voided.json()["void_reason"] == "Duplicate"
-    assert voided.json()["balance_due"] == "0"
+    assert voided.json()["balance_due"] == "0.0000"
 
 
 def test_credit_note_reduces_the_balance(owner_client: TestClient, acme: dict[str, Any]) -> None:
@@ -231,9 +231,9 @@ def test_calculate_saves_nothing(
               "quantity": "2"}]},
     ).json()  # fmt: skip
     assert (result["subtotal"], result["tax_total"], result["total"]) == (
-        "400.00",
-        "16.00",
-        "416.00",
+        "400.0000",
+        "16.0000",
+        "416.0000",
     )
     assert db_session.scalar(select(func.count()).select_from(Invoice)) == before
 

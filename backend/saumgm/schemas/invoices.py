@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from saumgm.enums import InvoiceKind, InvoiceStatus, PaymentChannel, PaymentMethod, PaymentStatus
+from saumgm.schemas.types import Amount, RateValue
 
 ORM = ConfigDict(from_attributes=True)
 
@@ -19,11 +20,11 @@ class LineIn(BaseModel):
     catalog_item_id: int | None = None
     subscription_id: int | None = None
     description: str | None = Field(None, max_length=500)
-    quantity: Decimal = Field(Decimal(1), max_digits=12, decimal_places=4)
+    quantity: Amount = Field(Decimal(1), max_digits=12, decimal_places=4)
     unit: str | None = Field(None, max_length=20)
-    unit_price: Decimal | None = _money(default=None)
-    unit_discount: Decimal | None = _money(default=None, ge=0)
-    discount_pct: Decimal | None = Field(None, ge=0, le=100, decimal_places=4)
+    unit_price: Amount | None = _money(default=None)
+    unit_discount: Amount | None = _money(default=None, ge=0)
+    discount_pct: Amount | None = Field(None, ge=0, le=100, decimal_places=4)
     tax_category_id: int | None = None
     revenue_category_id: int | None = None
 
@@ -43,8 +44,8 @@ class HeaderFields(BaseModel):
     bill_to_country: str | None = Field(None, max_length=100)
     bill_to_phone: str | None = Field(None, max_length=50)
     bill_to_email: str | None = Field(None, max_length=255)
-    freight: Decimal | None = _money(default=None, ge=0)
-    adjustment: Decimal | None = _money(default=None)
+    freight: Amount | None = _money(default=None, ge=0)
+    adjustment: Amount | None = _money(default=None)
     adjustment_note: str | None = Field(None, max_length=200)
     notes: str | None = None
 
@@ -81,8 +82,8 @@ class CalculateRequest(BaseModel):
     party_id: int
     tax_jurisdiction_id: int | None = None
     issue_date: date | None = None
-    freight: Decimal = _money(default=Decimal(0), ge=0)
-    adjustment: Decimal = _money(default=Decimal(0))
+    freight: Amount = _money(default=Decimal(0), ge=0)
+    adjustment: Amount = _money(default=Decimal(0))
     lines: list[LineIn]
 
 
@@ -93,31 +94,31 @@ class LineOut(BaseModel):
     catalog_item_id: int | None
     subscription_id: int | None
     description: str
-    quantity: Decimal
+    quantity: Amount
     unit: str | None
-    unit_price: Decimal
-    unit_discount: Decimal
-    line_total: Decimal
+    unit_price: Amount
+    unit_discount: Amount
+    line_total: Amount
     tax_category_id: int | None
     revenue_category_id: int | None
-    legacy_unit_tax: Decimal | None = None
+    legacy_unit_tax: Amount | None = None
 
 
 class TaxOut(BaseModel):
     model_config = ORM
     jurisdiction_id: int | None
     name: str
-    rate: Decimal | None
-    taxable_base: Decimal
-    amount: Decimal
+    rate: RateValue | None
+    taxable_base: Amount
+    amount: Amount
 
 
 class CalculateResult(BaseModel):
     lines: list[LineOut]
-    subtotal: Decimal
+    subtotal: Amount
     taxes: list[TaxOut]
-    tax_total: Decimal
-    total: Decimal
+    tax_total: Amount
+    total: Amount
 
 
 class RevisionSummary(BaseModel):
@@ -134,7 +135,7 @@ class RevisionOut(RevisionSummary):
 
 class InvoicePayment(BaseModel):
     payment_id: int
-    amount: Decimal
+    amount: Amount
     received_date: date | None
     method: PaymentMethod | None
     channel: PaymentChannel | None
@@ -142,9 +143,9 @@ class InvoicePayment(BaseModel):
 
 
 class Balance(BaseModel):
-    amount_paid: Decimal
-    amount_credited: Decimal
-    balance_due: Decimal
+    amount_paid: Amount
+    amount_credited: Amount
+    balance_due: Amount
     payment_status: PaymentStatus
     is_overdue: bool
 
@@ -158,7 +159,7 @@ class InvoiceListItem(Balance):
     party_name: str
     issue_date: date | None
     due_date: date | None
-    total: Decimal
+    total: Amount
     is_historical: bool
     archived_at: datetime | None
 
@@ -179,12 +180,12 @@ class InvoiceOut(InvoiceListItem):
     bill_to_email: str | None
     tax_jurisdiction_id: int | None
     tax_location_text: str | None
-    freight: Decimal
-    adjustment: Decimal
+    freight: Amount
+    adjustment: Amount
     adjustment_note: str | None
     notes: str | None
-    subtotal: Decimal
-    tax_total: Decimal
+    subtotal: Amount
+    tax_total: Amount
     revision_no: int
     issued_at: datetime | None
     voided_at: datetime | None

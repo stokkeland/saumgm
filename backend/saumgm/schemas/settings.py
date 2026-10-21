@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -10,6 +9,7 @@ from saumgm.enums import (
     TaxBasis,
     UserRoleType,
 )
+from saumgm.schemas.types import RateValue
 
 ORM = ConfigDict(from_attributes=True)
 
@@ -167,14 +167,14 @@ class JurisdictionOut(BaseModel):
 
 class TaxRateIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    rate: Decimal = Field(ge=0, lt=1, max_digits=9, decimal_places=6, description="0.04 = 4%")
+    rate: RateValue = Field(ge=0, lt=1, max_digits=9, decimal_places=6, description="0.04 = 4%")
     effective_from: date
     effective_to: date | None = None
 
 
 class TaxRatePatch(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=100)
-    rate: Decimal | None = Field(None, ge=0, lt=1, max_digits=9, decimal_places=6)
+    rate: RateValue | None = Field(None, ge=0, lt=1, max_digits=9, decimal_places=6)
     effective_from: date | None = None
     effective_to: date | None = None
 
