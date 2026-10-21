@@ -2,7 +2,7 @@
 
 Revision ID: 16cbee2565fe
 Revises:
-Create Date: 2026-10-20 22:34:59.356993
+Create Date: 2026-10-21 10:15:56.006522
 """
 
 from collections.abc import Sequence
@@ -107,7 +107,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_account_organization_id_organization"),
+            name=op.f("fk_account__organization_id__organization"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_account")),
         sa.UniqueConstraint(
@@ -149,10 +149,10 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_audit_log_organization_id_organization"),
+            name=op.f("fk_audit_log__organization_id__organization"),
         ),
         sa.ForeignKeyConstraint(
-            ["user_id"], ["app_user.id"], name=op.f("fk_audit_log_user_id_app_user")
+            ["user_id"], ["app_user.id"], name=op.f("fk_audit_log__user_id__app_user")
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_audit_log")),
         mysql_charset="utf8mb4",
@@ -181,13 +181,13 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_auth_session_organization_id_organization"),
+            name=op.f("fk_auth_session__organization_id__organization"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["app_user.id"],
-            name=op.f("fk_auth_session_user_id_app_user"),
+            name=op.f("fk_auth_session__user_id__app_user"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("token_hash", name=op.f("pk_auth_session")),
@@ -213,7 +213,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_number_sequence_organization_id_organization"),
+            name=op.f("fk_number_sequence__organization_id__organization"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_number_sequence")),
@@ -260,7 +260,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_organization_address_organization_id_organization"),
+            name=op.f("fk_organization_address__organization_id__organization"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_organization_address")),
@@ -283,7 +283,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_revenue_category_organization_id_organization"),
+            name=op.f("fk_revenue_category__organization_id__organization"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_revenue_category")),
         sa.UniqueConstraint(
@@ -315,12 +315,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_stored_file_organization_id_organization"),
+            name=op.f("fk_stored_file__organization_id__organization"),
         ),
         sa.ForeignKeyConstraint(
             ["uploaded_by_user_id"],
             ["app_user.id"],
-            name=op.f("fk_stored_file_uploaded_by_user_id_app_user"),
+            name=op.f("fk_stored_file__uploaded_by_user_id__app_user"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_stored_file")),
         sa.UniqueConstraint("storage_key", name=op.f("uq_stored_file_storage_key")),
@@ -348,7 +348,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_tax_category_organization_id_organization"),
+            name=op.f("fk_tax_category__organization_id__organization"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_tax_category")),
         sa.UniqueConstraint(
@@ -387,12 +387,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_tax_jurisdiction_organization_id_organization"),
+            name=op.f("fk_tax_jurisdiction__organization_id__organization"),
         ),
         sa.ForeignKeyConstraint(
             ["parent_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_tax_jurisdiction_parent_id_tax_jurisdiction"),
+            name=op.f("fk_tax_jurisdiction__parent_id__tax_jurisdiction"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_tax_jurisdiction")),
         sa.UniqueConstraint(
@@ -431,7 +431,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["app_user.id"],
-            name=op.f("fk_user_identity_user_id_app_user"),
+            name=op.f("fk_user_identity__user_id__app_user"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_user_identity")),
@@ -458,13 +458,13 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_user_role_organization_id_organization"),
+            name=op.f("fk_user_role__organization_id__organization"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["app_user.id"],
-            name=op.f("fk_user_role_user_id_app_user"),
+            name=op.f("fk_user_role__user_id__app_user"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_user_role")),
@@ -515,12 +515,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["default_expense_account_id"],
             ["account.id"],
-            name=op.f("fk_party_default_expense_account_id_account"),
+            name=op.f("fk_party__default_expense_account_id__account"),
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_party_organization_id_organization"),
+            name=op.f("fk_party__organization_id__organization"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_party")),
         sa.UniqueConstraint(
@@ -553,7 +553,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_tax_rate_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_tax_rate__jurisdiction_id__tax_jurisdiction"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_tax_rate")),
@@ -593,12 +593,12 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_tax_registration_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_tax_registration__jurisdiction_id__tax_jurisdiction"),
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_tax_registration_organization_id_organization"),
+            name=op.f("fk_tax_registration__organization_id__organization"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_tax_registration")),
         mysql_charset="utf8mb4",
@@ -626,13 +626,13 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_taxability_rule_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_taxability_rule__jurisdiction_id__tax_jurisdiction"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["tax_category_id"],
             ["tax_category.id"],
-            name=op.f("fk_taxability_rule_tax_category_id_tax_category"),
+            name=op.f("fk_taxability_rule__tax_category_id__tax_category"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_taxability_rule")),
@@ -703,27 +703,27 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["cogs_account_id"],
             ["account.id"],
-            name=op.f("fk_catalog_item_cogs_account_id_account"),
+            name=op.f("fk_catalog_item__cogs_account_id__account"),
         ),
         sa.ForeignKeyConstraint(
             ["default_vendor_id"],
             ["party.id"],
-            name=op.f("fk_catalog_item_default_vendor_id_party"),
+            name=op.f("fk_catalog_item__default_vendor_id__party"),
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_catalog_item_organization_id_organization"),
+            name=op.f("fk_catalog_item__organization_id__organization"),
         ),
         sa.ForeignKeyConstraint(
             ["revenue_category_id"],
             ["revenue_category.id"],
-            name=op.f("fk_catalog_item_revenue_category_id_revenue_category"),
+            name=op.f("fk_catalog_item__revenue_category_id__revenue_category"),
         ),
         sa.ForeignKeyConstraint(
             ["tax_category_id"],
             ["tax_category.id"],
-            name=op.f("fk_catalog_item_tax_category_id_tax_category"),
+            name=op.f("fk_catalog_item__tax_category_id__tax_category"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_catalog_item")),
         sa.UniqueConstraint(
@@ -772,12 +772,12 @@ def upgrade() -> None:
             "updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["bank_party_id"], ["party.id"], name=op.f("fk_deposit_bank_party_id_party")
+            ["bank_party_id"], ["party.id"], name=op.f("fk_deposit__bank_party_id__party")
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_deposit_organization_id_organization"),
+            name=op.f("fk_deposit__organization_id__organization"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_deposit")),
         mysql_charset="utf8mb4",
@@ -809,15 +809,15 @@ def upgrade() -> None:
             "updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["for_party_id"], ["party.id"], name=op.f("fk_expense_for_party_id_party")
+            ["for_party_id"], ["party.id"], name=op.f("fk_expense__for_party_id__party")
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_expense_organization_id_organization"),
+            name=op.f("fk_expense__organization_id__organization"),
         ),
         sa.ForeignKeyConstraint(
-            ["vendor_party_id"], ["party.id"], name=op.f("fk_expense_vendor_party_id_party")
+            ["vendor_party_id"], ["party.id"], name=op.f("fk_expense__vendor_party_id__party")
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_expense")),
         mysql_charset="utf8mb4",
@@ -890,21 +890,23 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["credited_invoice_id"],
             ["invoice.id"],
-            name=op.f("fk_invoice_credited_invoice_id_invoice"),
+            name=op.f("fk_invoice__credited_invoice_id__invoice"),
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_invoice_organization_id_organization"),
+            name=op.f("fk_invoice__organization_id__organization"),
         ),
-        sa.ForeignKeyConstraint(["party_id"], ["party.id"], name=op.f("fk_invoice_party_id_party")),
         sa.ForeignKeyConstraint(
-            ["pdf_file_id"], ["stored_file.id"], name=op.f("fk_invoice_pdf_file_id_stored_file")
+            ["party_id"], ["party.id"], name=op.f("fk_invoice__party_id__party")
+        ),
+        sa.ForeignKeyConstraint(
+            ["pdf_file_id"], ["stored_file.id"], name=op.f("fk_invoice__pdf_file_id__stored_file")
         ),
         sa.ForeignKeyConstraint(
             ["tax_jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_invoice_tax_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_invoice__tax_jurisdiction_id__tax_jurisdiction"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_invoice")),
         sa.UniqueConstraint(
@@ -958,13 +960,13 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["party_id"],
             ["party.id"],
-            name=op.f("fk_party_address_party_id_party"),
+            name=op.f("fk_party_address__party_id__party"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["tax_jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_party_address_tax_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_party_address__tax_jurisdiction_id__tax_jurisdiction"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_party_address")),
         mysql_charset="utf8mb4",
@@ -992,7 +994,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["party_id"],
             ["party.id"],
-            name=op.f("fk_party_contact_party_id_party"),
+            name=op.f("fk_party_contact__party_id__party"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_party_contact")),
@@ -1023,7 +1025,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["party_id"],
             ["party.id"],
-            name=op.f("fk_party_role_party_id_party"),
+            name=op.f("fk_party_role__party_id__party"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_party_role")),
@@ -1051,17 +1053,17 @@ def upgrade() -> None:
             "updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["file_id"], ["stored_file.id"], name=op.f("fk_tax_exemption_file_id_stored_file")
+            ["file_id"], ["stored_file.id"], name=op.f("fk_tax_exemption__file_id__stored_file")
         ),
         sa.ForeignKeyConstraint(
             ["jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_tax_exemption_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_tax_exemption__jurisdiction_id__tax_jurisdiction"),
         ),
         sa.ForeignKeyConstraint(
             ["party_id"],
             ["party.id"],
-            name=op.f("fk_tax_exemption_party_id_party"),
+            name=op.f("fk_tax_exemption__party_id__party"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_tax_exemption")),
@@ -1084,7 +1086,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["deposit_id"],
             ["deposit.id"],
-            name=op.f("fk_deposit_item_deposit_id_deposit"),
+            name=op.f("fk_deposit_item__deposit_id__deposit"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_deposit_item")),
@@ -1104,11 +1106,13 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["expense_id"],
             ["expense.id"],
-            name=op.f("fk_expense_attachment_expense_id_expense"),
+            name=op.f("fk_expense_attachment__expense_id__expense"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
-            ["file_id"], ["stored_file.id"], name=op.f("fk_expense_attachment_file_id_stored_file")
+            ["file_id"],
+            ["stored_file.id"],
+            name=op.f("fk_expense_attachment__file_id__stored_file"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_expense_attachment")),
         mysql_charset="utf8mb4",
@@ -1131,12 +1135,12 @@ def upgrade() -> None:
         sa.Column("legacy_id", sa.BigInteger(), nullable=True),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.ForeignKeyConstraint(
-            ["account_id"], ["account.id"], name=op.f("fk_expense_line_account_id_account")
+            ["account_id"], ["account.id"], name=op.f("fk_expense_line__account_id__account")
         ),
         sa.ForeignKeyConstraint(
             ["expense_id"],
             ["expense.id"],
-            name=op.f("fk_expense_line_expense_id_expense"),
+            name=op.f("fk_expense_line__expense_id__expense"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_expense_line")),
@@ -1166,18 +1170,18 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["changed_by_user_id"],
             ["app_user.id"],
-            name=op.f("fk_invoice_revision_changed_by_user_id_app_user"),
+            name=op.f("fk_invoice_revision__changed_by_user_id__app_user"),
         ),
         sa.ForeignKeyConstraint(
             ["invoice_id"],
             ["invoice.id"],
-            name=op.f("fk_invoice_revision_invoice_id_invoice"),
+            name=op.f("fk_invoice_revision__invoice_id__invoice"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["pdf_file_id"],
             ["stored_file.id"],
-            name=op.f("fk_invoice_revision_pdf_file_id_stored_file"),
+            name=op.f("fk_invoice_revision__pdf_file_id__stored_file"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_invoice_revision")),
         sa.UniqueConstraint(
@@ -1211,13 +1215,13 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["invoice_id"],
             ["invoice.id"],
-            name=op.f("fk_invoice_tax_invoice_id_invoice"),
+            name=op.f("fk_invoice_tax__invoice_id__invoice"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["jurisdiction_id"],
             ["tax_jurisdiction.id"],
-            name=op.f("fk_invoice_tax_jurisdiction_id_tax_jurisdiction"),
+            name=op.f("fk_invoice_tax__jurisdiction_id__tax_jurisdiction"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_invoice_tax")),
         mysql_charset="utf8mb4",
@@ -1276,14 +1280,16 @@ def upgrade() -> None:
             "updated_at", sa.DateTime(), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["deposit_id"], ["deposit.id"], name=op.f("fk_payment_deposit_id_deposit")
+            ["deposit_id"], ["deposit.id"], name=op.f("fk_payment__deposit_id__deposit")
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_payment_organization_id_organization"),
+            name=op.f("fk_payment__organization_id__organization"),
         ),
-        sa.ForeignKeyConstraint(["party_id"], ["party.id"], name=op.f("fk_payment_party_id_party")),
+        sa.ForeignKeyConstraint(
+            ["party_id"], ["party.id"], name=op.f("fk_payment__party_id__party")
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_payment")),
         mysql_charset="utf8mb4",
         mysql_collate="utf8mb4_unicode_ci",
@@ -1336,18 +1342,18 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["catalog_item_id"],
             ["catalog_item.id"],
-            name=op.f("fk_subscription_catalog_item_id_catalog_item"),
+            name=op.f("fk_subscription__catalog_item_id__catalog_item"),
         ),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
-            name=op.f("fk_subscription_organization_id_organization"),
+            name=op.f("fk_subscription__organization_id__organization"),
         ),
         sa.ForeignKeyConstraint(
-            ["party_id"], ["party.id"], name=op.f("fk_subscription_party_id_party")
+            ["party_id"], ["party.id"], name=op.f("fk_subscription__party_id__party")
         ),
         sa.ForeignKeyConstraint(
-            ["vendor_party_id"], ["party.id"], name=op.f("fk_subscription_vendor_party_id_party")
+            ["vendor_party_id"], ["party.id"], name=op.f("fk_subscription__vendor_party_id__party")
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_subscription")),
         mysql_charset="utf8mb4",
@@ -1393,28 +1399,28 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(
             ["catalog_item_id"],
             ["catalog_item.id"],
-            name=op.f("fk_invoice_line_catalog_item_id_catalog_item"),
+            name=op.f("fk_invoice_line__catalog_item_id__catalog_item"),
         ),
         sa.ForeignKeyConstraint(
             ["invoice_id"],
             ["invoice.id"],
-            name=op.f("fk_invoice_line_invoice_id_invoice"),
+            name=op.f("fk_invoice_line__invoice_id__invoice"),
             ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["revenue_category_id"],
             ["revenue_category.id"],
-            name=op.f("fk_invoice_line_revenue_category_id_revenue_category"),
+            name=op.f("fk_invoice_line__revenue_category_id__revenue_category"),
         ),
         sa.ForeignKeyConstraint(
             ["subscription_id"],
             ["subscription.id"],
-            name=op.f("fk_invoice_line_subscription_id_subscription"),
+            name=op.f("fk_invoice_line__subscription_id__subscription"),
         ),
         sa.ForeignKeyConstraint(
             ["tax_category_id"],
             ["tax_category.id"],
-            name=op.f("fk_invoice_line_tax_category_id_tax_category"),
+            name=op.f("fk_invoice_line__tax_category_id__tax_category"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_invoice_line")),
         mysql_charset="utf8mb4",
@@ -1450,12 +1456,12 @@ def upgrade() -> None:
         sa.Column("legacy_id", sa.BigInteger(), nullable=True),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.ForeignKeyConstraint(
-            ["invoice_id"], ["invoice.id"], name=op.f("fk_payment_allocation_invoice_id_invoice")
+            ["invoice_id"], ["invoice.id"], name=op.f("fk_payment_allocation__invoice_id__invoice")
         ),
         sa.ForeignKeyConstraint(
             ["payment_id"],
             ["payment.id"],
-            name=op.f("fk_payment_allocation_payment_id_payment"),
+            name=op.f("fk_payment_allocation__payment_id__payment"),
             ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_payment_allocation")),
@@ -1474,14 +1480,14 @@ def upgrade() -> None:
     )
     # organization <-> party / stored_file reference each other; add these after all tables exist.
     op.create_foreign_key(
-        op.f("fk_organization_self_party_id_party"),
+        op.f("fk_organization__self_party_id__party"),
         "organization",
         "party",
         ["self_party_id"],
         ["id"],
     )
     op.create_foreign_key(
-        op.f("fk_organization_logo_file_id_stored_file"),
+        op.f("fk_organization__logo_file_id__stored_file"),
         "organization",
         "stored_file",
         ["logo_file_id"],
@@ -1494,10 +1500,10 @@ def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     # Dropping a table drops its indexes; drop the cyclic foreign keys first.
     op.drop_constraint(
-        op.f("fk_organization_self_party_id_party"), "organization", type_="foreignkey"
+        op.f("fk_organization__self_party_id__party"), "organization", type_="foreignkey"
     )
     op.drop_constraint(
-        op.f("fk_organization_logo_file_id_stored_file"), "organization", type_="foreignkey"
+        op.f("fk_organization__logo_file_id__stored_file"), "organization", type_="foreignkey"
     )
     op.drop_table("payment_allocation")
     op.drop_table("invoice_line")
