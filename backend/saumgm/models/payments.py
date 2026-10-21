@@ -5,8 +5,8 @@ from sqlalchemy import BigInteger, Boolean, Date, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import PaymentChannel, PaymentMethod
 from saumgm.models.base import ArchivableMixin, LegacyMixin, Money, OrgScopedMixin, fk, str_enum
-from saumgm.models.enums import PaymentChannel, PaymentMethod
 
 
 class Deposit(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):

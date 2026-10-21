@@ -4,8 +4,8 @@ from sqlalchemy import BigInteger, Boolean, Integer, String, Text, UniqueConstra
 from sqlalchemy.orm import Mapped, mapped_column
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import BillingTiming, ItemType
 from saumgm.models.base import ZERO, LegacyMixin, Money, OrgScopedMixin, Percent, fk, str_enum
-from saumgm.models.enums import BillingTiming, ItemType
 
 
 class RevenueCategory(IdMixin, OrgScopedMixin, Base):

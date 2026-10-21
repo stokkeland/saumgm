@@ -4,8 +4,8 @@ from sqlalchemy import BigInteger, Boolean, Integer, String, Text, UniqueConstra
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import AddressType, PartyKind, PartyRoleType
 from saumgm.models.base import ArchivableMixin, LegacyMixin, OrgScopedMixin, fk, str_enum
-from saumgm.models.enums import AddressType, PartyKind, PartyRoleType
 
 if TYPE_CHECKING:
     from saumgm.models.tax import TaxExemption

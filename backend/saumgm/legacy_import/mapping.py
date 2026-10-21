@@ -14,6 +14,15 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from saumgm.context import set_audit_rows
+from saumgm.enums import (
+    AccountType,
+    AddressType,
+    AuditActor,
+    InvoiceStatus,
+    PartyKind,
+    PartyRoleType,
+)
 from saumgm.legacy_import import convert as cv
 from saumgm.legacy_import.config import ImportConfig
 from saumgm.legacy_import.source import LegacyData, Row
@@ -37,14 +46,6 @@ from saumgm.models import (
     PaymentAllocation,
     TaxExemption,
     TaxJurisdiction,
-)
-from saumgm.models.enums import (
-    AccountType,
-    AddressType,
-    AuditActor,
-    InvoiceStatus,
-    PartyKind,
-    PartyRoleType,
 )
 from saumgm.seed import create_organization, jurisdiction_code
 from saumgm.services.archive import archive_through
@@ -107,6 +108,14 @@ class AccessImporter:
         self.result.issues.append(message)
 
     def run(self) -> ImportResult:
+        # One summary audit entry for the whole import instead of one per imported row.
+        set_audit_rows(self.session, False)
+        try:
+            return self._run()
+        finally:
+            set_audit_rows(self.session, True)
+
+    def _run(self) -> ImportResult:
         self.create_organization()
         self.import_parties()
         self.import_accounts()

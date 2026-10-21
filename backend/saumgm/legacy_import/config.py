@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from saumgm.models.enums import AddressType
+from saumgm.enums import AddressType
 from saumgm.seed import OrganizationSetup
 
 

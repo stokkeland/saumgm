@@ -6,8 +6,8 @@ from typing import Any
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from saumgm.enums import AuditActor, InvoiceStatus
 from saumgm.models import AuditLog, Deposit, Expense, Invoice, Payment, PaymentAllocation
-from saumgm.models.enums import AuditActor, InvoiceStatus
 
 
 def archive_through(

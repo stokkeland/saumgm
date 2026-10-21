@@ -88,3 +88,10 @@ def get_session() -> Iterator[Session]:
 
 def server_version(session: Session) -> str:
     return str(session.execute(text("SELECT VERSION()")).scalar_one())
+
+
+# Every session writes its row changes to audit_log (docs/design.md 4.9). Installed here because
+# every code path that touches the database imports this module.
+from saumgm import audit  # noqa: E402
+
+audit.install()

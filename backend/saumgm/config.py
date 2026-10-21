@@ -27,6 +27,16 @@ class Settings(BaseSettings):
     environment: Literal["development", "production"] = "development"
     cors_origins: Annotated[list[str], NoDecode] = []
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    # Login sessions
+    session_days: int = 14
+    # Send cookies only over HTTPS. Defaults to on in production, off in development.
+    cookie_secure: bool | None = None
+
+    @property
+    def secure_cookies(self) -> bool:
+        if self.cookie_secure is not None:
+            return self.cookie_secure
+        return self.environment == "production"
 
     @field_validator("cors_origins", mode="before")
     @classmethod

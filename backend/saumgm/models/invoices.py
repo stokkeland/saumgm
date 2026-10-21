@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import InvoiceKind, InvoiceStatus
 from saumgm.models.base import (
     ZERO,
     ArchivableMixin,
@@ -28,7 +29,6 @@ from saumgm.models.base import (
     fk,
     str_enum,
 )
-from saumgm.models.enums import InvoiceKind, InvoiceStatus
 
 
 class Invoice(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):

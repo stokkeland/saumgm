@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from saumgm import __version__
-from saumgm.api import health
+from saumgm.api import auth, health
 from saumgm.config import get_settings
 from saumgm.request_logging import configure_logging, request_id_middleware
 
@@ -31,6 +31,7 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(health.router, prefix="/api")
+    app.include_router(auth.router, prefix="/api")
     return app
 
 

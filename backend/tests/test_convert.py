@@ -3,8 +3,8 @@ from decimal import Decimal
 
 import pytest
 
+from saumgm.enums import ItemType
 from saumgm.legacy_import import convert as cv
-from saumgm.models.enums import ItemType
 
 
 def test_dec_normalizes_floats_and_currency() -> None:

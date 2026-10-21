@@ -5,8 +5,8 @@ from sqlalchemy import JSON, BigInteger, DateTime, Index, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin
+from saumgm.enums import AuditActor
 from saumgm.models.base import fk, str_enum
-from saumgm.models.enums import AuditActor
 
 
 class AuditLog(IdMixin, Base):
@@ -15,6 +15,7 @@ class AuditLog(IdMixin, Base):
     __tablename__ = "audit_log"
     __table_args__ = (
         Index("ix_audit_log_entity", "entity_type", "entity_id"),
+        Index("ix_audit_log_parent", "parent_type", "parent_id"),
         TABLE_ARGS,
     )
 
@@ -30,6 +31,10 @@ class AuditLog(IdMixin, Base):
     action: Mapped[str] = mapped_column(String(32))
     entity_type: Mapped[str | None] = mapped_column(String(64))
     entity_id: Mapped[str | None] = mapped_column(String(64))
+    # For child rows (invoice lines, addresses, ...) the record they belong to, so the parent's
+    # history includes them.
+    parent_type: Mapped[str | None] = mapped_column(String(64))
+    parent_id: Mapped[str | None] = mapped_column(String(64))
     changes: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     reason: Mapped[str | None] = mapped_column(Text)
     request_id: Mapped[str | None] = mapped_column(String(64))

@@ -12,8 +12,8 @@ from sqlalchemy import BigInteger, Boolean, Date, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import FilingFrequency, JurisdictionLevel
 from saumgm.models.base import OrgScopedMixin, Rate, fk, str_enum
-from saumgm.models.enums import FilingFrequency, JurisdictionLevel
 
 
 class TaxJurisdiction(IdMixin, OrgScopedMixin, Base):

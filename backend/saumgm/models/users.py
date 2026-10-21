@@ -4,8 +4,8 @@ from sqlalchemy import BigInteger, Boolean, DateTime, String, Text, UniqueConstr
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import IdentityProvider, UserRoleType
 from saumgm.models.base import fk, str_enum
-from saumgm.models.enums import IdentityProvider, UserRoleType
 
 
 class User(IdMixin, TimestampMixin, Base):

@@ -6,6 +6,13 @@ from sqlalchemy import func, inspect, select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from saumgm.enums import (
+    InvoiceStatus,
+    PartyKind,
+    PartyRoleType,
+    PaymentChannel,
+    PaymentMethod,
+)
 from saumgm.legacy_import.archive import write_archive
 from saumgm.legacy_import.config import ImportConfig
 from saumgm.legacy_import.mapping import ImportResult, import_access
@@ -18,13 +25,6 @@ from saumgm.models import (
     Organization,
     Party,
     Payment,
-)
-from saumgm.models.enums import (
-    InvoiceStatus,
-    PartyKind,
-    PartyRoleType,
-    PaymentChannel,
-    PaymentMethod,
 )
 from saumgm.seed import OrganizationSetup
 from tests.legacy_sample import sample_data

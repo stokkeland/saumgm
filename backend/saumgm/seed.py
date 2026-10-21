@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
+from saumgm.enums import JurisdictionLevel
 from saumgm.models import NumberSequence, Organization, TaxCategory, TaxJurisdiction
-from saumgm.models.enums import JurisdictionLevel
 
 COUNTRIES = {"US": "United States", "CA": "Canada"}
 

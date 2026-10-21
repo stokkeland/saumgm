@@ -5,12 +5,16 @@ from alembic import command
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine, make_url
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from saumgm.config import get_settings
 from saumgm.db import get_session, make_engine
+from saumgm.enums import UserRoleType
 from saumgm.main import create_app
-from tests.support import alembic_config
+from saumgm.models import Organization, User
+from saumgm.seed import OrganizationSetup, create_organization
+from saumgm.services.auth import create_user
+from tests.support import PASSWORD, alembic_config, login
 
 
 @pytest.fixture(scope="session")
@@ -63,14 +67,29 @@ def db_session(migrated_engine: Engine) -> Iterator[Session]:
 
 
 @pytest.fixture
-def client(test_engine: Engine) -> Iterator[TestClient]:
+def client(db_session: Session) -> Iterator[TestClient]:
+    """API client whose requests all use the rolled-back test session."""
     app = create_app()
-    factory = sessionmaker(bind=test_engine, expire_on_commit=False)
-
-    def test_session() -> Iterator[Session]:
-        with factory() as session:
-            yield session
-
-    app.dependency_overrides[get_session] = test_session
+    app.dependency_overrides[get_session] = lambda: db_session
     with TestClient(app) as client:
         yield client
+
+
+@pytest.fixture
+def org(db_session: Session) -> Organization:
+    return create_organization(
+        db_session, OrganizationSetup(legal_name="Test Company LLC", display_name="Test Co")
+    )
+
+
+@pytest.fixture
+def owner(db_session: Session, org: Organization) -> User:
+    return create_user(
+        db_session, org.id, "owner@example.com", "Olivia Owner", UserRoleType.OWNER, PASSWORD
+    )
+
+
+@pytest.fixture
+def owner_client(client: TestClient, owner: User) -> TestClient:
+    login(client, owner.email)
+    return client

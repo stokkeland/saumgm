@@ -4,8 +4,8 @@ from sqlalchemy import BigInteger, Boolean, Date, Integer, String, Text, UniqueC
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import AddressType, TaxBasis
 from saumgm.models.base import fk, str_enum
-from saumgm.models.enums import AddressType, TaxBasis
 
 
 class Organization(IdMixin, TimestampMixin, Base):

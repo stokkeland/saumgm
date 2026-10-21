@@ -5,7 +5,7 @@ from datetime import date, datetime
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
-from saumgm.models.enums import ItemType, PaymentChannel, PaymentMethod
+from saumgm.enums import ItemType, PaymentChannel, PaymentMethod
 from saumgm.seed import CA_PROVINCES, US_STATES
 
 FOUR_PLACES = Decimal("0.0001")

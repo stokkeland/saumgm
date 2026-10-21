@@ -5,8 +5,8 @@ from sqlalchemy import BigInteger, Boolean, Date, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import SubscriptionStatus
 from saumgm.models.base import Money, OrgScopedMixin, Percent, Quantity, fk, str_enum
-from saumgm.models.enums import SubscriptionStatus
 
 
 class Subscription(IdMixin, OrgScopedMixin, TimestampMixin, Base):

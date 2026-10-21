@@ -1,8 +1,8 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from saumgm.enums import JurisdictionLevel
 from saumgm.models import NumberSequence, TaxCategory, TaxJurisdiction
-from saumgm.models.enums import JurisdictionLevel
 from saumgm.seed import OrganizationSetup, create_organization
 
 

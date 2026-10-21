@@ -2,8 +2,8 @@ from sqlalchemy import Boolean, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
+from saumgm.enums import AccountType
 from saumgm.models.base import LegacyMixin, OrgScopedMixin, str_enum
-from saumgm.models.enums import AccountType
 
 
 class Account(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
