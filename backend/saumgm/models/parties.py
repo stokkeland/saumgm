@@ -4,14 +4,14 @@ from sqlalchemy import BigInteger, Boolean, Integer, String, Text, UniqueConstra
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
-from saumgm.models.base import LegacyMixin, OrgScopedMixin, fk, str_enum
+from saumgm.models.base import ArchivableMixin, LegacyMixin, OrgScopedMixin, fk, str_enum
 from saumgm.models.enums import AddressType, PartyKind, PartyRoleType
 
 if TYPE_CHECKING:
     from saumgm.models.tax import TaxExemption
 
 
-class Party(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
+class Party(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMixin, Base):
     """Anyone the business deals with: clients, vendors, banks, tax authorities, itself.
     `party_no` is the shared identifier (the old Access "file number")."""
 

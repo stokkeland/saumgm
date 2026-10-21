@@ -242,7 +242,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 - Invoices, payments, deposits and expenses have `archived_at` (NULL = current). Archived records stay in their tables, keep all links, and count in every report; they are only hidden from everyday lists.
 - Lists default to current records, with a "show archived" toggle (and an `include_archived` / `archived_only` filter on the API). Archived records open read-only; unarchiving is allowed for the owner role.
 - `archive_through(cutoff)` (`saumgm/services/archive.py`) archives everything dated on or before a day; drafts are never archived; an undated payment follows its invoices. Each run writes one audit entry with the counts.
-- Contacts and catalog items use their existing active/inactive flag instead.
+- Contacts (parties) have `archived_at` too, next to `is_active` ("inactive" = no longer used for new work; "archived" = hidden from lists). All imported contacts start active and unarchived; the old system's inactive/closed flag is kept in `legacy_data.inactive_in_old_system` for the clean-up. Catalog items use their active/inactive flag.
 - The initial import archived everything dated 2016 or earlier.
 
 ---

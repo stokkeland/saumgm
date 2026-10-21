@@ -76,11 +76,16 @@ def test_parties(imported: tuple[Session, ImportResult]) -> None:
 
     bob = party(session, "00010002")
     assert bob.kind == PartyKind.PERSON
-    assert bob.is_active is False  # closed client
+    assert bob.is_active is True  # everyone starts active ...
+    assert bob.archived_at is None
     assert bob.addresses[0].country_code == "CA"  # inferred from province
     assert [e.certificate_type for e in bob.tax_exemptions] == ["Native American"]
     assert acme.tax_exemptions == []
-    assert bob.legacy_data == {"file_type": "C", "client": {"ClientID": 3, "Nick": "BOB"}}
+    assert bob.legacy_data == {  # ... the old "closed" flag is kept for the clean-up
+        "file_type": "C",
+        "inactive_in_old_system": True,
+        "client": {"ClientID": 3, "Nick": "BOB"},
+    }
 
     bank = party(session, "00010004")
     assert {r.role for r in bank.roles} == {PartyRoleType.FINANCIAL, PartyRoleType.VENDOR}

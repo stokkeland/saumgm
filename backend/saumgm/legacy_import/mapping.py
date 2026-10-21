@@ -197,6 +197,9 @@ class AccessImporter:
         details = client or vendor or {}
 
         legacy: dict[str, Any] = {"file_type": f["Type"]}
+        if f["Inactive"] or closed:
+            # Everyone starts active; the old flag is kept for the clean-up.
+            legacy["inactive_in_old_system"] = True
         if file_name != name:
             legacy["file_name"] = file_name
         if cv.clean(f.get("FSdirectory")):
@@ -212,7 +215,7 @@ class AccessImporter:
             short_code=cv.clean(f["nick"]) or file_no,
             name=name,
             kind=PartyKind.PERSON if client and not company and person else PartyKind.COMPANY,
-            is_active=not f["Inactive"] and not closed,
+            is_active=True,
             phone=cv.clean(details.get("Phone")),
             fax=cv.clean(details.get("Fax")),
             email=cv.clean(details.get("EMail") or details.get("Email")),
