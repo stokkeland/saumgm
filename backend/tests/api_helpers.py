@@ -32,3 +32,9 @@ def issued_invoice(
         201,
     )
     return ok(client.post(f"/api/invoices/{draft['id']}/issue", json={"issue_date": issue_date}))
+
+
+def ok_list(response: Any, status: int = 200) -> list[dict[str, Any]]:
+    assert response.status_code == status, response.text
+    body: list[dict[str, Any]] = response.json()
+    return body

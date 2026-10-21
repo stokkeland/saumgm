@@ -8,12 +8,12 @@ tax category and the jurisdiction's taxability rules; clients can hold exemption
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import BigInteger, Boolean, Date, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, Date, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
 from saumgm.enums import FilingFrequency, JurisdictionLevel
-from saumgm.models.base import OrgScopedMixin, Rate, fk, str_enum
+from saumgm.models.base import Money, OrgScopedMixin, Rate, fk, str_enum
 
 
 class TaxJurisdiction(IdMixin, OrgScopedMixin, Base):
@@ -61,8 +61,28 @@ class TaxRegistration(IdMixin, OrgScopedMixin, TimestampMixin, Base):
     jurisdiction_id: Mapped[int] = mapped_column(BigInteger, fk("tax_jurisdiction.id"), index=True)
     registration_number: Mapped[str | None] = mapped_column(String(100))
     filing_frequency: Mapped[FilingFrequency | None] = mapped_column(str_enum(FilingFrequency))
+    # First month of the filing year: 1 = calendar quarters/years; New York uses 3
+    # (quarters Mar-May, Jun-Aug, Sep-Nov, Dec-Feb; annual Mar-Feb).
+    period_start_month: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     effective_from: Mapped[date] = mapped_column(Date)
     effective_to: Mapped[date | None] = mapped_column(Date)
+
+
+class TaxFiling(IdMixin, OrgScopedMixin, TimestampMixin, Base):
+    """A tax return filed for one period of a registration."""
+
+    __tablename__ = "tax_filing"
+    __table_args__ = (UniqueConstraint("registration_id", "period_start"), TABLE_ARGS)
+
+    registration_id: Mapped[int] = mapped_column(
+        BigInteger, fk("tax_registration.id", ondelete="CASCADE"), index=True
+    )
+    period_start: Mapped[date] = mapped_column(Date)
+    period_end: Mapped[date] = mapped_column(Date)
+    filed_on: Mapped[date] = mapped_column(Date)
+    amount_paid: Mapped[Decimal | None] = mapped_column(Money)
+    reference: Mapped[str | None] = mapped_column(String(100))
+    notes: Mapped[str | None] = mapped_column(Text)
 
 
 class TaxCategory(IdMixin, OrgScopedMixin, Base):

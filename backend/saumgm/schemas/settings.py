@@ -9,7 +9,7 @@ from saumgm.enums import (
     TaxBasis,
     UserRoleType,
 )
-from saumgm.schemas.types import RateValue
+from saumgm.schemas.types import Amount, RateValue
 
 ORM = ConfigDict(from_attributes=True)
 
@@ -189,6 +189,9 @@ class RegistrationIn(BaseModel):
     jurisdiction_id: int
     registration_number: str | None = Field(None, max_length=100)
     filing_frequency: FilingFrequency | None = None
+    period_start_month: int = Field(
+        1, ge=1, le=12, description="First month of the filing year (New York: 3)"
+    )
     effective_from: date
     effective_to: date | None = None
 
@@ -196,6 +199,7 @@ class RegistrationIn(BaseModel):
 class RegistrationPatch(BaseModel):
     registration_number: str | None = Field(None, max_length=100)
     filing_frequency: FilingFrequency | None = None
+    period_start_month: int | None = Field(None, ge=1, le=12)
     effective_from: date | None = None
     effective_to: date | None = None
 
@@ -203,6 +207,28 @@ class RegistrationPatch(BaseModel):
 class RegistrationOut(RegistrationIn):
     model_config = ORM
     id: int
+
+
+class FilingIn(BaseModel):
+    registration_id: int
+    period_start: date
+    filed_on: date
+    amount_paid: Amount | None = Field(None, ge=0, max_digits=15, decimal_places=4)
+    reference: str | None = Field(None, max_length=100)
+    notes: str | None = None
+
+
+class FilingOut(FilingIn):
+    model_config = ORM
+    id: int
+    period_end: date
+
+
+class TaxPeriod(BaseModel):
+    registration_id: int
+    period_start: date
+    period_end: date
+    filing: FilingOut | None
 
 
 class TaxabilityRuleIn(BaseModel):

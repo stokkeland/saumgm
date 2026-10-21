@@ -1,6 +1,7 @@
 import {
   Accordion,
   ActionIcon,
+  Alert,
   Anchor,
   Badge,
   Button,
@@ -24,6 +25,7 @@ import {
 import { modals } from '@mantine/modals'
 import {
   IconArchive,
+  IconBan,
   IconCash,
   IconDots,
   IconPencil,
@@ -44,6 +46,7 @@ import { formatDateTime, formatNumber, formatRate } from '../../lib/format'
 import { labelOf, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
 import { InvoiceEditor } from './InvoiceEditor'
+import { UndoWriteOffModal, WriteOffModal } from './WriteOffModal'
 
 type Invoice = Schemas['InvoiceOut']
 
@@ -454,7 +457,7 @@ export function InvoicePage() {
   const { data: organization } = useOrganization()
   const { data: invoice, error } = useInvoice(invoiceId)
   const [revising, setRevising] = useState(false)
-  const [dialog, setDialog] = useState<'credit' | 'void' | null>(null)
+  const [dialog, setDialog] = useState<'credit' | 'void' | 'writeoff' | 'undo' | null>(null)
 
   const archive = useMutation({
     mutationFn: async (archived: boolean) =>
@@ -555,7 +558,7 @@ export function InvoicePage() {
                   Record payment
                 </Button>
               )}
-              {invoice.status === 'issued' && !ownerOnlyRevise && (
+              {invoice.status === 'issued' && !ownerOnlyRevise && !invoice.write_off_date && (
                 <Button variant="light" leftSection={<IconPencil size={16} />} onClick={() => setRevising(true)}>
                   Revise
                 </Button>
@@ -572,7 +575,12 @@ export function InvoicePage() {
                       Credit note…
                     </Menu.Item>
                   )}
-                  {invoice.status === 'issued' && (
+                  {invoice.status === 'issued' && invoice.kind === 'invoice' && Number(invoice.balance_due) > 0 && (
+                    <Menu.Item leftSection={<IconBan size={14} />} onClick={() => setDialog('writeoff')}>
+                      Write off as uncollectible…
+                    </Menu.Item>
+                  )}
+                  {invoice.status === 'issued' && !invoice.write_off_date && (
                     <Menu.Item color="red" leftSection={<IconX size={14} />} onClick={() => setDialog('void')}>
                       Void…
                     </Menu.Item>
@@ -591,6 +599,21 @@ export function InvoicePage() {
           Unarchive
         </Button>
       )}
+      {invoice.write_off_date && (
+        <Alert color="dark" variant="light" mb="md" title="Written off as uncollectible">
+          <Group justify="space-between" align="flex-start">
+            <Text size="sm">
+              <Money value={invoice.write_off_amount} /> on <DateText value={invoice.write_off_date} />
+              {invoice.write_off_reason && <> — {invoice.write_off_reason}</>}
+            </Text>
+            {isOwner && (
+              <Button size="xs" variant="subtle" onClick={() => setDialog('undo')}>
+                Undo write-off
+              </Button>
+            )}
+          </Group>
+        </Alert>
+      )}
       {revising ? (
         <InvoiceEditor
           mode="revise"
@@ -603,6 +626,8 @@ export function InvoicePage() {
       )}
       {dialog === 'credit' && <CreditNoteModal invoice={invoice} onClose={() => setDialog(null)} />}
       {dialog === 'void' && <VoidModal invoice={invoice} onClose={() => setDialog(null)} />}
+      {dialog === 'writeoff' && <WriteOffModal invoiceIds={[invoice.id]} onClose={() => setDialog(null)} />}
+      {dialog === 'undo' && <UndoWriteOffModal invoice={invoice} onClose={() => setDialog(null)} />}
     </>
   )
 }

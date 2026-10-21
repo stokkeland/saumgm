@@ -25,6 +25,7 @@ from saumgm.models import (
     RevenueCategory,
     Subscription,
     TaxCategory,
+    TaxFiling,
     TaxJurisdiction,
 )
 from saumgm.schemas.invoices import LineIn
@@ -337,6 +338,8 @@ def issue(session: Session, org: Organization, invoice: Invoice, issue_date: dat
 def void(session: Session, invoice: Invoice, reason: str) -> None:
     if invoice.status != InvoiceStatus.ISSUED:
         raise InvoiceError("Only issued invoices can be voided (delete drafts instead)")
+    if invoice.write_off_date is not None:
+        raise InvoiceError("Undo the write-off before voiding this invoice")
     paid = session.scalar(
         select(func.count())
         .select_from(PaymentAllocation)
@@ -379,6 +382,8 @@ def revise(
     """Correct an issued invoice. The previous version is kept as a revision. Returns warnings."""
     if invoice.status != InvoiceStatus.ISSUED:
         raise InvoiceError("Only issued invoices can be revised (edit drafts directly)")
+    if invoice.write_off_date is not None:
+        raise InvoiceError("Undo the write-off before revising this invoice")
     _check_header_refs(session, org.id, header)
     session.add(
         InvoiceRevision(
@@ -408,6 +413,20 @@ def revise(
     )
 
     warnings = []
+    if invoice.issue_date is not None:
+        filed = session.scalars(
+            select(TaxFiling).where(
+                TaxFiling.organization_id == org.id,
+                TaxFiling.period_start <= invoice.issue_date,
+                TaxFiling.period_end >= invoice.issue_date,
+            )
+        ).first()
+        if filed is not None:
+            warnings.append(
+                f"The invoice date falls in a sales-tax period already filed "
+                f"({filed.period_start.isoformat()} to {filed.period_end.isoformat()}); the "
+                "return may need an amendment."
+            )
     info = balances(session, [invoice], today_in(org.timezone))[invoice.id]
     if info.balance_due < -PAID_TOLERANCE:
         warnings.append(
@@ -446,17 +465,77 @@ def create_credit_note(
     )
 
 
+# -- bad debt -------------------------------------------------------------------------------------
+
+
+def write_off(
+    session: Session, org: Organization, invoice: Invoice, reason: str, on: date | None
+) -> Decimal:
+    """Give up on what is still owed. The sale stays in the books; the balance becomes zero.
+    Returns the amount written off."""
+    if invoice.kind != InvoiceKind.INVOICE or invoice.status != InvoiceStatus.ISSUED:
+        raise InvoiceError("Only issued invoices can be written off")
+    if invoice.write_off_date is not None:
+        raise InvoiceError(f"Invoice {invoice.number} is already written off")
+    info = balances(session, [invoice], today_in(org.timezone))[invoice.id]
+    if info.balance_due <= PAID_TOLERANCE:
+        raise InvoiceError(f"Invoice {invoice.number} has nothing left to write off")
+    invoice.write_off_amount = info.balance_due
+    invoice.write_off_date = on or today_in(org.timezone)
+    invoice.write_off_reason = reason
+    session.flush()
+    audit.record(
+        session,
+        "write_off",
+        entity_type="invoice",
+        entity_id=str(invoice.id),
+        reason=reason,
+        changes={"amount": str(info.balance_due), "date": invoice.write_off_date.isoformat()},
+    )
+    return info.balance_due
+
+
+def undo_write_off(session: Session, invoice: Invoice, reason: str) -> None:
+    """The client paid after all (or it was a mistake): the balance is owed again."""
+    if invoice.write_off_date is None:
+        raise InvoiceError(f"Invoice {invoice.number} is not written off")
+    amount = invoice.write_off_amount
+    invoice.write_off_amount = None
+    invoice.write_off_date = None
+    invoice.write_off_reason = None
+    session.flush()
+    audit.record(
+        session,
+        "write_off_undone",
+        entity_type="invoice",
+        entity_id=str(invoice.id),
+        reason=reason,
+        changes={"amount": str(amount)},
+    )
+
+
+def written_off_tax(invoice: Invoice) -> Decimal:
+    """The sales-tax part of a written-off amount (for bad-debt tax credits)."""
+    if not invoice.write_off_amount or not invoice.total:
+        return ZERO
+    share = invoice.write_off_amount * invoice.tax_total / invoice.total
+    return share.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
 # -- balances -------------------------------------------------------------------------------------
 
 
 def balance_info(invoice: Invoice, paid: Decimal, credited: Decimal, today: date) -> BalanceInfo:
-    balance = invoice.total - paid - credited
+    written_off = invoice.write_off_amount or ZERO
+    balance = invoice.total - paid - credited - written_off
     if invoice.status == InvoiceStatus.DRAFT:
         status = PaymentStatus.DRAFT
     elif invoice.status == InvoiceStatus.VOID:
         status = PaymentStatus.VOID
     elif invoice.kind == InvoiceKind.CREDIT_NOTE:
         status = PaymentStatus.CREDIT
+    elif written_off and abs(balance) <= PAID_TOLERANCE:
+        status = PaymentStatus.WRITTEN_OFF
     elif balance < -PAID_TOLERANCE:
         status = PaymentStatus.OVERPAID
     elif balance <= PAID_TOLERANCE:
@@ -476,6 +555,7 @@ def balance_info(invoice: Invoice, paid: Decimal, credited: Decimal, today: date
         PaymentStatus.VOID,
         PaymentStatus.CREDIT,
         PaymentStatus.PAID,
+        PaymentStatus.WRITTEN_OFF,
     ):
         balance = ZERO
     return BalanceInfo(paid, credited, balance, status, overdue)

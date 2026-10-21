@@ -89,6 +89,10 @@ class Invoice(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMi
     pdf_file_id: Mapped[int | None] = mapped_column(BigInteger, fk("stored_file.id"), index=True)
     # Imported from the old system: totals are kept as they were, never recomputed.
     is_historical: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Bad debt: the balance that was given up on. The sale still counts; nothing is due.
+    write_off_date: Mapped[date | None] = mapped_column(Date, index=True)
+    write_off_amount: Mapped[Decimal | None] = mapped_column(Money)
+    write_off_reason: Mapped[str | None] = mapped_column(Text)
 
     lines: Mapped[list["InvoiceLine"]] = relationship(
         back_populates="invoice", cascade="all, delete-orphan", order_by="InvoiceLine.sort_order"

@@ -117,6 +117,7 @@ const PAYMENT_STATUS: Record<string, { color: MantineColor; label: string }> = {
   overpaid: { color: 'grape', label: 'Overpaid' },
   void: { color: 'red', label: 'Void' },
   credit: { color: 'teal', label: 'Credit note' },
+  written_off: { color: 'dark', label: 'Written off' },
 }
 
 export function PaymentStatusBadge({ status, overdue }: { status: string; overdue?: boolean }) {

@@ -1,4 +1,5 @@
 import { Button, Group, SegmentedControl, Select, Text, TextInput } from '@mantine/core'
+import { useState } from 'react'
 import { IconPlus } from '@tabler/icons-react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router'
@@ -17,6 +18,7 @@ import {
   type ArchiveFilterValue,
 } from '../../components/ui'
 import { useUrlState } from '../../lib/useUrlState'
+import { WriteOffModal } from './WriteOffModal'
 
 type Row = Schemas['InvoiceListItem']
 const LIMIT = 50
@@ -34,6 +36,7 @@ const VIEWS = [
   { value: 'open', label: 'Open' },
   { value: 'overdue', label: 'Overdue' },
   { value: 'paid', label: 'Paid' },
+  { value: 'written_off', label: 'Written off' },
   { value: 'draft', label: 'Drafts' },
   { value: 'void', label: 'Void' },
   { value: 'all', label: 'All' },
@@ -44,7 +47,10 @@ export function InvoicesPage() {
   const { canEdit } = useAuth()
   const [f, setF] = useUrlState(DEFAULTS)
 
-  const payment = ['open', 'overdue', 'paid'].includes(f.view) ? f.view : undefined
+  const payment = ['open', 'overdue', 'paid', 'written_off'].includes(f.view) ? f.view : undefined
+  const [selected, setSelected] = useState<Set<string | number>>(new Set())
+  const [writingOff, setWritingOff] = useState(false)
+  const canWriteOff = canEdit && (f.view === 'open' || f.view === 'overdue')
   const status = ['draft', 'void'].includes(f.view) ? f.view : undefined
 
   const { data, isFetching } = useQuery({
@@ -55,7 +61,7 @@ export function InvoicesPage() {
           params: {
             query: {
               q: f.q || undefined,
-              payment: payment as 'open' | 'overdue' | 'paid' | undefined,
+              payment: payment as 'open' | 'overdue' | 'paid' | 'written_off' | undefined,
               status: status as 'draft' | 'void' | undefined,
               kind: (f.kind || undefined) as Row['kind'] | undefined,
               date_from: f.from || undefined,
@@ -100,6 +106,11 @@ export function InvoicesPage() {
         <Text size="sm">to</Text>
         <TextInput type="date" aria-label="To date" value={f.to} onChange={(e) => setF({ to: e.currentTarget.value })} />
         <ArchiveFilter value={f.archived as ArchiveFilterValue} onChange={(archived) => setF({ archived })} />
+        {canWriteOff && selected.size > 0 && (
+          <Button color="dark" variant="light" onClick={() => setWritingOff(true)}>
+            Write off {selected.size} selected
+          </Button>
+        )}
       </Group>
       <DataTable<Row>
         rows={data?.items}
@@ -107,6 +118,7 @@ export function InvoicesPage() {
         rowKey={(r) => r.id}
         onRowClick={(r) => navigate(`/invoices/${r.id}`)}
         empty="No invoices match"
+        selection={canWriteOff ? { selected, onChange: setSelected } : undefined}
         page={
           data && {
             total: data.total,
@@ -153,6 +165,15 @@ export function InvoicesPage() {
           },
         ]}
       />
+      {writingOff && (
+        <WriteOffModal
+          invoiceIds={[...selected].map(Number)}
+          onClose={(done) => {
+            setWritingOff(false)
+            if (done) setSelected(new Set())
+          }}
+        />
+      )}
     </>
   )
 }

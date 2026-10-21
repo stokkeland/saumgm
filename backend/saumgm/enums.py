@@ -87,6 +87,7 @@ class PaymentStatus(StrEnum):
     OVERPAID = "overpaid"
     VOID = "void"
     CREDIT = "credit"  # an issued credit note
+    WRITTEN_OFF = "written_off"  # uncollectible; balance given up
 
 
 class PaymentMethod(StrEnum):

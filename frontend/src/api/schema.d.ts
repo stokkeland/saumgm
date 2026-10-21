@@ -552,6 +552,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/invoices/write-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Write Off Many
+         * @description Write off several uncollectible invoices at once; ones that cannot be are reported.
+         */
+        post: operations["write_off_many_api_invoices_write_off_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/write-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Write Off
+         * @description Give up on an uncollectible balance (bad debt). The sale still counts.
+         */
+        post: operations["write_off_api_invoices__invoice_id__write_off_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invoices/{invoice_id}/undo-write-off": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo Write Off */
+        post: operations["undo_write_off_api_invoices__invoice_id__undo_write_off_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/invoices/{invoice_id}/credit-note": {
         parameters: {
             query?: never;
@@ -995,6 +1052,60 @@ export interface paths {
         head?: never;
         /** Update Registration */
         patch: operations["update_registration_api_tax_registrations__registration_id__patch"];
+        trace?: never;
+    };
+    "/api/tax/periods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Periods
+         * @description The filing periods that start in a calendar year, with what was filed for each.
+         */
+        get: operations["list_periods_api_tax_periods_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/filings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark Filed */
+        post: operations["mark_filed_api_tax_filings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax/filings/{filing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Unmark Filed */
+        delete: operations["unmark_filed_api_tax_filings__filing_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/tax/rules": {
@@ -1489,6 +1600,25 @@ export interface components {
          * @enum {string}
          */
         BillingTiming: "advance" | "arrears";
+        /** BulkWriteOffRequest */
+        BulkWriteOffRequest: {
+            /** Reason */
+            reason: string;
+            /**
+             * Write Off Date
+             * @description Defaults to today
+             */
+            write_off_date?: string | null;
+            /** Invoice Ids */
+            invoice_ids: number[];
+        };
+        /** BulkWriteOffResult */
+        BulkWriteOffResult: {
+            /** Written Off */
+            written_off: components["schemas"]["WrittenOff"][];
+            /** Skipped */
+            skipped: components["schemas"]["Skipped"][];
+        };
         /** CalculateRequest */
         CalculateRequest: {
             /** Party Id */
@@ -1917,6 +2047,55 @@ export interface components {
          * @enum {string}
          */
         FilingFrequency: "monthly" | "quarterly" | "annual";
+        /** FilingIn */
+        FilingIn: {
+            /** Registration Id */
+            registration_id: number;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Filed On
+             * Format: date
+             */
+            filed_on: string;
+            /** Amount Paid */
+            amount_paid?: number | string | null;
+            /** Reference */
+            reference?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** FilingOut */
+        FilingOut: {
+            /** Registration Id */
+            registration_id: number;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Filed On
+             * Format: date
+             */
+            filed_on: string;
+            /** Amount Paid */
+            amount_paid?: string | null;
+            /** Reference */
+            reference?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Id */
+            id: number;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -2103,6 +2282,12 @@ export interface components {
             voided_at: string | null;
             /** Void Reason */
             void_reason: string | null;
+            /** Write Off Date */
+            write_off_date: string | null;
+            /** Write Off Amount */
+            write_off_amount: string | null;
+            /** Write Off Reason */
+            write_off_reason: string | null;
             /** Lines */
             lines: components["schemas"]["LineOut"][];
             /** Taxes */
@@ -2847,7 +3032,7 @@ export interface components {
          * PaymentFilter
          * @enum {string}
          */
-        PaymentFilter: "open" | "overdue" | "paid";
+        PaymentFilter: "open" | "overdue" | "paid" | "written_off";
         /**
          * PaymentMethod
          * @enum {string}
@@ -2908,7 +3093,7 @@ export interface components {
          * @description Computed from issued invoices, payments and credit notes; never stored.
          * @enum {string}
          */
-        PaymentStatus: "draft" | "unpaid" | "partially_paid" | "paid" | "overpaid" | "void" | "credit";
+        PaymentStatus: "draft" | "unpaid" | "partially_paid" | "paid" | "overpaid" | "void" | "credit" | "written_off";
         /** PersonIn */
         PersonIn: {
             /** Name */
@@ -2976,6 +3161,12 @@ export interface components {
             registration_number?: string | null;
             filing_frequency?: components["schemas"]["FilingFrequency"] | null;
             /**
+             * Period Start Month
+             * @description First month of the filing year (New York: 3)
+             * @default 1
+             */
+            period_start_month: number;
+            /**
              * Effective From
              * Format: date
              */
@@ -2991,6 +3182,12 @@ export interface components {
             registration_number?: string | null;
             filing_frequency?: components["schemas"]["FilingFrequency"] | null;
             /**
+             * Period Start Month
+             * @description First month of the filing year (New York: 3)
+             * @default 1
+             */
+            period_start_month: number;
+            /**
              * Effective From
              * Format: date
              */
@@ -3005,6 +3202,8 @@ export interface components {
             /** Registration Number */
             registration_number?: string | null;
             filing_frequency?: components["schemas"]["FilingFrequency"] | null;
+            /** Period Start Month */
+            period_start_month?: number | null;
             /** Effective From */
             effective_from?: string | null;
             /** Effective To */
@@ -3108,6 +3307,15 @@ export interface components {
             prefix?: string | null;
             /** Pad Width */
             pad_width?: number | null;
+        };
+        /** Skipped */
+        Skipped: {
+            /** Invoice Id */
+            invoice_id: number;
+            /** Number */
+            number: string | null;
+            /** Reason */
+            reason: string;
         };
         /** SubscriptionCreate */
         SubscriptionCreate: {
@@ -3294,6 +3502,22 @@ export interface components {
             /** Amount */
             amount: string;
         };
+        /** TaxPeriod */
+        TaxPeriod: {
+            /** Registration Id */
+            registration_id: number;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            filing: components["schemas"]["FilingOut"] | null;
+        };
         /** TaxRateIn */
         TaxRateIn: {
             /** Name */
@@ -3363,6 +3587,11 @@ export interface components {
             /** Id */
             id: number;
         };
+        /** UndoWriteOffRequest */
+        UndoWriteOffRequest: {
+            /** Reason */
+            reason: string;
+        };
         /** UserCreate */
         UserCreate: {
             /** Email */
@@ -3426,6 +3655,25 @@ export interface components {
         VoidRequest: {
             /** Reason */
             reason: string;
+        };
+        /** WriteOffRequest */
+        WriteOffRequest: {
+            /** Reason */
+            reason: string;
+            /**
+             * Write Off Date
+             * @description Defaults to today
+             */
+            write_off_date?: string | null;
+        };
+        /** WrittenOff */
+        WrittenOff: {
+            /** Invoice Id */
+            invoice_id: number;
+            /** Number */
+            number: string | null;
+            /** Amount */
+            amount: string;
         };
     };
     responses: never;
@@ -4887,6 +5135,109 @@ export interface operations {
             };
         };
     };
+    write_off_many_api_invoices_write_off_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkWriteOffRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkWriteOffResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    write_off_api_invoices__invoice_id__write_off_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WriteOffRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    undo_write_off_api_invoices__invoice_id__undo_write_off_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                invoice_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoWriteOffRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_credit_note_api_invoices__invoice_id__credit_note_post: {
         parameters: {
             query?: never;
@@ -6232,6 +6583,100 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["RegistrationOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_periods_api_tax_periods_get: {
+        parameters: {
+            query: {
+                registration_id: number;
+                year?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxPeriod"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_filed_api_tax_filings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FilingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FilingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unmark_filed_api_tax_filings__filing_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                filing_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

@@ -73,6 +73,36 @@ class VoidRequest(BaseModel):
     reason: str = Field(min_length=3, max_length=2000)
 
 
+class WriteOffRequest(BaseModel):
+    reason: str = Field(min_length=3, max_length=2000)
+    write_off_date: date | None = Field(None, description="Defaults to today")
+
+
+class BulkWriteOffRequest(WriteOffRequest):
+    invoice_ids: list[int] = Field(min_length=1, max_length=500)
+
+
+class WrittenOff(BaseModel):
+    invoice_id: int
+    number: str | None
+    amount: Amount
+
+
+class Skipped(BaseModel):
+    invoice_id: int
+    number: str | None
+    reason: str
+
+
+class BulkWriteOffResult(BaseModel):
+    written_off: list[WrittenOff]
+    skipped: list[Skipped]
+
+
+class UndoWriteOffRequest(BaseModel):
+    reason: str = Field(min_length=3, max_length=2000)
+
+
 class CreditNoteCreate(BaseModel):
     lines: list[LineIn] = Field(min_length=1)
     notes: str | None = None
@@ -190,6 +220,9 @@ class InvoiceOut(InvoiceListItem):
     issued_at: datetime | None
     voided_at: datetime | None
     void_reason: str | None
+    write_off_date: date | None
+    write_off_amount: Amount | None
+    write_off_reason: str | None
     lines: list[LineOut]
     taxes: list[TaxOut]
     payments: list[InvoicePayment]

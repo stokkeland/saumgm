@@ -1,4 +1,4 @@
-import { Center, Group, Loader, Pagination, Paper, ScrollArea, Table, Text } from '@mantine/core'
+import { Center, Checkbox, Group, Loader, Pagination, Paper, ScrollArea, Table, Text } from '@mantine/core'
 import type { ReactNode } from 'react'
 
 export interface Column<T> {
@@ -9,6 +9,13 @@ export interface Column<T> {
   width?: number | string
   /** Hide on narrow screens. */
   wide?: boolean
+}
+
+export interface Selection {
+  selected: Set<string | number>
+  onChange: (selected: Set<string | number>) => void
+  /** Rows that cannot be selected show no checkbox. */
+  isSelectable?: (key: string | number) => boolean
 }
 
 export interface PageInfo {
@@ -27,6 +34,7 @@ export function DataTable<T>({
   empty = 'Nothing here yet',
   onRowClick,
   page,
+  selection,
 }: {
   columns: Column<T>[]
   rows: T[] | undefined
@@ -35,14 +43,37 @@ export function DataTable<T>({
   empty?: ReactNode
   onRowClick?: (row: T) => void
   page?: PageInfo
+  selection?: Selection
 }) {
   const pages = page ? Math.max(1, Math.ceil(page.total / page.limit)) : 1
+  const selectable = (rows ?? []).map(rowKey).filter((k) => selection?.isSelectable?.(k) ?? true)
+  const allSelected = selectable.length > 0 && selectable.every((k) => selection?.selected.has(k))
+  const toggle = (key: string | number, on: boolean) => {
+    if (!selection) return
+    const next = new Set(selection.selected)
+    if (on) next.add(key)
+    else next.delete(key)
+    selection.onChange(next)
+  }
   return (
     <Paper withBorder radius="sm">
       <ScrollArea>
         <Table highlightOnHover={!!onRowClick} verticalSpacing="xs" striped>
           <Table.Thead>
             <Table.Tr>
+              {selection && (
+                <Table.Th w={36}>
+                  <Checkbox
+                    aria-label="Select all"
+                    checked={allSelected}
+                    indeterminate={!allSelected && selectable.some((k) => selection.selected.has(k))}
+                    onChange={(e) => {
+                      const on = e.currentTarget.checked
+                      selection.onChange(on ? new Set(selectable) : new Set())
+                    }}
+                  />
+                </Table.Th>
+              )}
               {columns.map((col) => (
                 <Table.Th
                   key={col.key}
@@ -61,6 +92,17 @@ export function DataTable<T>({
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 style={onRowClick ? { cursor: 'pointer' } : undefined}
               >
+                {selection && (
+                  <Table.Td onClick={(e) => e.stopPropagation()}>
+                    {(selection.isSelectable?.(rowKey(row)) ?? true) && (
+                      <Checkbox
+                        aria-label="Select row"
+                        checked={selection.selected.has(rowKey(row))}
+                        onChange={(e) => toggle(rowKey(row), e.currentTarget.checked)}
+                      />
+                    )}
+                  </Table.Td>
+                )}
                 {columns.map((col) => (
                   <Table.Td
                     key={col.key}

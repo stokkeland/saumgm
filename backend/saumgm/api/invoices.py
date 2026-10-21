@@ -32,6 +32,8 @@ from saumgm.models import (
     PaymentAllocation,
 )
 from saumgm.schemas.invoices import (
+    BulkWriteOffRequest,
+    BulkWriteOffResult,
     CalculateRequest,
     CalculateResult,
     CreditNoteCreate,
@@ -45,8 +47,12 @@ from saumgm.schemas.invoices import (
     LineOut,
     RevisionOut,
     RevisionSummary,
+    Skipped,
     TaxOut,
+    UndoWriteOffRequest,
     VoidRequest,
+    WriteOffRequest,
+    WrittenOff,
 )
 from saumgm.services import invoices as service
 from saumgm.services.money import ZERO
@@ -57,7 +63,8 @@ router = APIRouter(prefix="/invoices", tags=["invoices"])
 DETAIL_FIELDS = (
     "terms_days", "terms_text", "tax_jurisdiction_id", "tax_location_text", "freight",
     "adjustment", "adjustment_note", "notes", "subtotal", "tax_total", "revision_no", "issued_at",
-    "voided_at", "void_reason", "legacy_data", *service.BILL_TO_FIELDS,
+    "voided_at", "void_reason", "write_off_date", "write_off_amount", "write_off_reason",
+    "legacy_data", *service.BILL_TO_FIELDS,
 )  # fmt: skip
 
 
@@ -65,6 +72,7 @@ class PaymentFilter(StrEnum):
     OPEN = "open"  # issued, money still due
     OVERDUE = "overdue"
     PAID = "paid"
+    WRITTEN_OFF = "written_off"
 
 
 def _org(db: Session, auth: Auth) -> Organization:
@@ -185,7 +193,7 @@ def list_invoices(
         .where(credit.credited_invoice_id == Invoice.id, credit.status == InvoiceStatus.ISSUED)
         .scalar_subquery()
     )
-    balance = Invoice.total - paid - credited
+    balance = Invoice.total - paid - credited - func.coalesce(Invoice.write_off_amount, 0)
 
     stmt: Any = (
         select(Invoice, Party.name)
@@ -221,8 +229,10 @@ def list_invoices(
             stmt = stmt.where(issued, due)
         elif payment == PaymentFilter.OVERDUE:
             stmt = stmt.where(issued, due, Invoice.due_date < today)
+        elif payment == PaymentFilter.WRITTEN_OFF:
+            stmt = stmt.where(issued, Invoice.write_off_date.is_not(None))
         else:
-            stmt = stmt.where(issued, ~due)
+            stmt = stmt.where(issued, ~due, Invoice.write_off_date.is_(None))
 
     total = db.scalar(select(func.count()).select_from(stmt.order_by(None).subquery())) or 0
     rows = db.execute(stmt.limit(limit).offset(offset)).all()
@@ -370,6 +380,56 @@ def get_revision(invoice_id: int, revision_no: int, auth: Reader, db: DbSession)
     if revision is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Revision not found")
     return RevisionOut.model_validate(revision)
+
+
+@router.post("/write-off")
+def write_off_many(body: BulkWriteOffRequest, auth: Editor, db: DbSession) -> BulkWriteOffResult:
+    """Write off several uncollectible invoices at once; ones that cannot be are reported."""
+    org = _org(db, auth)
+    set_context(db, replace(get_context(db), reason=body.reason))
+    done: list[WrittenOff] = []
+    skipped: list[Skipped] = []
+    for invoice_id in dict.fromkeys(body.invoice_ids):
+        invoice = db.get(Invoice, invoice_id)
+        if invoice is None or invoice.organization_id != auth.organization_id:
+            skipped.append(Skipped(invoice_id=invoice_id, number=None, reason="not found"))
+            continue
+        try:
+            amount = service.write_off(db, org, invoice, body.reason, body.write_off_date)
+        except service.InvoiceError as exc:
+            skipped.append(Skipped(invoice_id=invoice.id, number=invoice.number, reason=str(exc)))
+            continue
+        done.append(WrittenOff(invoice_id=invoice.id, number=invoice.number, amount=amount))
+    db.commit()
+    return BulkWriteOffResult(written_off=done, skipped=skipped)
+
+
+@router.post("/{invoice_id}/write-off")
+def write_off(invoice_id: int, body: WriteOffRequest, auth: Editor, db: DbSession) -> InvoiceOut:
+    """Give up on an uncollectible balance (bad debt). The sale still counts."""
+    org = _org(db, auth)
+    invoice = _invoice(db, invoice_id, auth)
+    set_context(db, replace(get_context(db), reason=body.reason))
+    try:
+        service.write_off(db, org, invoice, body.reason, body.write_off_date)
+    except service.InvoiceError as exc:
+        raise _service_errors(exc) from None
+    db.commit()
+    return detail(db, org, invoice)
+
+
+@router.post("/{invoice_id}/undo-write-off")
+def undo_write_off(
+    invoice_id: int, body: UndoWriteOffRequest, auth: Owner, db: DbSession
+) -> InvoiceOut:
+    invoice = _invoice(db, invoice_id, auth)
+    set_context(db, replace(get_context(db), reason=body.reason))
+    try:
+        service.undo_write_off(db, invoice, body.reason)
+    except service.InvoiceError as exc:
+        raise _service_errors(exc) from None
+    db.commit()
+    return detail(db, _org(db, auth), invoice)
 
 
 @router.post("/{invoice_id}/credit-note", status_code=status.HTTP_201_CREATED)

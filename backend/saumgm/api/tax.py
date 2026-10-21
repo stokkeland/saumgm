@@ -1,12 +1,24 @@
 """Sales tax setup: jurisdictions, rates, registrations and taxability rules."""
 
+from datetime import date
+
 from fastapi import APIRouter, status
 from sqlalchemy import select
 
 from saumgm.api.common import apply_changes, conflict, get_owned, not_found
 from saumgm.api.deps import DbSession, Owner, Reader
-from saumgm.models import TaxabilityRule, TaxCategory, TaxJurisdiction, TaxRate, TaxRegistration
+from saumgm.models import (
+    Organization,
+    TaxabilityRule,
+    TaxCategory,
+    TaxFiling,
+    TaxJurisdiction,
+    TaxRate,
+    TaxRegistration,
+)
 from saumgm.schemas.settings import (
+    FilingIn,
+    FilingOut,
     JurisdictionIn,
     JurisdictionOut,
     JurisdictionPatch,
@@ -15,10 +27,13 @@ from saumgm.schemas.settings import (
     RegistrationPatch,
     TaxabilityRuleIn,
     TaxabilityRuleOut,
+    TaxPeriod,
     TaxRateIn,
     TaxRateOut,
     TaxRatePatch,
 )
+from saumgm.services.tax_periods import is_period_start, period_containing, periods_between
+from saumgm.timeutil import today_in
 
 router = APIRouter(prefix="/tax", tags=["tax"])
 
@@ -139,6 +154,55 @@ def update_registration(
     apply_changes(registration, body)
     db.commit()
     return RegistrationOut.model_validate(registration)
+
+
+@router.get("/periods")
+def list_periods(
+    auth: Reader, db: DbSession, registration_id: int, year: int | None = None
+) -> list[TaxPeriod]:
+    """The filing periods that start in a calendar year, with what was filed for each."""
+    registration = get_owned(db, TaxRegistration, registration_id, auth.organization_id)
+    org = db.get(Organization, auth.organization_id)
+    assert org is not None
+    year = year or today_in(org.timezone).year
+    filings = {
+        f.period_start: f
+        for f in db.scalars(select(TaxFiling).where(TaxFiling.registration_id == registration.id))
+    }
+    return [
+        TaxPeriod(
+            registration_id=registration.id,
+            period_start=start,
+            period_end=end,
+            filing=FilingOut.model_validate(filings[start]) if start in filings else None,
+        )
+        for start, end in periods_between(registration, date(year, 1, 1), date(year, 12, 31))
+        if start.year == year
+    ]
+
+
+@router.post("/filings", status_code=status.HTTP_201_CREATED)
+def mark_filed(body: FilingIn, auth: Owner, db: DbSession) -> FilingOut:
+    registration = get_owned(db, TaxRegistration, body.registration_id, auth.organization_id)
+    if not is_period_start(registration, body.period_start):
+        raise conflict("period_start is not the first day of one of this registration's periods")
+    start, end = period_containing(registration, body.period_start)
+    filing = TaxFiling(
+        organization_id=auth.organization_id,
+        period_start=start,
+        period_end=end,
+        **body.model_dump(exclude={"period_start"}),
+    )
+    db.add(filing)
+    db.flush()
+    db.commit()
+    return FilingOut.model_validate(filing)
+
+
+@router.delete("/filings/{filing_id}", status_code=status.HTTP_204_NO_CONTENT)
+def unmark_filed(filing_id: int, auth: Owner, db: DbSession) -> None:
+    db.delete(get_owned(db, TaxFiling, filing_id, auth.organization_id))
+    db.commit()
 
 
 @router.delete("/registrations/{registration_id}", status_code=status.HTTP_204_NO_CONTENT)
