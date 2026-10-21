@@ -7,6 +7,8 @@ import { PageHeader } from './components/ui'
 import { AccountPage } from './pages/AccountPage'
 import { ContactPage } from './pages/contacts/ContactPage'
 import { ContactsPage } from './pages/contacts/ContactsPage'
+import { InvoicePage, NewInvoicePage } from './pages/invoices/InvoicePage'
+import { InvoicesPage } from './pages/invoices/InvoicesPage'
 import { LoginPage } from './pages/LoginPage'
 
 function NotFound() {
@@ -43,7 +45,9 @@ const router = createBrowserRouter([
       { path: '/', element: <Placeholder title="Dashboard" /> },
       { path: '/contacts', element: <ContactsPage /> },
       { path: '/contacts/:id', element: <ContactPage /> },
-      { path: '/invoices/*', element: <Placeholder title="Invoices" /> },
+      { path: '/invoices', element: <InvoicesPage /> },
+      { path: '/invoices/new', element: <NewInvoicePage /> },
+      { path: '/invoices/:id', element: <InvoicePage /> },
       { path: '/payments/*', element: <Placeholder title="Payments" /> },
       { path: '/deposits/*', element: <Placeholder title="Deposits" /> },
       { path: '/expenses/*', element: <Placeholder title="Expenses" /> },

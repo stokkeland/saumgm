@@ -470,7 +470,13 @@ def balance_info(invoice: Invoice, paid: Decimal, credited: Decimal, today: date
         and invoice.due_date is not None
         and invoice.due_date < today
     )
-    if status in (PaymentStatus.DRAFT, PaymentStatus.VOID, PaymentStatus.CREDIT):
+    # Settled within the tolerance (e.g. 8088.625 paid as 8088.63) reads as nothing due.
+    if status in (
+        PaymentStatus.DRAFT,
+        PaymentStatus.VOID,
+        PaymentStatus.CREDIT,
+        PaymentStatus.PAID,
+    ):
         balance = ZERO
     return BalanceInfo(paid, credited, balance, status, overdue)
 
