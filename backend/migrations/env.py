@@ -13,6 +13,13 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
+def include_object(
+    obj: object, name: str | None, type_: str, reflected: bool, compare_to: object
+) -> bool:
+    # legacy_* tables hold the raw MS Access archive; the importer manages them, not Alembic.
+    return not (type_ == "table" and name is not None and name.startswith("legacy_"))
+
+
 def database_url() -> str:
     # Tests pass their own URL via `config.attributes`; normal runs use the settings.
     url = config.attributes.get("database_url")
@@ -26,6 +33,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         compare_type=True,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -34,7 +42,12 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     engine = make_engine(database_url())
     with engine.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+            include_object=include_object,
+        )
         with context.begin_transaction():
             context.run_migrations()
     engine.dispose()

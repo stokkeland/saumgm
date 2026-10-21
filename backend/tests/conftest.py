@@ -1,6 +1,7 @@
 from collections.abc import Iterator
 
 import pytest
+from alembic import command
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine, make_url
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from saumgm.config import get_settings
 from saumgm.db import get_session, make_engine
 from saumgm.main import create_app
+from tests.support import alembic_config
 
 
 @pytest.fixture(scope="session")
@@ -39,10 +41,25 @@ def test_engine(test_database_url: str) -> Iterator[Engine]:
     engine.dispose()
 
 
+@pytest.fixture(scope="session")
+def migrated_engine(test_engine: Engine, test_database_url: str) -> Engine:
+    command.upgrade(alembic_config(test_database_url), "head")
+    return test_engine
+
+
 @pytest.fixture
-def session(test_engine: Engine) -> Iterator[Session]:
-    with sessionmaker(bind=test_engine)() as session:
+def db_session(migrated_engine: Engine) -> Iterator[Session]:
+    """A session on the migrated test schema; everything it writes is rolled back afterwards,
+    even if the code under test commits."""
+    conn = migrated_engine.connect()
+    outer = conn.begin()
+    session = Session(bind=conn, join_transaction_mode="create_savepoint")
+    try:
         yield session
+    finally:
+        session.close()
+        outer.rollback()
+        conn.close()
 
 
 @pytest.fixture

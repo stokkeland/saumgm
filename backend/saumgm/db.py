@@ -10,6 +10,7 @@ Compatibility rules (production runs MariaDB 10.11, possibly Galera later):
 
 from collections.abc import Iterator
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import BigInteger, DateTime, MetaData, create_engine, func, text
 from sqlalchemy.engine import Engine
@@ -26,7 +27,7 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
 }
 
-TABLE_ARGS = {
+TABLE_ARGS: dict[str, Any] = {
     "mysql_engine": "InnoDB",
     "mysql_charset": "utf8mb4",
     "mysql_collate": "utf8mb4_unicode_ci",

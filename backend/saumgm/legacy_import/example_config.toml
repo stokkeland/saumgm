@@ -1,0 +1,28 @@
+# Example import configuration. Copy it somewhere private (e.g. tmp/import_config.toml, which is
+# git-ignored), fill in the business details, and pass it with --config.
+# These values seed the organization row; everything can be changed later in the app.
+
+[organization]
+legal_name = "Example Consulting"          # legal name / DBA shown on documents
+display_name = "Example Consulting"
+payable_to = "Jane Example"                # "Make checks payable to" line
+tagline = "IT services and web hosting"
+phone = "555-555-0100"
+email = "billing@example.com"
+website = "https://example.com"
+country_code = "US"                        # ISO 3166-1
+currency_code = "USD"                      # ISO 4217
+locale = "en-US"                           # number and date style
+timezone = "America/New_York"
+default_terms_days = 30
+self_party_no = "00010000"                 # the old file number that represents the business itself
+
+# Addresses with optional validity periods (YYYY-MM-DD); old documents use the one in force.
+[[organization.addresses]]
+address_type = "remit"                     # remit | physical | billing | other
+line1 = "123 Main Street"
+city = "Springfield"
+region = "NY"
+postal_code = "12345"
+country_code = "US"
+effective_from = 2020-01-01

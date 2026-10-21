@@ -58,6 +58,32 @@ npm run gen:api
 
 Other scripts: `npm run lint`, `npm run typecheck`, `npm run build`.
 
+## Importing the old MS Access database
+
+A one-off importer moves the original Access application (`.mdb`) into SauMGM. It needs Windows
+with the 64-bit Microsoft Access ODBC driver (installed with Office or the Access Database
+Engine).
+
+```sh
+cd backend
+pip install -e ".[dev,legacy]"
+alembic upgrade head
+cp saumgm/legacy_import/example_config.toml ../tmp/import_config.toml   # then fill it in
+python -m saumgm.legacy_import --mdb ../tmp/sauen.com.mdb --config ../tmp/import_config.toml \
+    --report ../tmp/import_report.md
+```
+
+What it does, in one transaction:
+
+1. Copies every Access table verbatim into `legacy_*` tables (a read-only archive).
+2. Creates the organization, maps contacts, catalog, invoices, payments, deposits and expenses
+   into the new schema, keeping file and invoice numbers.
+3. Reconciles counts and money totals per year against Access and writes a report listing
+   every data issue. If anything does not match, the import is rolled back.
+
+Add `--reset` to replace data from an earlier import. Keep the config and report out of git
+(`tmp/` is ignored); they contain business data.
+
 ## Database changes
 
 Change or add models in `backend/saumgm/models/`, then:

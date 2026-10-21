@@ -1,6 +1,6 @@
 # SauMGM — Design
 
-Status: **draft for review** — nothing is built yet. Mark up this file; it is the source of truth until the first code lands.
+Status: **living design** — phases 1–2 are built (see §7). Mark up this file; code and this document should agree.
 
 SauMGM is a small-business management system: contacts (clients, vendors, banks, tax authorities), a product/service catalog, client subscriptions, invoicing, payments, bank deposits, expenses, and sales tax. It replaces a 2004-era MS Access application and must carry all of its historical data forward. It is designed to be generic (open-sourceable): everything specific to one business is configuration or data, never code.
 
@@ -55,11 +55,11 @@ Browser (React SPA) ──HTTPS/JSON──> API (Python, FastAPI) ──> MariaD
 
 **Later:** two images (API, static frontend), `docker-compose.yml` with MariaDB for dev/self-hosters, then Kubernetes / Cloud Run / etc.
 
-### Repository layout (proposed)
+### Repository layout
 ```
 backend/            FastAPI app, models, services, Alembic migrations, tests
 frontend/           React app
-tools/import_access/  one-off Access → MariaDB importer + reconciliation
+backend/saumgm/legacy_import/  one-off Access → MariaDB importer + reconciliation
 deploy/             Apache vhost, systemd units, later Dockerfiles/compose
 docs/               this design, setup guides
 tmp/                (git-ignored) local private files, e.g. the .mdb
@@ -123,7 +123,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 - `party_role` — client, vendor, bank/financial, tax_authority, resource, self. A party may hold several roles (fixes the one-type-per-file limit).
 - `party_address` — type (billing, service/ship-to, remit), lines, city, region (state/province), postal code, country, `is_default`. The service address drives the sales-tax location.
 - `party_contact` — person name, title, phone(s), email, primary flag.
-- Client-specific: default terms, `tax_exempt` via `tax_exemption` (below), `active_billing_since`.
+- Client-specific: default terms; tax exemptions via `tax_exemption` (below).
 - Vendor-specific: account number with vendor, default expense account.
 
 ### 4.2 Catalog (replaces tblProduct; expanded for services)
@@ -137,7 +137,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   - subscription defaults: `billing_interval` (1, 3, 6, 12 months), `billing_timing` (in advance / in arrears)
   - cost side: `default_vendor_id`, `unit_cost`, `cogs_account_id` — for resold items (domains, hosting, certificates), so margin can be reported
   - `active`, `created_at`, `updated_at`
-- `catalog_price` — price history with effective dates (optional in v1; keeps old prices visible).
+- `catalog_price` — price history with effective dates. *Deferred: not in the v1 schema.*
 - `revenue_category` — small editable list.
 - Cleanup: all old products are imported; unused ones are marked inactive; a merge tool lets you fold duplicates together without breaking historical invoice lines.
 
@@ -210,7 +210,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 *Which items are taxable in which jurisdiction is a business/accounting decision — the app makes it configurable; confirm the rules with an accountant.*
 
 ### 4.8 Users and security
-- `user` (name, email, active, last_login), `user_identity` (provider: local | oidc | saml, subject, password hash for local), `role` + `user_role` (owner, bookkeeper, viewer), `session`.
+- `app_user` (name, email, active, last_login), `user_identity` (provider: local | oidc | saml, issuer, subject, password hash for local), `user_role` (user × organization × role: owner, bookkeeper, viewer — a fixed list, so no separate role table), `auth_session` (only the SHA-256 of the session token is stored).
 - Local: argon2 password hashing, optional TOTP 2FA, login rate limiting.
 - SSO: OIDC first (Authlib; Entra ID, Google, Keycloak…); SAML via python3-saml later. Identities link to existing users by email on first SSO login (admin-confirmable).
 - CSRF protection on cookie-authenticated requests; strict CORS.
@@ -260,8 +260,8 @@ Interaction expectations: global search, sortable/filterable tables, keyboard-fr
 
 **Principles**: nothing is lost; old identifiers survive; history is not recalculated.
 
-1. **Raw archive** — every Access table (including projects and all lookup tables) is copied verbatim into `saumgm_legacy`. Read-only, for audit.
-2. **Mapped import** — idempotent script (`tools/import_access`) reads the `.mdb` with pyodbc + the Microsoft Access ODBC driver (Windows), cleans and maps into the new schema, carrying `legacy_id` columns.
+1. **Raw archive** — every Access table (including projects and all lookup tables) is copied verbatim into `legacy_<table>` tables in the application database (ignored by Alembic; each gets a surrogate `_row_id` primary key). Read-only, for audit. Keep the original `.mdb` in backups as well.
+2. **Mapped import** — `python -m saumgm.legacy_import` reads the `.mdb` with pyodbc + the Microsoft Access ODBC driver (Windows), maps it into the new schema in one transaction, and carries `legacy_id` / `legacy_data` (unmapped fields as JSON). Re-runnable with `--reset`. Business details not in the `.mdb` (names, addresses) come from a TOML config.
 3. **Reconciliation report** — row counts per entity; invoice totals, tax and payments per year; expenses per account per year; must match Access to the cent before the import is accepted.
 
 | Access | New | Notes |
@@ -272,20 +272,23 @@ Interaction expectations: global search, sortable/filterable tables, keyboard-fr
 | tblInvoiceHdr | invoice (`is_historical = true`, status issued/void) | Stored SubTotal/SalesTax/OriginallyDue kept exactly; Status "Cancelled" → void; free-text Terms → `terms_days` where parsable, original text kept in notes |
 | tblInvoiceDtl | invoice_line | `ItemDiscount` is a per-unit discount **amount** (line = (cost − discount) × qty); `ItemTax` is per-unit tax |
 | SalesTax + SalesTaxLocation | invoice_tax (one row, jurisdiction best-matched, e.g. "Salamanca NY") | |
-| tblInvoicePayment + tblPaymentReceived | payment + payment_allocation | `chargePaymentID = 0` → no link; tax/taxable amounts preserved for historical tax reports |
-| tblDepositHdr / Dtl | deposit / deposit_item | 7 orphaned detail rows kept, flagged for review |
+| tblInvoicePayment | payment + payment_allocation (1:1, `is_historical`) | Tax/taxable amounts preserved on the allocation for historical tax reports; imported payments never show as undeposited |
+| tblPaymentReceived | merged into the matching payment (method, channel, check no., notes) | Linked by `chargePaymentID`, else matched by client + amount + date (±120 days, invoice number in the text preferred). Unmatched receipts — donations credited to the dropped project accounts — stay in the archive and are listed in the report |
+| tblDepositHdr / Dtl | deposit / deposit_item | Detail rows without a deposit stay in the archive only and are listed in the report |
 | tblExpenseAccount | account | |
 | tblExpenseJournal / Trx | expense / expense_line | `refFileNo` → `for_party_id`; `refInvNo` → reference |
 | tblProject*, lookupProjectItemType, lookupInvoicableChoice | archive only | |
 
-Known data issues to report (not silently fix): 2 expense entries with unknown file numbers, 3 client/vendor files without detail records, 1 payment without a date, 1 invoice whose total ≠ components, fractional-cent totals.
+Known data issues are reported, not silently fixed: 3 client/vendor files without detail records, 1 payment and 1 deposit without a date (imported without one; dates are required only for new entries), 1 invoice whose total ≠ its components, 10 fractional-cent totals, 2 expense file numbers missing leading zeros (`10068` → `00010068`), 1 invoice line and 1 expense line without a parent.
+
+**Result of the first real import (2026-10-20):** 535 of 535 reconciliation checks match; 3,434 rows archived.
 
 ---
 
 ## 7. Phases
 
 1. **Foundation** ✅ — repo layout, backend skeleton (FastAPI, settings, DB session, Alembic, health endpoint, request-id logging), frontend skeleton (Vite + React + TS + Mantine + TanStack Query + typed API client), CI (ruff, mypy, pytest on MariaDB 10.11; oxlint + build).
-2. **Schema + import** — models for §4, raw archive, mapped import, reconciliation report. *Exit: reconciliation passes.*
+2. **Schema + import** ✅ — 34-table schema for §4 (initial Alembic migration), seed data (US states + DC + PR, Canadian provinces/territories, starter tax categories, number sequences), raw archive, mapped import, reconciliation report; importer tested in CI with a synthetic dataset. *Exit met: reconciliation 535/535.*
 3. **API** — auth (local), contacts, catalog, subscriptions, invoices (with tax engine), payments, deposits, expenses, settings.
 4. **Frontend** — app shell, login, screens in §5.
 5. **Documents + reports** — invoice/receipt/deposit-slip PDFs, reports, CSV export.
@@ -295,6 +298,8 @@ Known data issues to report (not silently fix): 2 expense entries with unknown f
 ---
 
 ## 8. Open items
+- Client "Native" flag (21 clients) and "ActiveBilling" date: meaning to confirm; kept in `legacy_data` until then.
+- Organization addresses: confirm which remit-to address is current and the dates each was valid; confirm the time zone.
 - Production storage backend (local + restic to start, or Garage from day one).
 - NY sales-tax setup: which localities you deliver to, and your filing frequency.
 - Revenue categories and tax categories: starting lists to be drafted from the current product list.

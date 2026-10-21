@@ -27,9 +27,16 @@ dev = [
 prod = [
     "gunicorn>=23",
 ]
+# Only for the one-off MS Access import (Windows + Microsoft Access ODBC driver).
+legacy = [
+    "pyodbc>=5.1",
+]
 
 [tool.setuptools.packages.find]
 include = ["saumgm*"]
+
+[tool.setuptools.package-data]
+"saumgm.legacy_import" = ["*.toml"]
 
 [tool.ruff]
 line-length = 100
@@ -47,3 +54,7 @@ exclude = ["migrations/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+
+[[tool.mypy.overrides]]
+module = ["pyodbc"]
+ignore_missing_imports = true

@@ -1,17 +1,8 @@
-from pathlib import Path
-
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import inspect
 from sqlalchemy.engine import Engine
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent
-
-
-def alembic_config(url: str) -> Config:
-    config = Config(str(BACKEND_DIR / "alembic.ini"))
-    config.attributes["database_url"] = url
-    return config
+from tests.support import alembic_config
 
 
 def test_migrations_upgrade_and_downgrade(test_engine: Engine, test_database_url: str) -> None:
