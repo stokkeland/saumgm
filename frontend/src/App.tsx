@@ -1,93 +1,59 @@
-import {
-  ActionIcon,
-  AppShell,
-  Badge,
-  Card,
-  Group,
-  Loader,
-  Stack,
-  Text,
-  Title,
-  useComputedColorScheme,
-  useMantineColorScheme,
-} from '@mantine/core'
-import { useQuery } from '@tanstack/react-query'
+import { Button, Center, Stack, Text, Title } from '@mantine/core'
+import { createBrowserRouter, Link, RouterProvider } from 'react-router'
 
-import { api, type Health } from './api/client'
+import { RequireAuth } from './auth/RequireAuth'
+import { AppLayout } from './components/AppLayout'
+import { PageHeader } from './components/ui'
+import { AccountPage } from './pages/AccountPage'
+import { LoginPage } from './pages/LoginPage'
 
-async function fetchHealth(): Promise<Health> {
-  // The API answers 503 with a Health body when the database is down, so read it either way.
-  const { data, error } = await api.GET('/api/health')
-  const health = data ?? (error as Health | undefined)
-  if (!health) throw new Error('No response from the API')
-  return health
-}
-
-function ColorSchemeToggle() {
-  const { setColorScheme } = useMantineColorScheme()
-  const scheme = useComputedColorScheme('light')
+function NotFound() {
   return (
-    <ActionIcon
-      variant="default"
-      aria-label="Toggle color scheme"
-      onClick={() => setColorScheme(scheme === 'dark' ? 'light' : 'dark')}
-    >
-      {scheme === 'dark' ? '☀' : '☾'}
-    </ActionIcon>
+    <Center py="xl">
+      <Stack align="center">
+        <Title order={2}>Page not found</Title>
+        <Button component={Link} to="/">
+          Back to the dashboard
+        </Button>
+      </Stack>
+    </Center>
   )
 }
 
-function SystemStatus() {
-  const { data, error, isPending } = useQuery({ queryKey: ['health'], queryFn: fetchHealth })
-
-  if (isPending) return <Loader size="sm" />
-  if (error) {
-    return (
-      <Group>
-        <Badge color="red">API unreachable</Badge>
-        <Text size="sm" c="dimmed">
-          {error.message}
-        </Text>
-      </Group>
-    )
-  }
+function Placeholder({ title }: { title: string }) {
   return (
-    <Stack gap="xs">
-      <Group>
-        <Text w={90}>API</Text>
-        <Badge color={data.status === 'ok' ? 'green' : 'red'}>{data.status}</Badge>
-        <Text size="sm" c="dimmed">
-          v{data.version}
-        </Text>
-      </Group>
-      <Group>
-        <Text w={90}>Database</Text>
-        <Badge color={data.database === 'ok' ? 'green' : 'red'}>{data.database}</Badge>
-        <Text size="sm" c="dimmed">
-          {data.database_version}
-        </Text>
-      </Group>
-    </Stack>
+    <>
+      <PageHeader title={title} />
+      <Text c="dimmed">Coming soon.</Text>
+    </>
   )
 }
+
+const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
+  {
+    element: (
+      <RequireAuth>
+        <AppLayout />
+      </RequireAuth>
+    ),
+    children: [
+      { path: '/', element: <Placeholder title="Dashboard" /> },
+      { path: '/contacts/*', element: <Placeholder title="Contacts" /> },
+      { path: '/invoices/*', element: <Placeholder title="Invoices" /> },
+      { path: '/payments/*', element: <Placeholder title="Payments" /> },
+      { path: '/deposits/*', element: <Placeholder title="Deposits" /> },
+      { path: '/expenses/*', element: <Placeholder title="Expenses" /> },
+      { path: '/subscriptions/*', element: <Placeholder title="Subscriptions" /> },
+      { path: '/catalog/*', element: <Placeholder title="Catalog" /> },
+      { path: '/settings/*', element: <Placeholder title="Settings" /> },
+      { path: '/audit', element: <Placeholder title="Audit log" /> },
+      { path: '/account', element: <AccountPage /> },
+      { path: '*', element: <NotFound /> },
+    ],
+  },
+])
 
 export default function App() {
-  return (
-    <AppShell header={{ height: 56 }} padding="md">
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Title order={3}>SauMGM</Title>
-          <ColorSchemeToggle />
-        </Group>
-      </AppShell.Header>
-      <AppShell.Main>
-        <Card withBorder maw={480}>
-          <Title order={4} mb="sm">
-            System status
-          </Title>
-          <SystemStatus />
-        </Card>
-      </AppShell.Main>
-    </AppShell>
-  )
+  return <RouterProvider router={router} />
 }

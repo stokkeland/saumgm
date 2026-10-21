@@ -228,3 +228,7 @@ frontend/src/api/schema.d.ts.tmp
 
 # Local file storage (dev)
 storage/
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
