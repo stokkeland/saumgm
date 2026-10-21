@@ -3,7 +3,7 @@
 from fastapi import APIRouter, status
 from sqlalchemy import select
 
-from saumgm.api.common import apply_changes, get_owned, not_found
+from saumgm.api.common import apply_changes, conflict, get_owned, not_found
 from saumgm.api.deps import DbSession, Owner, Reader
 from saumgm.models import TaxabilityRule, TaxCategory, TaxJurisdiction, TaxRate, TaxRegistration
 from saumgm.schemas.settings import (
@@ -112,6 +112,18 @@ def list_registrations(auth: Reader, db: DbSession) -> list[RegistrationOut]:
 @router.post("/registrations", status_code=status.HTTP_201_CREATED)
 def add_registration(body: RegistrationIn, auth: Owner, db: DbSession) -> RegistrationOut:
     get_owned(db, TaxJurisdiction, body.jurisdiction_id, auth.organization_id)
+    existing = db.scalars(
+        select(TaxRegistration).where(
+            TaxRegistration.organization_id == auth.organization_id,
+            TaxRegistration.jurisdiction_id == body.jurisdiction_id,
+        )
+    )
+    for other in existing:
+        overlaps = (other.effective_to is None or other.effective_to >= body.effective_from) and (
+            body.effective_to is None or other.effective_from <= body.effective_to
+        )
+        if overlaps:
+            raise conflict("There is already a registration for this jurisdiction in that period")
     registration = TaxRegistration(organization_id=auth.organization_id, **body.model_dump())
     db.add(registration)
     db.flush()

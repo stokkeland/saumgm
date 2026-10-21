@@ -24,6 +24,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dashboard */
+        get: operations["dashboard_api_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -1640,6 +1657,41 @@ export interface components {
             /** Notes */
             notes?: string | null;
         };
+        /** Dashboard */
+        Dashboard: {
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** Receivable */
+            receivable: string;
+            /** Open Invoices */
+            open_invoices: number;
+            /** Overdue */
+            overdue: string;
+            /** Overdue Invoices */
+            overdue_invoices: number;
+            /** Drafts */
+            drafts: number;
+            /** Undeposited */
+            undeposited: string;
+            /** Undeposited Payments */
+            undeposited_payments: number;
+            /** Unapplied Credit */
+            unapplied_credit: string;
+            /**
+             * Year Start
+             * Format: date
+             */
+            year_start: string;
+            /** Sales This Year */
+            sales_this_year: string;
+            /** Expenses This Year */
+            expenses_this_year: string;
+            /** Renewals */
+            renewals: components["schemas"]["Renewal"][];
+        };
         /** DepositCreate */
         DepositCreate: {
             /**
@@ -2958,6 +3010,24 @@ export interface components {
             /** Effective To */
             effective_to?: string | null;
         };
+        /** Renewal */
+        Renewal: {
+            /** Subscription Id */
+            subscription_id: number;
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Item Name */
+            item_name: string;
+            /** Service Identifier */
+            service_identifier: string | null;
+            /**
+             * Next Bill Date
+             * Format: date
+             */
+            next_bill_date: string;
+        };
         /** RevenueCategoryIn */
         RevenueCategoryIn: {
             /** Name */
@@ -3382,6 +3452,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    dashboard_api_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dashboard"];
                 };
             };
         };

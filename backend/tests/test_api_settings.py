@@ -114,6 +114,11 @@ def test_tax_setup(owner_client: TestClient) -> None:
               "2004-01-01", "filing_frequency": "quarterly"},
     )  # fmt: skip
     assert registration.status_code == 201
+    again = owner_client.post(
+        "/api/tax/registrations",
+        json={"jurisdiction_id": ny["id"], "effective_from": "2020-01-01"},
+    )
+    assert again.status_code == 409  # overlaps the first one
 
     category = owner_client.get("/api/tax/categories").json()[0]
     rule = {"jurisdiction_id": ny["id"], "tax_category_id": category["id"], "is_taxable": False}

@@ -306,7 +306,7 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
    - Automatic audit hook on every ORM flush (field-level changes, user, request id, IP, parent record for child rows); History endpoint per record; audit log + CSV export for the owner.
    - Contacts, catalog, categories, accounts, settings, users, tax setup, invoices + credit notes + revisions, payments, deposits, expenses, subscriptions + billing run, archiving.
    - Smoke-tested on the imported data: every list responds in under 100 ms.
-4. **Frontend** — app shell, login, screens in §5.
+4. **Frontend** ✅ — React + Mantine screens for everything in §5: login and account, dashboard, contacts, invoices (editor with live server-side totals and tax, issue / revise / credit note / void, revision viewer), payments (apply to open invoices), deposits, expenses, subscriptions with the billing run, catalog, settings (business, addresses, sales tax, accounts, categories, numbering, users), audit log; history timeline on every record. Verified with Playwright end-to-end tests against a copy of the imported data (`frontend/e2e/`).
 5. **Documents + reports** — invoice/receipt/deposit-slip PDFs, reports, CSV export.
 6. **Deploy** — Apache vhost, systemd, TLS, backups on the Ubuntu server; cut over from Access.
 7. **Post-v1** — email invoices, SSO (OIDC → SAML), Docker images/compose, recurring auto-issue, project module redesign.

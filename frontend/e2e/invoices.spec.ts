@@ -21,8 +21,8 @@ test('create, issue and revise an invoice', async ({ page }) => {
   await screenshot(page, 'invoices-open')
   await page.getByRole('link', { name: 'New invoice' }).click()
 
-  await page.getByRole('combobox', { name: 'Client' }).fill('Bethel')
-  await page.getByRole('option', { name: /Bethel Lutheran Church/ }).click()
+  await page.getByRole('combobox', { name: 'Client' }).fill('Petrela')
+  await page.getByRole('option', { name: /Petrela Westmount/ }).click()
   await page.getByRole('combobox', { name: 'Catalog item' }).first().click()
   await page.getByRole('option', { name: /Domain Registration/ }).first().click()
   await page.getByRole('textbox', { name: 'Quantity' }).first().fill('2')

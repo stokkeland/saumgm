@@ -75,6 +75,9 @@ npm run gen:api
 
 Other scripts: `npm run lint`, `npm run typecheck`, `npm run build`.
 
+End-to-end browser tests (Playwright) run against a separate API and database; see
+[frontend/e2e/README.md](frontend/e2e/README.md).
+
 ## Importing the old MS Access database
 
 A one-off importer moves the original Access application (`.mdb`) into SauMGM. It needs Windows

@@ -8,8 +8,8 @@ test('invoice -> payment -> deposit', async ({ page }) => {
 
   // An invoice to pay
   await page.goto('/invoices/new')
-  await page.getByRole('combobox', { name: 'Client' }).fill('Bethel')
-  await page.getByRole('option', { name: /Bethel Lutheran Church/ }).click()
+  await page.getByRole('combobox', { name: 'Client' }).fill('Petrela')
+  await page.getByRole('option', { name: /Petrela Westmount/ }).click()
   await page.getByRole('textbox', { name: 'Description' }).first().fill('Support call')
   await page.getByRole('textbox', { name: 'Unit price' }).first().fill('75')
   await expect(page.getByText('$75.00').first()).toBeVisible()
@@ -33,7 +33,7 @@ test('invoice -> payment -> deposit', async ({ page }) => {
 
   // Deposit it
   await page.goto('/deposits/new')
-  await page.getByRole('checkbox', { name: /Deposit payment from Bethel/ }).first().check()
+  await page.getByRole('checkbox', { name: /Deposit payment from Petrela/ }).first().check()
   await screenshot(page, 'new-deposit')
   await page.getByRole('button', { name: 'Record deposit' }).click()
   await expect(page.getByRole('heading', { name: /Deposit/ })).toBeVisible()

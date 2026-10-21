@@ -3,8 +3,12 @@ import { createBrowserRouter, Link, RouterProvider, useRouteError } from 'react-
 
 import { RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './components/AppLayout'
-import { PageHeader } from './components/ui'
 import { AccountPage } from './pages/AccountPage'
+import { AuditPage } from './pages/AuditPage'
+import { CatalogPage } from './pages/CatalogPage'
+import { DashboardPage } from './pages/DashboardPage'
+import { SettingsPage } from './pages/settings/SettingsPage'
+import { SubscriptionsPage } from './pages/SubscriptionsPage'
 import { ContactPage } from './pages/contacts/ContactPage'
 import { ContactsPage } from './pages/contacts/ContactsPage'
 import { InvoicePage, NewInvoicePage } from './pages/invoices/InvoicePage'
@@ -52,14 +56,6 @@ function RouteError() {
   )
 }
 
-function Placeholder({ title }: { title: string }) {
-  return (
-    <>
-      <PageHeader title={title} />
-      <Text c="dimmed">Coming soon.</Text>
-    </>
-  )
-}
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
@@ -75,7 +71,7 @@ const router = createBrowserRouter([
         // A crash inside a page shows the error in place; the menu stays usable.
         errorElement: <RouteError />,
         children: [
-          { path: '/', element: <Placeholder title="Dashboard" /> },
+          { path: '/', element: <DashboardPage /> },
           { path: '/contacts', element: <ContactsPage /> },
           { path: '/contacts/:id', element: <ContactPage /> },
           { path: '/invoices', element: <InvoicesPage /> },
@@ -90,10 +86,10 @@ const router = createBrowserRouter([
           { path: '/expenses', element: <ExpensesPage /> },
           { path: '/expenses/new', element: <NewExpensePage /> },
           { path: '/expenses/:id', element: <ExpensePage /> },
-          { path: '/subscriptions/*', element: <Placeholder title="Subscriptions" /> },
-          { path: '/catalog/*', element: <Placeholder title="Catalog" /> },
-          { path: '/settings/*', element: <Placeholder title="Settings" /> },
-          { path: '/audit', element: <Placeholder title="Audit log" /> },
+          { path: '/subscriptions', element: <SubscriptionsPage /> },
+          { path: '/catalog', element: <CatalogPage /> },
+          { path: '/settings', element: <SettingsPage /> },
+          { path: '/audit', element: <AuditPage /> },
           { path: '/account', element: <AccountPage /> },
           { path: '*', element: <NotFound /> },
         ],
