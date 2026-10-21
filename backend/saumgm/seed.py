@@ -5,7 +5,13 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from saumgm.enums import JurisdictionLevel
-from saumgm.models import NumberSequence, Organization, TaxCategory, TaxJurisdiction
+from saumgm.models import (
+    NumberSequence,
+    Organization,
+    TaxabilityRule,
+    TaxCategory,
+    TaxJurisdiction,
+)
 
 COUNTRIES = {"US": "United States", "CA": "Canada"}
 
@@ -105,6 +111,7 @@ def create_organization(session: Session, setup: OrganizationSetup) -> Organizat
         ]
     )
 
+    countries: dict[str, TaxJurisdiction] = {}
     for country, country_name in COUNTRIES.items():
         parent = TaxJurisdiction(
             organization_id=org.id,
@@ -114,6 +121,7 @@ def create_organization(session: Session, setup: OrganizationSetup) -> Organizat
         )
         session.add(parent)
         session.flush()
+        countries[country] = parent
         session.add_all(
             TaxJurisdiction(
                 organization_id=org.id,
@@ -125,9 +133,21 @@ def create_organization(session: Session, setup: OrganizationSetup) -> Organizat
             for region, region_name in REGIONS[country].items()
         )
 
-    session.add_all(
-        TaxCategory(organization_id=org.id, code=code, name=name, description=description)
+    categories = {
+        code: TaxCategory(organization_id=org.id, code=code, name=name, description=description)
         for code, name, description in TAX_CATEGORIES
-    )
+    }
+    session.add_all(categories.values())
+    session.flush()
+
+    # "Non-taxable" is never taxed: a rule at each country level, inherited by everything below.
+    for country in COUNTRIES:
+        session.add(
+            TaxabilityRule(
+                jurisdiction_id=countries[country].id,
+                tax_category_id=categories["exempt"].id,
+                is_taxable=False,
+            )
+        )
     session.flush()
     return org

@@ -77,6 +77,18 @@ class InvoiceStatus(StrEnum):
     VOID = "void"
 
 
+class PaymentStatus(StrEnum):
+    """Computed from issued invoices, payments and credit notes; never stored."""
+
+    DRAFT = "draft"
+    UNPAID = "unpaid"
+    PARTIALLY_PAID = "partially_paid"
+    PAID = "paid"
+    OVERPAID = "overpaid"
+    VOID = "void"
+    CREDIT = "credit"  # an issued credit note
+
+
 class PaymentMethod(StrEnum):
     CHECK = "check"
     CASH = "cash"

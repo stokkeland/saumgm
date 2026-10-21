@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 
 from saumgm import __version__
-from saumgm.api import auth, catalog, contacts, health, tax
+from saumgm.api import auth, catalog, contacts, health, invoices, tax
 from saumgm.api import settings as settings_api
 from saumgm.config import get_settings
 from saumgm.request_logging import configure_logging, request_id_middleware
@@ -46,6 +46,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/api")
     app.include_router(contacts.router, prefix="/api")
     app.include_router(catalog.router, prefix="/api")
+    app.include_router(invoices.router, prefix="/api")
     app.include_router(tax.router, prefix="/api")
     app.include_router(settings_api.router, prefix="/api")
     return app
