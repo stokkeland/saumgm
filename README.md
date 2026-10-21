@@ -22,8 +22,11 @@ that owns it (and may create a `test_*` database for the test suite).
 ```sh
 cd backend
 python -m venv .venv
-.venv/Scripts/activate        # Windows (Git Bash: source .venv/Scripts/activate)
-# source .venv/bin/activate   # Linux / macOS
+.venv\Scripts\Activate.ps1    # Windows PowerShell (once per window)
+# source .venv/Scripts/activate   # Windows Git Bash
+# source .venv/bin/activate       # Linux / macOS
+# PowerShell refuses to run the script? Once: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+# Without activating, call the tools by path, e.g. .venv\Scripts\uvicorn ...
 pip install -e ".[dev]"
 cp .env.example .env          # then edit DATABASE_URL / TEST_DATABASE_URL
 
