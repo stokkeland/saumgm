@@ -1,0 +1,13 @@
+# Nightly SauMGM backup at 02:30 (catches up after downtime).
+# Install: sudo cp deploy/systemd/saumgm-backup.* /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now saumgm-backup.timer
+[Unit]
+Description=Nightly SauMGM backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

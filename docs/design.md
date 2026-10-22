@@ -315,7 +315,7 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
    - Smoke-tested on the imported data: every list responds in under 100 ms.
 4. **Frontend** ✅ — React + Mantine screens for everything in §5: login and account, dashboard, contacts, invoices (editor with live server-side totals and tax, issue / revise / credit note / void, revision viewer), payments (apply to open invoices), deposits, expenses, subscriptions with the billing run, catalog, settings (business, addresses, sales tax, accounts, categories, numbering, users), audit log; history timeline on every record. Verified with Playwright end-to-end tests against a copy of the imported data (`frontend/e2e/`).
 5. **Documents + reports** ✅ — file storage interface (`saumgm/storage.py`, `file://` backend), business logo upload (and importer option), ReportLab PDFs for invoices (kept as issued and per revision), receipts and deposit slips; write-offs for uncollectible invoices; sales-tax filing periods; reports API + screen with CSV downloads (sales, sales tax, expenses, profit & loss, aging). 119 backend tests, 17 end-to-end tests.
-6. **Deploy** — Apache vhost, systemd, TLS, backups on the Ubuntu server; cut over from Access.
+6. **Deploy** — install guide [docs/deploy/ubuntu.md](deploy/ubuntu.md) and `deploy/` (prerequisite check/install script, systemd unit, Apache vhost, nightly backup timer, update script, database export for MariaDB 10.11); then install on the Ubuntu server and cut over from Access.
 7. **Post-v1** — email invoices, SSO (OIDC → SAML), Docker images/compose, recurring auto-issue, project module redesign.
 
 ---

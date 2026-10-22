@@ -81,6 +81,12 @@ Other scripts: `npm run lint`, `npm run typecheck`, `npm run build`.
 End-to-end browser tests (Playwright) run against a separate API and database; see
 [frontend/e2e/README.md](frontend/e2e/README.md).
 
+## Production install (Ubuntu + Apache)
+
+See [docs/deploy/ubuntu.md](docs/deploy/ubuntu.md): packages (with a check-and-install script,
+`deploy/install-prereqs.sh`), database, systemd service, Apache vhost with HTTPS, backups, updates
+and the switch-over from Access. The service, vhost, backup and update files are in [deploy/](deploy/).
+
 ## Importing the old MS Access database
 
 A one-off importer moves the original Access application (`.mdb`) into SauMGM. It needs Windows
