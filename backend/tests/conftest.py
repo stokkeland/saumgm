@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from alembic import command
@@ -14,7 +15,17 @@ from saumgm.main import create_app
 from saumgm.models import Organization, User
 from saumgm.seed import OrganizationSetup, create_organization
 from saumgm.services.auth import create_user
+from saumgm.storage import LocalStorage, set_storage
 from tests.support import PASSWORD, alembic_config, login
+
+
+@pytest.fixture(autouse=True)
+def file_storage(tmp_path: Path) -> Iterator[LocalStorage]:
+    """Every test stores files in its own temporary folder."""
+    storage = LocalStorage(tmp_path / "files")
+    set_storage(storage)
+    yield storage
+    set_storage(None)
 
 
 @pytest.fixture(scope="session")

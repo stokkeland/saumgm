@@ -20,6 +20,7 @@ locale = "en-US"                           # number and date style
 timezone = "America/New_York"
 default_terms_days = 30
 self_party_no = "00010000"                 # the old file number that represents the business itself
+logo = "logo.png"                          # optional; relative to this file
 
 # Addresses with optional validity periods (YYYY-MM-DD); old documents use the one in force.
 [[organization.addresses]]

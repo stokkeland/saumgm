@@ -31,6 +31,8 @@ class ImportConfig:
     addresses: list[AddressConfig] = field(default_factory=list)
     # Archive records dated on or before this day right after the import.
     archive_through: date | None = None
+    # Image file to use as the business logo (relative to the config file).
+    logo: Path | None = None
 
 
 def load_config(path: Path) -> ImportConfig:
@@ -38,6 +40,7 @@ def load_config(path: Path) -> ImportConfig:
         raw: dict[str, Any] = tomllib.load(fh)
     org = dict(raw["organization"])
     self_party_no = str(org.pop("self_party_no"))
+    logo = org.pop("logo", None)
     addresses = [
         AddressConfig(**{**addr, "address_type": AddressType(addr["address_type"])})
         for addr in org.pop("addresses", [])
@@ -47,4 +50,5 @@ def load_config(path: Path) -> ImportConfig:
         self_party_no=self_party_no,
         addresses=addresses,
         archive_through=raw.get("import", {}).get("archive_through"),
+        logo=(path.parent / logo) if logo else None,
     )

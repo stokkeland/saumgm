@@ -13,9 +13,11 @@ from saumgm.api import (
     contacts,
     dashboard,
     expenses,
+    files,
     health,
     invoices,
     payments,
+    reports,
     subscriptions,
     tax,
 )
@@ -66,6 +68,8 @@ def create_app() -> FastAPI:
     app.include_router(tax.router, prefix="/api")
     app.include_router(settings_api.router, prefix="/api")
     app.include_router(audit.router, prefix="/api")
+    app.include_router(files.router, prefix="/api")
+    app.include_router(reports.router, prefix="/api")
     return app
 
 

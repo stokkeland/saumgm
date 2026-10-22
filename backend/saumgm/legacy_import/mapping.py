@@ -49,6 +49,7 @@ from saumgm.models import (
 )
 from saumgm.seed import create_organization, jurisdiction_code
 from saumgm.services.archive import archive_through
+from saumgm.storage import store_file
 
 FILE_TYPE_ROLES = {
     "B": PartyRoleType.SELF,
@@ -158,6 +159,11 @@ class AccessImporter:
         self.result.organization_id = org.id
         for addr in self.config.addresses:
             self.session.add(OrganizationAddress(organization_id=org.id, **vars(addr)))
+        if self.config.logo:
+            logo = store_file(
+                self.session, org.id, self.config.logo.read_bytes(), self.config.logo.name
+            )
+            org.logo_file_id = logo.id
         self.jurisdictions = {
             j.code: j.id
             for j in self.session.query(TaxJurisdiction).filter_by(organization_id=org.id)

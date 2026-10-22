@@ -11,6 +11,7 @@ from sqlalchemy import func, inspect, select
 from sqlalchemy.orm import Session
 
 from saumgm import audit
+from saumgm.documents import invoice_pdf
 from saumgm.enums import AddressType, InvoiceKind, InvoiceStatus, PartyKind, PaymentStatus
 from saumgm.models import (
     CatalogItem,
@@ -32,6 +33,7 @@ from saumgm.schemas.invoices import LineIn
 from saumgm.services.money import ZERO, discount_amount, line_total, round_money
 from saumgm.services.numbering import next_number
 from saumgm.services.tax_engine import TaxableLine, TaxEngine, default_engine
+from saumgm.storage import store_file
 from saumgm.timeutil import today_in, utcnow
 
 # Up to half a cent either way counts as settled (old totals had fractions of a cent, payments
@@ -326,6 +328,7 @@ def issue(session: Session, org: Organization, invoice: Invoice, issue_date: dat
     invoice.issued_at = utcnow()
     recalculate(session, org, invoice)
     session.flush()
+    store_pdf(session, org, invoice)
     audit.record(
         session,
         "issue",
@@ -393,6 +396,8 @@ def revise(
             reason=reason,
             changed_by_user_id=user_id,
             changed_at=utcnow(),
+            # The document the client had before this change.
+            pdf_file_id=invoice.pdf_file_id,
         )
     )
     invoice.revision_no += 1
@@ -403,6 +408,8 @@ def revise(
         _replace_lines(session, org.id, invoice, lines)
     recalculate(session, org, invoice)
     session.flush()
+    session.refresh(invoice, ["lines", "taxes"])
+    store_pdf(session, org, invoice)
     audit.record(
         session,
         "revise",
@@ -463,6 +470,19 @@ def create_credit_note(
         kind=InvoiceKind.CREDIT_NOTE,
         credited_invoice=invoice,
     )
+
+
+def store_pdf(session: Session, org: Organization, invoice: Invoice) -> None:
+    """Render the invoice as issued and keep that exact document."""
+    kind = "credit-note" if invoice.kind == InvoiceKind.CREDIT_NOTE else "invoice"
+    name = f"{kind}-{invoice.number}"
+    if invoice.revision_no:
+        name += f"-rev{invoice.revision_no}"
+    stored = store_file(
+        session, org.id, invoice_pdf(session, org, invoice), f"{name}.pdf", "application/pdf"
+    )
+    invoice.pdf_file_id = stored.id
+    session.flush()
 
 
 # -- bad debt -------------------------------------------------------------------------------------
