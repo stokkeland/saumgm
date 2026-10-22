@@ -1,0 +1,10 @@
+# Runs deploy/backup.sh once; started nightly by saumgm-backup.timer.
+[Unit]
+Description=SauMGM backup (database and files)
+After=mariadb.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/saumgm/deploy/backup.sh
+Nice=10
+IOSchedulingClass=idle

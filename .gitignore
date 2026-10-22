@@ -1,3 +1,6 @@
+
+tmp/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -14,8 +17,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -218,3 +221,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node / frontend
+node_modules/
+frontend/src/api/schema.d.ts.tmp
+
+# Local file storage (dev)
+storage/
+
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
