@@ -6,6 +6,7 @@ import { AppLayout } from './components/AppLayout'
 import { AccountPage } from './pages/AccountPage'
 import { AuditPage } from './pages/AuditPage'
 import { CatalogPage } from './pages/CatalogPage'
+import { ReportsPage } from './pages/ReportsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { SettingsPage } from './pages/settings/SettingsPage'
 import { SubscriptionsPage } from './pages/SubscriptionsPage'
@@ -88,6 +89,7 @@ const router = createBrowserRouter([
           { path: '/expenses/:id', element: <ExpensePage /> },
           { path: '/subscriptions', element: <SubscriptionsPage /> },
           { path: '/catalog', element: <CatalogPage /> },
+          { path: '/reports', element: <ReportsPage /> },
           { path: '/settings', element: <SettingsPage /> },
           { path: '/audit', element: <AuditPage /> },
           { path: '/account', element: <AccountPage /> },

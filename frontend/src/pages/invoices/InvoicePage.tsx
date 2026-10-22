@@ -41,7 +41,7 @@ import { api, unwrap, type Schemas } from '../../api/client'
 import { useJurisdictions, useOrganization } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
 import { HistoryPanel } from '../../components/HistoryPanel'
-import { ArchivedBadge, DateText, Money, PageHeader, PaymentStatusBadge } from '../../components/ui'
+import { ArchivedBadge, DateText, Money, PageHeader, PaymentStatusBadge, PdfButton } from '../../components/ui'
 import { formatDateTime, formatNumber, formatRate } from '../../lib/format'
 import { labelOf, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
@@ -429,6 +429,18 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
                       <Button size="xs" variant="subtle" onClick={() => setRevision(r.revision_no)}>
                         Show earlier version
                       </Button>
+                      {r.pdf_file_id !== null && (
+                        <Button
+                          size="xs"
+                          variant="subtle"
+                          component="a"
+                          href={`/api/invoices/${invoice.id}/revisions/${r.revision_no}/pdf`}
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          PDF as sent
+                        </Button>
+                      )}
                     </Table.Td>
                   </Table.Tr>
                 ))}
@@ -501,6 +513,8 @@ export function InvoicePage() {
           title={title}
           subtitle={invoice.party_name}
           actions={
+            <>
+            <PdfButton href={`/api/invoices/${invoice.id}/pdf`} label="Preview PDF" />
             <Button
               color="red"
               variant="light"
@@ -516,6 +530,7 @@ export function InvoicePage() {
             >
               Delete draft
             </Button>
+            </>
           }
         />
         <InvoiceEditor
@@ -546,8 +561,10 @@ export function InvoicePage() {
         }
         subtitle={invoice.party_name}
         actions={
-          editable &&
           !revising && (
+            <>
+              <PdfButton href={`/api/invoices/${invoice.id}/pdf`} />
+              {editable && (
             <>
               {invoice.status === 'issued' && invoice.kind === 'invoice' && Number(invoice.balance_due) > 0 && (
                 <Button
@@ -590,6 +607,8 @@ export function InvoicePage() {
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
+            </>
+              )}
             </>
           )
         }

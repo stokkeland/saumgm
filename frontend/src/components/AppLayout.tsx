@@ -17,6 +17,7 @@ import {
   IconBuildingBank,
   IconCalendarRepeat,
   IconCash,
+  IconChartBar,
   IconChevronDown,
   IconFileInvoice,
   IconHistory,
@@ -52,6 +53,7 @@ const NAV: NavItem[] = [
   { to: '/expenses', label: 'Expenses', icon: IconReceipt },
   { to: '/subscriptions', label: 'Subscriptions', icon: IconCalendarRepeat },
   { to: '/catalog', label: 'Catalog', icon: IconPackage },
+  { to: '/reports', label: 'Reports', icon: IconChartBar },
   { to: '/settings', label: 'Settings', icon: IconSettings },
   { to: '/audit', label: 'Audit log', icon: IconHistory, ownerOnly: true },
 ]

@@ -25,7 +25,7 @@ import { useAuth } from '../../auth/context'
 import { ContactSelect } from '../../components/ContactSelect'
 import { DataTable } from '../../components/DataTable'
 import { HistoryPanel } from '../../components/HistoryPanel'
-import { ArchivedBadge, ArchiveFilter, DateText, Money, PageHeader, type ArchiveFilterValue } from '../../components/ui'
+import { ArchivedBadge, ArchiveFilter, DateText, Money, PageHeader, PdfButton, type ArchiveFilterValue } from '../../components/ui'
 import { todayIso } from '../../lib/format'
 import { labelOf, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
@@ -297,8 +297,9 @@ export function DepositPage() {
         }
         subtitle={deposit.notes}
         actions={
-          canEdit &&
-          !deposit.archived_at && (
+          <>
+            <PdfButton href={`/api/deposits/${deposit.id}/slip.pdf`} label="Deposit slip" />
+            {canEdit && !deposit.archived_at && (
             <Button
               color="red"
               variant="light"
@@ -315,7 +316,8 @@ export function DepositPage() {
             >
               Delete
             </Button>
-          )
+            )}
+          </>
         }
       />
       <Card withBorder mb="md">

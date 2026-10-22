@@ -47,6 +47,9 @@ python -m saumgm set-password --email you@example.com      # later, to reset a p
 Roles: **owner** (everything, including settings, users, audit log and unarchiving),
 **bookkeeper** (day-to-day work: contacts, invoices, payments, expenses), **viewer** (read-only).
 
+Files (business logo, issued invoice PDFs) go to `STORAGE_URL`, by default a git-ignored
+`storage/` folder at the repository root; back it up together with the database.
+
 The API uses a session cookie; requests that change data must also send the `X-CSRF-Token`
 header with the value of the `saumgm_csrf` cookie (the frontend does this automatically).
 

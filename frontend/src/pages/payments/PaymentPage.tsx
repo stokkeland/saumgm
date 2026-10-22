@@ -29,7 +29,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { api, unwrap, type Schemas } from '../../api/client'
 import { useAuth } from '../../auth/context'
 import { HistoryPanel } from '../../components/HistoryPanel'
-import { ArchivedBadge, DateText, Money, PageHeader } from '../../components/ui'
+import { ArchivedBadge, DateText, Money, PageHeader, PdfButton } from '../../components/ui'
 import { labelOf, PAYMENT_CHANNELS, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
 import { PaymentStateBadge } from './PaymentsPage'
@@ -171,7 +171,9 @@ export function PaymentPage() {
           </Anchor>
         }
         actions={
-          canEdit && (
+          <>
+            <PdfButton href={`/api/payments/${payment.id}/receipt.pdf`} label="Receipt" />
+            {canEdit && (
             <>
               {!locked && (
                 <Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
@@ -217,7 +219,8 @@ export function PaymentPage() {
                 </Menu.Dropdown>
               </Menu>
             </>
-          )
+            )}
+          </>
         }
       />
       {payment.deposit_id && (

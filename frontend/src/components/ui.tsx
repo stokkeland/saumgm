@@ -2,6 +2,7 @@
 
 import {
   Badge,
+  Button,
   Group,
   SegmentedControl,
   Stack,
@@ -11,7 +12,7 @@ import {
   type MantineColor,
 } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
-import { IconSearch } from '@tabler/icons-react'
+import { IconFileTypePdf, IconSearch } from '@tabler/icons-react'
 import { useEffect, useState, type ReactNode } from 'react'
 
 import { useAuth } from '../auth/context'
@@ -38,6 +39,22 @@ export function PageHeader({
       </Stack>
       {actions && <Group gap="xs">{actions}</Group>}
     </Group>
+  )
+}
+
+/** Opens a PDF from the API in a new tab (the session cookie goes along). */
+export function PdfButton({ href, label = 'PDF' }: { href: string; label?: string }) {
+  return (
+    <Button
+      component="a"
+      href={href}
+      target="_blank"
+      rel="noopener"
+      variant="default"
+      leftSection={<IconFileTypePdf size={16} />}
+    >
+      {label}
+    </Button>
   )
 }
 

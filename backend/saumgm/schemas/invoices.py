@@ -157,6 +157,7 @@ class RevisionSummary(BaseModel):
     reason: str
     changed_by_user_id: int | None
     changed_at: datetime
+    pdf_file_id: int | None  # the document as it was sent before this revision
 
 
 class RevisionOut(RevisionSummary):

@@ -3,7 +3,9 @@ import {
   Button,
   Card,
   Checkbox,
+  FileButton,
   Group,
+  Image,
   Modal,
   NumberInput,
   Select,
@@ -16,11 +18,11 @@ import {
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { modals } from '@mantine/modals'
-import { IconPencil, IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconPencil, IconPlus, IconTrash, IconUpload } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { api, unwrap, type Schemas } from '../../api/client'
+import { api, send, unwrap, type Schemas } from '../../api/client'
 import { useOrganization } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
 import { ME_KEY } from '../../auth/context'
@@ -151,9 +153,69 @@ function BusinessForm({ org }: { org: Org }) {
   )
 }
 
+function LogoCard({ org }: { org: Org }) {
+  const { isOwner } = useAuth()
+  const queryClient = useQueryClient()
+  const change = useMutation({
+    mutationFn: async (file: File | null) => {
+      if (!file) return send('DELETE', '/api/settings/logo')
+      const body = new FormData()
+      body.append('file', file)
+      return send('PUT', '/api/settings/logo', body)
+    },
+    onSuccess: (_, file) => {
+      queryClient.invalidateQueries({ queryKey: ['organization'] })
+      notifySaved(file ? 'Logo saved' : 'Logo removed')
+    },
+    onError: notifyError,
+  })
+  return (
+    <Card withBorder>
+      <Text fw={600} mb="sm">
+        Logo
+      </Text>
+      <Group align="center">
+        {org.logo_file_id ? (
+          // the file id in the URL makes the browser fetch a replaced logo
+          <Image src={`/api/settings/logo?v=${org.logo_file_id}`} alt="Business logo" h={60} w="auto" fit="contain" />
+        ) : (
+          <Text size="sm" c="dimmed">
+            No logo; invoices show the business name instead.
+          </Text>
+        )}
+        {isOwner && (
+          <Group gap="xs" ml="auto">
+            <FileButton accept="image/png,image/jpeg,image/gif" onChange={(file) => file && change.mutate(file)}>
+              {(props) => (
+                <Button variant="light" leftSection={<IconUpload size={16} />} loading={change.isPending} {...props}>
+                  {org.logo_file_id ? 'Replace' : 'Upload'}
+                </Button>
+              )}
+            </FileButton>
+            {org.logo_file_id && (
+              <Button variant="subtle" color="red" onClick={() => change.mutate(null)}>
+                Remove
+              </Button>
+            )}
+          </Group>
+        )}
+      </Group>
+      <Text size="xs" c="dimmed" mt="xs">
+        PNG, JPEG or GIF, shown at the top of invoices, receipts and deposit slips. A wide image works
+        best.
+      </Text>
+    </Card>
+  )
+}
+
 export function BusinessTab() {
   const { data: org } = useOrganization()
-  return org ? <BusinessForm key={org.id} org={org} /> : null
+  return org ? (
+    <Stack>
+      <LogoCard org={org} />
+      <BusinessForm key={org.id} org={org} />
+    </Stack>
+  ) : null
 }
 
 // -- addresses ------------------------------------------------------------------------------------

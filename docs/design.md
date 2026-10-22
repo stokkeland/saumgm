@@ -1,6 +1,6 @@
 # SauMGM — Design
 
-Status: **living design** — phases 1–2 are built (see §7). Mark up this file; code and this document should agree.
+Status: **living design** — phases 1–5 are built (see §7). Mark up this file; code and this document should agree.
 
 SauMGM is a small-business management system: contacts (clients, vendors, banks, tax authorities), a product/service catalog, client subscriptions, invoicing, payments, bank deposits, expenses, and sales tax. It replaces a 2004-era MS Access application and must carry all of its historical data forward. It is designed to be generic (open-sourceable): everything specific to one business is configuration or data, never code.
 
@@ -38,7 +38,7 @@ Browser (React SPA) ──HTTPS/JSON──> API (Python, FastAPI) ──> MariaD
 | API | Python 3.13, FastAPI, Pydantic v2 | Typed, readable, auto-generated OpenAPI docs |
 | ORM / migrations | SQLAlchemy 2.0, Alembic | Mature; versioned schema changes |
 | Database | MariaDB 10.11+ (`utf8mb4`, InnoDB) | Ubuntu 24.04 package; cloud-managed options exist |
-| PDF | WeasyPrint (HTML/CSS → PDF), Jinja2 templates | Invoice layout is themable per installation |
+| PDF | ReportLab (Platypus) | Pure Python wheels on Windows and Linux; WeasyPrint was the first choice but needs GTK/Pango system libraries, awkward on Windows dev machines and in slim containers |
 | Number/date formatting (server) | Babel | Locale-aware currency and dates in PDFs and exports |
 | Frontend | React + TypeScript + Vite | Large ecosystem, good interactivity |
 | UI kit | Mantine (forms, dates, tables, notifications, dark mode) | Rich business components without custom CSS work |
@@ -177,6 +177,8 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   - The invoice number never changes. Void remains for invoices that should not exist at all.
   - A setting can restrict revising to the owner role.
 
+- **Write-offs (bad debt)** — an issued invoice the client will never pay can be written off (one at a time or many from the list), with a reason and a date. `write_off_date`, `write_off_amount` (the balance at that moment) and `write_off_reason` are stored on the invoice; its payment status becomes *written off*, the balance due becomes zero and it no longer counts as receivable or overdue. The sale itself is unchanged. A written-off invoice cannot be revised or voided; *undo write-off* (owner, with a reason) reopens it if the client pays after all. Reports show the write-off as a bad-debt expense and its tax share as a sales-tax credit.
+- **Documents** — issuing renders the invoice PDF (`saumgm/documents.py`) and keeps it (`pdf_file_id`); revising keeps the previous PDF on the revision and stores a new one, so the document as sent is always available. Drafts and imported invoices are rendered on request. Receipts and deposit slips are rendered on request. The letterhead uses the business logo (Settings → Business), the remit-to address valid on the invoice date and the invoice footer text; amounts and dates use the business locale (Babel).
 - Implementation notes: totals are rounded to the currency's minor units (2 for USD) and always returned with 4 decimals in JSON; an invoice counts as settled when within half a cent of its total (old totals had fractions of a cent); credit notes are numbered `CN-1`, `CN-2`, ...; imported invoices keep their stored tax when revised.
 
 ### 4.5 Payments and deposits (replaces tblInvoicePayment, tblPaymentReceived, tblDeposit*)
@@ -196,7 +198,8 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 |---|---|
 | `tax_jurisdiction` | Tree: country → state/province → county → city/locality, with `code` and optional filing/reporting code. Seeded with all US states + DC and all Canadian provinces/territories; lower levels added as needed. |
 | `tax_rate` | Jurisdiction, name (NY State, Cattaraugus County, GST, HST, PST, QST…), rate, `effective_from`/`effective_to`. Rates are entered by the user, never hard-coded. |
-| `tax_registration` | Where the business is registered to collect (registration number, filing frequency). **Tax is only charged in registered jurisdictions.** |
+| `tax_registration` | Where the business is registered to collect (registration number, filing frequency, first month of the filing year — New York's sales-tax quarters start in March). **Tax is only charged in registered jurisdictions.** Registrations for the same jurisdiction may not overlap in time. |
+| `tax_filing` | A filing period marked as filed (period start/end, filed on, amount paid, reference). Revising an invoice dated in a filed period gives a warning. |
 | `tax_category` | Taxability classes for catalog items: tangible goods, prewritten software, hosting/digital services, labor/professional services, non-taxable… |
 | `taxability_rule` | Jurisdiction × category → taxable yes/no (inherits down the tree; overridable at lower levels). |
 | `tax_exemption` | Per client (optionally per jurisdiction): certificate type and number, valid from/to, uploaded copy. |
@@ -210,7 +213,11 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 
 Defaults chosen while building: a line with no tax category, or a category without any rule up the tree, is taxable; freight and adjustments are not taxed; new organizations get a "Non-taxable" rule at country level.
 
-**Reporting**: sales tax by jurisdiction and period — gross sales, non-taxable, exempt, taxable, tax collected (shaped like NY ST-100/ST-101). Basis is a setting: invoice date (accrual) or payment date (cash; what the old app did).
+**Filing periods**: monthly, quarterly or annual, counted from the registration's first month (`saumgm/services/tax_periods.py`); Settings → Sales tax lists each year's periods and whether they are filed.
+
+**Reporting** (`saumgm/services/reports.py`): sales tax by jurisdiction for any date range or filing period — gross sales, non-taxable, taxable, tax collected, bad-debt credit and net tax due (shaped like NY ST-100/ST-101). Basis is a setting that the report can override:
+- *Invoice date (accrual)*: tax on invoices issued in the period (credit notes subtract), less the tax share of invoices written off in the period.
+- *Payment date (cash; what the old app did)*: each payment's share of its invoice's sales, taxable sales and tax. Imported payments use the tax the old system recorded on them.
 
 *Which items are taxable in which jurisdiction is a business/accounting decision — the app makes it configurable; confirm the rules with an accountant.*
 
@@ -261,7 +268,7 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - **Invoices** — list (default: unpaid, not archived), editor (line entry with catalog search, live totals and tax), issue/void/credit note, PDF.
 - **Payments** — receive payment, undeposited funds, deposits + slip.
 - **Expenses** — list by period/account/vendor, quick entry with receipts.
-- **Reports** — invoice listing, sales by period/client/revenue category, sales tax, expenses by account/vendor/summary, receivables aging; all exportable to CSV/PDF.
+- **Reports** — sales by month/client/revenue category, sales tax (by date range or filing period, accrual or cash), expenses by account/vendor/month, profit & loss (with cost of goods and bad debts), receivables aging; each downloadable as CSV (downloads are audited). Invoice PDFs, receipts and deposit slips open from their pages. The invoice list with its filters covers the "invoice listing".
 - **Settings** — business profile and locale, tax setup, terms, numbering, accounts, users.
 
 Interaction expectations: archived records hidden unless "show archived" is on, global search, sortable/filterable tables, keyboard-friendly forms, inline validation, unsaved-changes warnings, light/dark mode.
@@ -307,7 +314,7 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
    - Contacts, catalog, categories, accounts, settings, users, tax setup, invoices + credit notes + revisions, payments, deposits, expenses, subscriptions + billing run, archiving.
    - Smoke-tested on the imported data: every list responds in under 100 ms.
 4. **Frontend** ✅ — React + Mantine screens for everything in §5: login and account, dashboard, contacts, invoices (editor with live server-side totals and tax, issue / revise / credit note / void, revision viewer), payments (apply to open invoices), deposits, expenses, subscriptions with the billing run, catalog, settings (business, addresses, sales tax, accounts, categories, numbering, users), audit log; history timeline on every record. Verified with Playwright end-to-end tests against a copy of the imported data (`frontend/e2e/`).
-5. **Documents + reports** — invoice/receipt/deposit-slip PDFs, reports, CSV export.
+5. **Documents + reports** ✅ — file storage interface (`saumgm/storage.py`, `file://` backend), business logo upload (and importer option), ReportLab PDFs for invoices (kept as issued and per revision), receipts and deposit slips; write-offs for uncollectible invoices; sales-tax filing periods; reports API + screen with CSV downloads (sales, sales tax, expenses, profit & loss, aging). 119 backend tests, 17 end-to-end tests.
 6. **Deploy** — Apache vhost, systemd, TLS, backups on the Ubuntu server; cut over from Access.
 7. **Post-v1** — email invoices, SSO (OIDC → SAML), Docker images/compose, recurring auto-issue, project module redesign.
 
@@ -317,6 +324,6 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
 - Client "Native" flag (21 clients) and "ActiveBilling" date: meaning to confirm; kept in `legacy_data` until then.
 - Organization addresses: confirm which remit-to address is current and the dates each was valid; confirm the time zone.
 - Production storage backend (local + restic to start, or Garage from day one).
-- NY sales-tax setup: which localities you deliver to, and your filing frequency.
+- NY sales-tax setup: which localities you deliver to (filing frequency: annual, starting in March).
 - Revenue categories and tax categories: starting lists to be drafted from the current product list.
 - License choice for open-sourcing (e.g. MIT, Apache-2.0, AGPL-3.0).
