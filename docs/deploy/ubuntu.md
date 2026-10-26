@@ -4,6 +4,9 @@ This guide takes a fresh Ubuntu 24.04 server to a running SauMGM at `https://sau
 (use your own host name throughout). Expect about an hour. Every file mentioned under `deploy/` is
 in this repository.
 
+To run several installations side by side on one server (several businesses, a demo, a test
+instance), see [multiple-instances.md](multiple-instances.md) after reading this guide.
+
 ```
 Browser ──HTTPS──> Apache :443 ─┬─ /            → /opt/saumgm/frontend/dist  (built React app)
                                 └─ /api/...     → uvicorn 127.0.0.1:8000     (systemd: saumgm)
@@ -203,6 +206,19 @@ cd /opt/saumgm/backend
 sudo -u saumgm .venv/bin/alembic upgrade head
 sudo -u saumgm .venv/bin/python -m saumgm create-organization --name "My Company"
 sudo -u saumgm .venv/bin/python -m saumgm create-user --email you@example.com --name "Your Name" --role owner
+```
+
+### Option C: the demo business
+
+For trying the app out or showing it to someone: a made-up business with 10 clients, 5 vendors and
+about 15 months of history (sign in as `owner@example.com`, password `saumgm-demo`). Never use it
+for an installation that will hold real data; a separate demo instance is better
+([multiple-instances.md](multiple-instances.md#a-demo-instance)).
+
+```sh
+cd /opt/saumgm/backend
+sudo -u saumgm .venv/bin/alembic upgrade head
+sudo -u saumgm .venv/bin/python -m saumgm load-demo
 ```
 
 ## 6. Frontend

@@ -1,8 +1,24 @@
+# SauMGM - Sauen Management System: billing, sales tax and bookkeeping for small businesses
+# Copyright (C) 2026 J. Thomas Stokkeland - https://www.saumgm.com/
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details. You should have received a copy of the
+# GNU General Public License along with this program (the LICENSE file); if not, see
+# <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Administration commands:
 
 python -m saumgm create-organization --name "My Company"
 python -m saumgm create-user --email me@example.com --name "Me" --role owner
 python -m saumgm set-password --email me@example.com
+python -m saumgm load-demo          # a demo business, into an empty database
 """
 
 import argparse
@@ -15,6 +31,7 @@ from sqlalchemy.orm import Session
 from saumgm.config import get_settings
 from saumgm.context import RequestContext, set_context
 from saumgm.db import make_engine
+from saumgm.demo import DEMO_PASSWORD, DEMO_USERS, DemoError, load_demo
 from saumgm.enums import UserRoleType
 from saumgm.models import Organization, User
 from saumgm.seed import OrganizationSetup, create_organization
@@ -75,6 +92,20 @@ def cmd_set_password(db: Session, args: argparse.Namespace) -> None:
     print(f"Password changed for {user.email}; existing sessions signed out.")
 
 
+def cmd_load_demo(db: Session, args: argparse.Namespace) -> None:
+    set_context(db, RequestContext(batch_id="demo"))
+    try:
+        summary = load_demo(db)
+    except DemoError as exc:
+        raise SystemExit(str(exc)) from None
+    db.commit()
+    counts = ", ".join(f"{n} {what}" for what, n in summary.counts.items())
+    print(f"Loaded the demo business {summary.organization.display_name!r}: {counts}.")
+    print(f"Sign in as any of these, password {DEMO_PASSWORD!r}:")
+    for email, _, role in DEMO_USERS:
+        print(f"  {email}  ({role.value})")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m saumgm")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -98,6 +129,9 @@ def main(argv: list[str] | None = None) -> None:
     pw = sub.add_parser("set-password", help="reset a user's password")
     pw.add_argument("--email", required=True)
     pw.set_defaults(func=cmd_set_password)
+
+    demo = sub.add_parser("load-demo", help="fill an empty database with a demo business")
+    demo.set_defaults(func=cmd_load_demo)
 
     args = parser.parse_args(argv)
     engine = make_engine(get_settings().database_url)

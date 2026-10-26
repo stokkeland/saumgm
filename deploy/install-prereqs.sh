@@ -1,10 +1,27 @@
 #!/usr/bin/env bash
+# SauMGM - Sauen Management System: billing, sales tax and bookkeeping for small businesses
+# Copyright (C) 2026 J. Thomas Stokkeland - https://www.saumgm.com/
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details. You should have received a copy of the
+# GNU General Public License along with this program (the LICENSE file); if not, see
+# <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Check, and optionally install, what SauMGM needs on Ubuntu 24.04.
 #
 #   sudo deploy/install-prereqs.sh --check          # only report; changes nothing
 #   sudo deploy/install-prereqs.sh                  # install what is missing
 #   sudo deploy/install-prereqs.sh --with-node      # also Node.js 24 (to build the frontend here)
 #   sudo deploy/install-prereqs.sh --with-mariadb   # also MariaDB server (if the DB is on this host)
+#   sudo deploy/install-prereqs.sh --instance acme  # user and folders for instance "acme"
+#                                                   # (docs/deploy/multiple-instances.md)
 #
 # It never removes or upgrades packages that are already installed, and never touches databases.
 # See docs/deploy/ubuntu.md for the whole procedure.
@@ -13,15 +30,24 @@ set -euo pipefail
 CHECK_ONLY=0
 WITH_NODE=0
 WITH_MARIADB=0
-for arg in "$@"; do
-  case "$arg" in
+INSTANCE=""
+while [ $# -gt 0 ]; do
+  case "$1" in
     --check) CHECK_ONLY=1 ;;
     --with-node) WITH_NODE=1 ;;
     --with-mariadb) WITH_MARIADB=1 ;;
-    -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
-    *) echo "Unknown option: $arg" >&2; exit 2 ;;
+    --instance) INSTANCE="${2:?--instance needs a name}"; shift ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
+  shift
 done
+case "$INSTANCE" in
+  *[!a-z0-9-]*) echo "Instance names use a-z, 0-9 and -" >&2; exit 2 ;;
+esac
+# The single instance runs as "saumgm"; instance NAME as "saumgm-NAME" with its own folders.
+SUFFIX="${INSTANCE:+-$INSTANCE}"
+SERVICE_USER="saumgm$SUFFIX"
 
 MIN_PYTHON="3.12"
 MIN_MARIADB="10.11"
@@ -148,19 +174,19 @@ else
 fi
 
 echo "Service account and folders"
-if id saumgm >/dev/null 2>&1; then
-  ok "user saumgm"
+if id "$SERVICE_USER" >/dev/null 2>&1; then
+  ok "user $SERVICE_USER"
 elif [ "$CHECK_ONLY" -eq 0 ]; then
-  useradd --system --home-dir /var/lib/saumgm --shell /usr/sbin/nologin saumgm
-  ok "user saumgm (created)"
+  useradd --system --home-dir "/var/lib/saumgm$SUFFIX" --shell /usr/sbin/nologin "$SERVICE_USER"
+  ok "user $SERVICE_USER (created)"
 else
-  miss "user saumgm"
+  miss "user $SERVICE_USER"
 fi
-for dir in /var/lib/saumgm/storage /var/backups/saumgm; do
+for dir in "/var/lib/saumgm$SUFFIX/storage" "/var/backups/saumgm$SUFFIX"; do
   if [ -d "$dir" ]; then
     ok "$dir"
   elif [ "$CHECK_ONLY" -eq 0 ]; then
-    install -d -m 750 -o saumgm -g saumgm "$dir"
+    install -d -m 750 -o "$SERVICE_USER" -g "$SERVICE_USER" "$dir"
     ok "$dir (created)"
   else
     miss "$dir"

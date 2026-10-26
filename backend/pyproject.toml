@@ -1,5 +1,20 @@
+# SauMGM - Sauen Management System: billing, sales tax and bookkeeping for small businesses
+# Copyright (C) 2026 J. Thomas Stokkeland - https://www.saumgm.com/
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details. You should have received a copy of the
+# GNU General Public License along with this program (the LICENSE file); if not, see
+# <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 [build-system]
-requires = ["setuptools>=75"]
+requires = ["setuptools>=77"]  # 77+: SPDX license expressions (PEP 639)
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,6 +22,8 @@ name = "saumgm"
 version = "0.1.0"
 description = "SauMGM - small business management system (contacts, catalog, invoicing, payments, expenses, sales tax)"
 requires-python = ">=3.12"
+license = "GPL-3.0-or-later"
+authors = [{ name = "J. Thomas Stokkeland" }]
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
@@ -21,6 +38,10 @@ dependencies = [
     "babel>=2.16",
     "python-multipart>=0.0.12",
 ]
+
+[project.urls]
+Homepage = "https://www.saumgm.com/"
+Source = "https://github.com/stokkeland/sau_mgm"
 
 [project.optional-dependencies]
 dev = [

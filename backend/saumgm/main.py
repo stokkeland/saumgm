@@ -1,3 +1,18 @@
+# SauMGM - Sauen Management System: billing, sales tax and bookkeeping for small businesses
+# Copyright (C) 2026 J. Thomas Stokkeland - https://www.saumgm.com/
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details. You should have received a copy of the
+# GNU General Public License along with this program (the LICENSE file); if not, see
+# <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """ASGI application. Run in development with:  uvicorn saumgm.main:app --reload"""
 
 from fastapi import FastAPI, Request, status
@@ -34,6 +49,11 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="SauMGM API",
         version=__version__,
+        description="SauMGM - Sauen Management System. <https://www.saumgm.com/>",
+        license_info={
+            "name": "GPL-3.0-or-later",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.html",
+        },
         docs_url="/api/docs",
         redoc_url=None,
         openapi_url="/api/openapi.json",
