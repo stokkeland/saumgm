@@ -61,6 +61,26 @@ class FilingFrequency(StrEnum):
     ANNUAL = "annual"
 
 
+class DocumentType(StrEnum):
+    """Kinds of documents kept on file for a contact."""
+
+    W9 = "w9"  # US taxpayer identification (needed for 1099s)
+    W8 = "w8"  # foreign status (W-8BEN / W-8BEN-E)
+    TAX_EXEMPTION = "tax_exemption"  # sales-tax exemption or resale certificate
+    INSURANCE = "insurance"  # certificate of insurance
+    CONTRACT = "contract"  # contract, agreement, NDA
+    OTHER = "other"
+
+
+class DocumentStatus(StrEnum):
+    """Computed from the expiry date; never stored."""
+
+    NO_EXPIRY = "no_expiry"
+    VALID = "valid"
+    EXPIRING = "expiring"  # within its reminder window
+    EXPIRED = "expired"
+
+
 class TaxBasis(StrEnum):
     ACCRUAL = "accrual"  # tax reported by invoice date
     CASH = "cash"  # tax reported by payment date

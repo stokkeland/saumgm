@@ -52,3 +52,12 @@ export const ITEM_TYPES = [
 export function labelOf(options: { value: string; label: string }[], value: string | null | undefined) {
   return options.find((o) => o.value === value)?.label ?? value ?? ''
 }
+
+export const DOCUMENT_TYPES = [
+  { value: 'w9', label: 'W-9' },
+  { value: 'w8', label: 'W-8 (foreign)' },
+  { value: 'tax_exemption', label: 'Tax exemption certificate' },
+  { value: 'insurance', label: 'Certificate of insurance' },
+  { value: 'contract', label: 'Contract / agreement' },
+  { value: 'other', label: 'Other' },
+]

@@ -28,6 +28,7 @@ PARENTS = {
     "party_address": ("party", "party_id"),
     "party_contact": ("party", "party_id"),
     "tax_exemption": ("party", "party_id"),
+    "party_document": ("party", "party_id"),
     "tax_rate": ("tax_jurisdiction", "jurisdiction_id"),
     "taxability_rule": ("tax_jurisdiction", "jurisdiction_id"),
     "organization_address": ("organization", "organization_id"),

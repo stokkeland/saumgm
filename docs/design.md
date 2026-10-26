@@ -250,6 +250,13 @@ Defaults chosen while building: a line with no tax category, or a category witho
   The database needs the same treatment for multi-region (MariaDB replication or Galera, or a managed service) — files and DB should be planned together.
 - Storing files as DB BLOBs was considered: simplest (one backup, replicates with the DB) but bloats backups and doesn't fit cloud scaling; rejected in favour of the interface above.
 
+### 4.12 Contact documents (W-9s, certificates, contracts)
+- `party_document` — `party_id`, `document_type` (W-9, W-8, tax exemption certificate, certificate of insurance, contract, other), `title`, `file_id` (optional: a paper copy can be recorded and a scan attached later), `document_date` (signed/issued), `expires_on`, `remind_days_before` (default 30), `tax_exemption_id` (the exemption a certificate supports), `notes`, `archived_at`.
+- Status is computed, never stored: no expiry / valid / expiring (inside the reminder window) / expired. Archived = replaced by a newer document; kept on file but no longer checked. Adding a W-9, W-8, insurance or exemption certificate offers to archive the current one of that type.
+- The tax exemption (§4.7) stays the rule the tax engine uses; the certificate document is its evidence. Deleting an exemption keeps the certificate, unlinked.
+- Files can contain taxpayer ids (a sole proprietor's W-9 has an SSN): viewers see the list but cannot open files (also not through `/api/files/{id}`), every download is written to the audit log, and responses are sent `Cache-Control: no-store`. Deleting a document is owner-only and meant for mistakes.
+- `GET /api/documents/attention` lists current documents that have expired or are inside their reminder window; the dashboard shows them. **Reminders later**: a scheduled job can use the same query and `remind_days_before` to email the business (and, with email invoicing, the contact); a `reminded_at` column will record what was sent.
+
 ### 4.11 Archiving
 - Invoices, payments, deposits and expenses have `archived_at` (NULL = current). Archived records stay in their tables, keep all links, and count in every report; they are only hidden from everyday lists.
 - Lists default to current records, with a "show archived" toggle (and an `include_archived` / `archived_only` filter on the API). Archived records open read-only; unarchiving is allowed for the owner role.

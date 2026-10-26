@@ -7,6 +7,8 @@ import { Link } from 'react-router'
 import { api, unwrap } from '../api/client'
 import { useAuth } from '../auth/context'
 import { DateText, Money, PageHeader } from '../components/ui'
+import { DOCUMENT_TYPES, labelOf } from '../lib/labels'
+import { DocumentStatusBadge } from './contacts/ContactDocuments'
 
 function Stat({
   label,
@@ -42,6 +44,47 @@ function Stat({
     </Anchor>
   ) : (
     body
+  )
+}
+
+/** Contacts' documents (W-9s, certificates...) that have expired or expire soon. */
+function DocumentsCard() {
+  const { data } = useQuery({
+    queryKey: ['documents-attention'],
+    queryFn: async () => unwrap(await api.GET('/api/documents/attention')),
+  })
+  if (!data?.length) return null
+  return (
+    <Card withBorder>
+      <Text fw={600} mb="xs">
+        Documents expired or expiring soon
+      </Text>
+      <Table>
+        <Table.Tbody>
+          {data.map((d) => (
+            <Table.Tr key={d.id}>
+              <Table.Td>
+                <Anchor component={Link} to={`/contacts/${d.party_id}?tab=documents`} size="sm">
+                  {d.party_name}
+                </Anchor>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm">
+                  {labelOf(DOCUMENT_TYPES, d.document_type)}
+                  {d.title !== labelOf(DOCUMENT_TYPES, d.document_type) && ` – ${d.title}`}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <DateText value={d.expires_on} />
+              </Table.Td>
+              <Table.Td>
+                <DocumentStatusBadge doc={d} />
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Card>
   )
 }
 
@@ -157,6 +200,7 @@ export function DashboardPage() {
               )}
             </Card>
           </SimpleGrid>
+          <DocumentsCard />
         </Stack>
       )}
     </>

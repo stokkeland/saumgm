@@ -16,6 +16,7 @@ from saumgm.api import (
     files,
     health,
     invoices,
+    party_documents,
     payments,
     reports,
     subscriptions,
@@ -70,6 +71,7 @@ def create_app() -> FastAPI:
     app.include_router(audit.router, prefix="/api")
     app.include_router(files.router, prefix="/api")
     app.include_router(reports.router, prefix="/api")
+    app.include_router(party_documents.router, prefix="/api")
     return app
 
 

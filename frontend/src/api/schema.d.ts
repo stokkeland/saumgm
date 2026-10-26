@@ -1637,6 +1637,127 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/contacts/{party_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Documents */
+        get: operations["list_documents_api_contacts__party_id__documents_get"];
+        put?: never;
+        /**
+         * Add Document
+         * @description Record a document, with or without a file (multipart form).
+         */
+        post: operations["add_document_api_contacts__party_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/documents/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Document
+         * @description For mistakes (owner only); superseded documents should be archived instead.
+         */
+        delete: operations["delete_document_api_contacts__party_id__documents__document_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Document */
+        patch: operations["update_document_api_contacts__party_id__documents__document_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/documents/{document_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download File */
+        get: operations["download_file_api_contacts__party_id__documents__document_id__file_get"];
+        /**
+         * Replace File
+         * @description Attach a file (e.g. the scan of a paper copy), or replace a wrong one. The earlier file
+         *     stays in storage, and the audit log records the change.
+         */
+        put: operations["replace_file_api_contacts__party_id__documents__document_id__file_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/documents/{document_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Document
+         * @description Mark as superseded: kept on file, no longer checked for expiry.
+         */
+        post: operations["archive_document_api_contacts__party_id__documents__document_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/documents/{document_id}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Unarchive Document */
+        post: operations["unarchive_document_api_contacts__party_id__documents__document_id__unarchive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/documents/attention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Documents Needing Attention
+         * @description Current documents of all contacts that have expired or expire soon, soonest first.
+         */
+        get: operations["documents_needing_attention_api_documents_attention_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1909,6 +2030,35 @@ export interface components {
          * @enum {string}
          */
         BillingTiming: "advance" | "arrears";
+        /** Body_add_document_api_contacts__party_id__documents_post */
+        Body_add_document_api_contacts__party_id__documents_post: {
+            document_type: components["schemas"]["DocumentType"];
+            /** Title */
+            title: string;
+            /** File */
+            file?: string | null;
+            /** Tax Exemption Id */
+            tax_exemption_id?: number | null;
+            /** Document Date */
+            document_date?: string | null;
+            /** Expires On */
+            expires_on?: string | null;
+            /** Remind Days Before */
+            remind_days_before?: number | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Replace Previous
+             * @description Archive this contact's current documents of the same type
+             * @default false
+             */
+            replace_previous: boolean;
+        };
+        /** Body_replace_file_api_contacts__party_id__documents__document_id__file_put */
+        Body_replace_file_api_contacts__party_id__documents__document_id__file_put: {
+            /** File */
+            file: string;
+        };
         /** Body_upload_logo_api_settings_logo_put */
         Body_upload_logo_api_settings_logo_put: {
             /** File */
@@ -2206,6 +2356,91 @@ export interface components {
             /** Items */
             items?: components["schemas"]["DepositItemIn"][] | null;
         };
+        /** DocumentFile */
+        DocumentFile: {
+            /** Id */
+            id: number;
+            /** Original Name */
+            original_name: string;
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** DocumentOut */
+        DocumentOut: {
+            /** Id */
+            id: number;
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            document_type: components["schemas"]["DocumentType"];
+            /** Title */
+            title: string;
+            /** Tax Exemption Id */
+            tax_exemption_id: number | null;
+            /** Document Date */
+            document_date: string | null;
+            /** Expires On */
+            expires_on: string | null;
+            /** Remind Days Before */
+            remind_days_before: number | null;
+            /** Notes */
+            notes: string | null;
+            status: components["schemas"]["DocumentStatus"];
+            /** Days To Expiry */
+            days_to_expiry: number | null;
+            file: components["schemas"]["DocumentFile"] | null;
+            /** Archived At */
+            archived_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * DocumentPatch
+         * @description Changes to a document's details (the file itself is replaced with PUT .../file).
+         */
+        DocumentPatch: {
+            document_type?: components["schemas"]["DocumentType"] | null;
+            /** Title */
+            title?: string | null;
+            /** Tax Exemption Id */
+            tax_exemption_id?: number | null;
+            /** Document Date */
+            document_date?: string | null;
+            /** Expires On */
+            expires_on?: string | null;
+            /** Remind Days Before */
+            remind_days_before?: number | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * DocumentStatus
+         * @description Computed from the expiry date; never stored.
+         * @enum {string}
+         */
+        DocumentStatus: "no_expiry" | "valid" | "expiring" | "expired";
+        /**
+         * DocumentType
+         * @description Kinds of documents kept on file for a contact.
+         * @enum {string}
+         */
+        DocumentType: "w9" | "w8" | "tax_exemption" | "insurance" | "contract" | "other";
         /**
          * ExemptionIn
          * @description A tax exemption; jurisdiction_id None means it applies everywhere.
@@ -8247,6 +8482,307 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    list_documents_api_contacts__party_id__documents_get: {
+        parameters: {
+            query?: {
+                archived?: components["schemas"]["ArchiveFilter"];
+            };
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_document_api_contacts__party_id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_add_document_api_contacts__party_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_document_api_contacts__party_id__documents__document_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_document_api_contacts__party_id__documents__document_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_file_api_contacts__party_id__documents__document_id__file_get: {
+        parameters: {
+            query?: {
+                /** @description Save instead of opening in the browser */
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                party_id: number;
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_file_api_contacts__party_id__documents__document_id__file_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_replace_file_api_contacts__party_id__documents__document_id__file_put"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_document_api_contacts__party_id__documents__document_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unarchive_document_api_contacts__party_id__documents__document_id__unarchive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                party_id: number;
+                document_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    documents_needing_attention_api_documents_attention_get: {
+        parameters: {
+            query?: {
+                /** @description Instead of each document's own reminder window */
+                within_days?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

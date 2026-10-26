@@ -27,7 +27,7 @@ import {
 } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import { api, send, unwrap, type Schemas } from '../../api/client'
 import { useJurisdictions } from '../../api/lookups'
@@ -37,6 +37,7 @@ import { HistoryPanel } from '../../components/HistoryPanel'
 import { ArchivedBadge, DateText, Money, PageHeader, PaymentStatusBadge } from '../../components/ui'
 import { ADDRESS_TYPES, labelOf, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
+import { ContactDocuments } from './ContactDocuments'
 import { AddressForm, ContactForm, ExemptionForm, PersonForm } from './ContactForm'
 import { RoleBadges } from './ContactsPage'
 
@@ -375,6 +376,7 @@ function ContactPayments({ partyId }: { partyId: number }) {
 
 export function ContactPage() {
   const { id } = useParams()
+  const [params, setParams] = useSearchParams()
   const partyId = Number(id)
   const { canEdit, isOwner } = useAuth()
   const queryClient = useQueryClient()
@@ -515,10 +517,15 @@ export function ContactPage() {
         )}
       </Grid>
 
-      <Tabs defaultValue="details" keepMounted={false}>
+      <Tabs
+        value={params.get('tab') ?? 'details'}
+        onChange={(tab) => setParams(tab && tab !== 'details' ? { tab } : {}, { replace: true })}
+        keepMounted={false}
+      >
         <Tabs.List mb="md">
           <Tabs.Tab value="details">Addresses & people</Tabs.Tab>
           <Tabs.Tab value="tax">Tax</Tabs.Tab>
+          <Tabs.Tab value="documents">Documents</Tabs.Tab>
           {isClient && <Tabs.Tab value="invoices">Invoices</Tabs.Tab>}
           {isClient && <Tabs.Tab value="payments">Payments</Tabs.Tab>}
           <Tabs.Tab value="history">History</Tabs.Tab>
@@ -529,6 +536,9 @@ export function ContactPage() {
         </Tabs.Panel>
         <Tabs.Panel value="tax">
           <Exemptions contact={contact} canEdit={editable} />
+        </Tabs.Panel>
+        <Tabs.Panel value="documents">
+          <ContactDocuments contact={contact} canEdit={editable} />
         </Tabs.Panel>
         <Tabs.Panel value="invoices">
           <ContactInvoices partyId={contact.id} />
