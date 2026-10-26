@@ -2,6 +2,9 @@
   "name": "saumgm-frontend",
   "private": true,
   "version": "0.1.0",
+  "license": "GPL-3.0-or-later",
+  "author": "J. Thomas Stokkeland",
+  "homepage": "https://www.saumgm.com/",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -5,7 +5,7 @@ A small-business management system: contacts (clients, vendors, banks), a produc
 client subscriptions, invoicing, payments, bank deposits, expenses and sales tax. Everything specific
 to one business is configuration, so it can be used by others.
 
-Status: early development. The design lives in [docs/design.md](docs/design.md).
+Website: <https://www.saumgm.com/>. The design lives in [docs/design.md](docs/design.md).
 
 | Part | Stack |
 |---|---|
@@ -87,6 +87,26 @@ See [docs/deploy/ubuntu.md](docs/deploy/ubuntu.md): packages (with a check-and-i
 `deploy/install-prereqs.sh`), database, systemd service, Apache vhost with HTTPS, backups, updates
 and the switch-over from Access. The service, vhost, backup and update files are in [deploy/](deploy/).
 
+Several independent installations on one server (separate businesses, a demo, a test instance),
+each in its own folder with its own database, port, web address and backups:
+[docs/deploy/multiple-instances.md](docs/deploy/multiple-instances.md).
+
+## Demo data
+
+`python -m saumgm load-demo` fills an empty, migrated database with a made-up business: 10
+clients, 5 vendors and about 15 months of invoices (including a credit note, a revision, a void
+and a write-off), payments, deposits, expenses with receipts, subscriptions, sales tax with a
+filing, a tax-exempt client and contact documents, dated relative to today. Sign in as
+`owner@example.com`, `bookkeeper@example.com` or `viewer@example.com`, password `saumgm-demo`.
+
+```sh
+alembic upgrade head
+python -m saumgm load-demo
+```
+
+It refuses to run on a database that already has a business. Use a separate database for it
+(for development: a second database in `DATABASE_URL`; on a server: a demo instance).
+
 ## Importing the old MS Access database
 
 A one-off importer moves the original Access application (`.mdb`) into SauMGM. It needs Windows
@@ -125,3 +145,16 @@ alembic upgrade head
 
 A test fails if models and migrations are out of sync. Production runs MariaDB 10.11, and CI tests
 against it, so don't use features from newer MariaDB versions.
+
+## License
+
+Copyright (C) 2026 J. Thomas Stokkeland - <https://www.saumgm.com/>
+
+SauMGM is free software: you can redistribute it and/or modify it under the terms of the
+[GNU General Public License](LICENSE) as published by the Free Software Foundation, either version
+3 of the License, or (at your option) any later version. It is distributed in the hope that it
+will be useful, but WITHOUT ANY WARRANTY; see the license for details.
+
+The libraries it uses keep their own licenses, all compatible with the GPL; see
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). New source files start with the license header;
+`python tools/license_headers.py` adds it, and CI checks it.
