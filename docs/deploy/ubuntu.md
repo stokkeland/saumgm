@@ -115,7 +115,7 @@ Put the repository in `/opt/saumgm`. Choose one:
   sudo ssh-keygen -t ed25519 -f /root/.ssh/saumgm_deploy -N ""
   sudo cat /root/.ssh/saumgm_deploy.pub    # GitHub → repo → Settings → Deploy keys → Add (read-only)
   printf 'Host github.com\n  IdentityFile /root/.ssh/saumgm_deploy\n' | sudo tee -a /root/.ssh/config
-  sudo git clone --branch main git@github.com:stokkeland/sau_mgm.git /opt/saumgm
+  sudo git clone --branch main git@github.com:stokkeland/saumgm.git /opt/saumgm
   ```
   Deploy from `main`. The work so far is on the branch `dev/initial`; merge it into `main` first
   (a pull request on GitHub), or clone with `--branch dev/initial` until then.

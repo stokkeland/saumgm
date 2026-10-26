@@ -41,7 +41,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://www.saumgm.com/"
-Source = "https://github.com/stokkeland/sau_mgm"
+Source = "https://github.com/stokkeland/saumgm"
 
 [project.optional-dependencies]
 dev = [
