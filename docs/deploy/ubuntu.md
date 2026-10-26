@@ -26,6 +26,7 @@ The API runs as the unprivileged system user `saumgm`, which can only write to
 
 Contents:
 
+- [The whole install, start to finish](#the-whole-install-start-to-finish)
 1. [Packages](#1-packages)
 2. [Database](#2-database)
 3. [Code and Python environment](#3-code-and-python-environment)
@@ -40,6 +41,90 @@ Contents:
 12. [Troubleshooting](#12-troubleshooting)
 
 ---
+
+## The whole install, start to finish
+
+The commands below cover the common case in order: one installation, MariaDB on the same server,
+frontend built on the server, and a new empty business. Run them as an admin user with `sudo`
+rights. The numbered sections that follow explain each step and the alternatives (database on
+another host, building on your PC, loading your existing data).
+
+```sh
+# --- 0. Log in and bring the server up to date
+ssh admin@server
+sudo apt update && sudo apt upgrade -y
+sudo timedatectl set-timezone America/New_York       # your time zone; logs and backups use it
+
+# --- 1. Get the code into /opt/saumgm (git is needed first; step 3 has the SSH variant)
+sudo apt install -y git
+cd /opt
+sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm
+cd /opt/saumgm
+git log -1 --oneline                                 # shows which version you have
+
+# --- 2. Packages, the saumgm user and its folders (section 1)
+sudo bash deploy/install-prereqs.sh --check          # see what is missing
+sudo bash deploy/install-prereqs.sh --with-node --with-mariadb
+
+# --- 3. Database and its user (section 2); keep the password for step 5
+openssl rand -base64 24                              # use this output as the password below
+sudo mariadb <<'SQL'
+CREATE DATABASE saumgm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'saumgm'@'localhost' IDENTIFIED BY 'CHANGE-ME';
+GRANT ALL PRIVILEGES ON saumgm.* TO 'saumgm'@'localhost';
+SQL
+
+# --- 4. Python environment (section 3)
+cd /opt/saumgm
+sudo python3 -m venv backend/.venv
+sudo backend/.venv/bin/pip install --upgrade pip
+sudo backend/.venv/bin/pip install -e backend
+
+# --- 5. Configuration (section 4): put the database password into DATABASE_URL
+sudo tee /opt/saumgm/backend/.env >/dev/null <<'EOF'
+DATABASE_URL=mysql+pymysql://saumgm:CHANGE-ME@127.0.0.1:3306/saumgm?charset=utf8mb4
+STORAGE_URL=file:///var/lib/saumgm/storage
+ENVIRONMENT=production
+LOG_LEVEL=INFO
+CORS_ORIGINS=
+EOF
+sudo chown root:saumgm /opt/saumgm/backend/.env
+sudo chmod 640 /opt/saumgm/backend/.env
+
+# --- 6. Schema, business and first user (section 5, option B; option A loads your data instead)
+cd /opt/saumgm/backend
+sudo -u saumgm .venv/bin/alembic upgrade head
+sudo -u saumgm .venv/bin/python -m saumgm create-organization --name "My Company"
+sudo -u saumgm .venv/bin/python -m saumgm create-user --email you@example.com --name "Your Name" --role owner
+
+# --- 7. Frontend (section 6)
+cd /opt/saumgm/frontend
+sudo npm ci --no-audit --no-fund && sudo npm run build
+
+# --- 8. API service (section 7)
+sudo cp /opt/saumgm/deploy/systemd/saumgm.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now saumgm
+curl -s http://127.0.0.1:8000/api/health             # {"status":"ok","database":"ok",...}
+
+# --- 9. Apache and HTTPS (section 8); DNS must already point at this server
+sudo ufw allow 'Apache Full'                         # only if ufw is enabled
+sudo cp /opt/saumgm/deploy/apache/saumgm.conf /etc/apache2/sites-available/
+sudo nano /etc/apache2/sites-available/saumgm.conf   # set ServerName
+sudo a2ensite saumgm
+sudo apache2ctl configtest && sudo systemctl reload apache2
+sudo certbot --apache -d saumgm.example.com
+
+# --- 10. Nightly backups (section 9)
+sudo chmod +x /opt/saumgm/deploy/*.sh
+sudo cp /opt/saumgm/deploy/systemd/saumgm-backup.service /opt/saumgm/deploy/systemd/saumgm-backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now saumgm-backup.timer
+```
+
+Then open `https://saumgm.example.com`, sign in with the user from step 6 and fill in Settings
+(business details, addresses, logo, sales-tax registrations). Later updates are one command:
+`sudo /opt/saumgm/deploy/update.sh` (section 10).
 
 ## 1. Packages
 
@@ -61,7 +146,16 @@ The script `deploy/install-prereqs.sh` checks all of this, installs what is miss
 Apache modules, and creates the `saumgm` user and its folders. It never upgrades or removes
 anything that is already there.
 
-Get the repository onto the server first (step 3 explains the options), or copy just the script.
+The script is part of the repository, so get the code onto the server first (section 3 explains
+the options):
+
+```sh
+sudo apt update && sudo apt install -y git
+cd /opt && sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm
+cd /opt/saumgm
+```
+
+Then, from `/opt/saumgm`:
 
 ```sh
 sudo bash deploy/install-prereqs.sh --check        # report only
@@ -107,18 +201,29 @@ SQL
 
 ## 3. Code and Python environment
 
-Put the repository in `/opt/saumgm`. Choose one:
+Put the repository in `/opt/saumgm`, owned by root (the service user only reads it). Choose one:
 
-- **git (recommended; updates become `git pull`).** The GitHub repository is private, so give the
-  server read access with a deploy key:
+- **git over HTTPS (recommended; updates become `git pull`).** The repository
+  <https://github.com/stokkeland/saumgm> is public, so no key or login is needed:
+  ```sh
+  sudo apt install -y git                  # if not installed yet
+  cd /opt
+  sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm
+  cd /opt/saumgm && git log -1 --oneline   # the version you now have
+  ```
+- **git over SSH** (`git@github.com:stokkeland/saumgm.git`). The clone runs as root through
+  `sudo`, so root needs an SSH key that GitHub knows. A read-only deploy key is the safest:
   ```sh
   sudo ssh-keygen -t ed25519 -f /root/.ssh/saumgm_deploy -N ""
   sudo cat /root/.ssh/saumgm_deploy.pub    # GitHub → repo → Settings → Deploy keys → Add (read-only)
   printf 'Host github.com\n  IdentityFile /root/.ssh/saumgm_deploy\n' | sudo tee -a /root/.ssh/config
-  sudo git clone --branch main git@github.com:stokkeland/saumgm.git /opt/saumgm
+  sudo ssh -T git@github.com               # answer "yes" once; it greets you and exits
+  cd /opt
+  sudo git clone --branch main git@github.com:stokkeland/saumgm.git saumgm
   ```
-  Deploy from `main`. The work so far is on the branch `dev/initial`; merge it into `main` first
-  (a pull request on GitHub), or clone with `--branch dev/initial` until then.
+
+  Deploy from `main`, or from a release branch or tag (`--branch release/v1.0`) to stay on a
+  fixed version. `update.sh` pulls whichever branch is checked out.
 - **Copy from your PC** (Git Bash). Copy without `.venv`, `node_modules`, `.env` or `tmp`:
   ```sh
   rsync -av --exclude .git --exclude .venv --exclude node_modules --exclude tmp \

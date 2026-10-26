@@ -67,7 +67,8 @@ Each instance gets its own database user, so one instance can never read another
 ### 3. Code
 
 ```sh
-sudo git clone --branch main git@github.com:stokkeland/saumgm.git /opt/saumgm-acme
+cd /opt
+sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm-acme
 cd /opt/saumgm-acme
 sudo python3 -m venv backend/.venv
 sudo backend/.venv/bin/pip install --upgrade pip
