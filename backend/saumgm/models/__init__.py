@@ -9,6 +9,7 @@ from saumgm.models.files import StoredFile
 from saumgm.models.invoices import Invoice, InvoiceLine, InvoiceRevision, InvoiceTax
 from saumgm.models.organization import NumberSequence, Organization, OrganizationAddress
 from saumgm.models.parties import Party, PartyAddress, PartyContact, PartyRole
+from saumgm.models.party_documents import PartyDocument
 from saumgm.models.payments import Deposit, DepositItem, Payment, PaymentAllocation
 from saumgm.models.subscriptions import Subscription
 from saumgm.models.tax import (
@@ -43,6 +44,7 @@ __all__ = [
     "Party",
     "PartyAddress",
     "PartyContact",
+    "PartyDocument",
     "PartyRole",
     "Payment",
     "PaymentAllocation",

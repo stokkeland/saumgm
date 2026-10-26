@@ -8,7 +8,16 @@ from sqlalchemy import select
 from saumgm.api.common import get_owned, not_found
 from saumgm.api.deps import Auth, DbSession, Owner, Reader
 from saumgm.documents import deposit_slip_pdf, invoice_pdf, receipt_pdf
-from saumgm.models import Deposit, Invoice, InvoiceRevision, Organization, Payment, StoredFile
+from saumgm.enums import UserRoleType
+from saumgm.models import (
+    Deposit,
+    Invoice,
+    InvoiceRevision,
+    Organization,
+    PartyDocument,
+    Payment,
+    StoredFile,
+)
 from saumgm.storage import MAX_UPLOAD_BYTES, read_file, store_file
 
 router = APIRouter(tags=["documents"])
@@ -41,6 +50,10 @@ def _stored(db: DbSession, file_id: int, auth: Auth) -> Response:
 
 @router.get("/files/{file_id}")
 def download(file_id: int, auth: Reader, db: DbSession) -> Response:
+    # Contact documents (W-9s...) have their own audited download for owners and bookkeepers.
+    is_document = select(PartyDocument.id).where(PartyDocument.file_id == file_id).limit(1)
+    if auth.role == UserRoleType.VIEWER and db.scalar(is_document):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Your role does not allow this")
     return _stored(db, file_id, auth)
 
 
