@@ -2701,6 +2701,10 @@ export interface components {
             database: "ok" | "error";
             /** Database Version */
             database_version?: string | null;
+            /** Schema Revision */
+            schema_revision?: string | null;
+            /** Schema Current */
+            schema_current?: boolean | null;
         };
         /** InvoiceCreate */
         InvoiceCreate: {

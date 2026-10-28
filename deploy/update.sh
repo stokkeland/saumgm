@@ -17,25 +17,35 @@
 # Update a running installation to the latest code of the checked-out branch.
 #
 #   sudo /opt/saumgm/deploy/update.sh                          # pull, install, migrate, build, restart
+#   sudo /opt/saumgm/deploy/update.sh --branch release/v2.0    # move to another branch first
 #   sudo /opt/saumgm/deploy/update.sh --no-pull                # use the code already there
 #   sudo /opt/saumgm-acme/deploy/update.sh --instance acme     # one of several instances
 #
-# Takes a backup first. The frontend is built here if Node.js is installed; otherwise copy a
-# frontend/dist built elsewhere before running this (see docs/deploy/ubuntu.md, step 6).
+# Read docs/upgrading.md before moving to a new version. Takes a backup first. The frontend is
+# built here if Node.js is installed; otherwise copy a frontend/dist built elsewhere before
+# running this (see docs/deploy/ubuntu.md, step 6).
 # Instances: /opt/saumgm-NAME, service saumgm@NAME, port from /etc/saumgm/NAME.env
 # (docs/deploy/multiple-instances.md).
 set -euo pipefail
 
 PULL=1
+BACKUP=1
 INSTANCE=""
+BRANCH=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --no-pull) PULL=0 ;;
+    --skip-backup) BACKUP=0 ;;  # used when the script restarts itself after pulling
+    --branch) BRANCH="${2:?--branch needs a name}"; shift ;;
     --instance) INSTANCE="${2:?--instance needs a name}"; shift ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
   shift
 done
+if [ -n "$BRANCH" ] && [ "$PULL" -eq 0 ]; then
+  echo "--branch fetches from git, so it cannot be combined with --no-pull" >&2
+  exit 2
+fi
 
 if [ -n "$INSTANCE" ]; then
   case "$INSTANCE" in
@@ -61,12 +71,30 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 cd "$APP_DIR"
 
-echo "== Backup"
-"$APP_DIR/deploy/backup.sh" "${BACKUP_ARGS[@]}"
+if [ "$PULL" -eq 1 ] && [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+  echo "Files in $APP_DIR were changed by hand (git status); commit, stash or undo them first" >&2
+  exit 1
+fi
+
+if [ "$BACKUP" -eq 1 ]; then
+  echo "== Backup"
+  "$APP_DIR/deploy/backup.sh" "${BACKUP_ARGS[@]}"
+fi
 
 if [ "$PULL" -eq 1 ]; then
-  echo "== Pull"
+  if [ -n "$BRANCH" ] && [ "$BRANCH" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
+    echo "== Switch to $BRANCH"
+    git fetch origin
+    git switch "$BRANCH"
+  fi
+  echo "== Pull ($(git rev-parse --abbrev-ref HEAD))"
   git pull --ff-only
+  # The pull may have replaced this script while bash is reading it. Continue with the new copy,
+  # so the remaining steps are those of the version just pulled. (This block is parsed whole
+  # before it runs, so the exec is safe.)
+  INSTANCE_ARGS=()
+  [ -n "$INSTANCE" ] && INSTANCE_ARGS=(--instance "$INSTANCE")
+  exec bash "$APP_DIR/deploy/update.sh" --no-pull --skip-backup "${INSTANCE_ARGS[@]}"
 fi
 
 echo "== Backend"
@@ -86,7 +114,13 @@ echo "== Restart $SERVICE"
 systemctl restart "$SERVICE"
 for _ in $(seq 1 20); do
   if curl -fsS "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1; then
-    echo "API is up: $(curl -fsS "http://127.0.0.1:$PORT/api/health")"
+    HEALTH=$(curl -fsS "http://127.0.0.1:$PORT/api/health")
+    echo "API is up: $HEALTH"
+    case "$HEALTH" in
+      *'"schema_current":false'*)
+        echo "The database schema is not the newest one; see: alembic current / alembic heads" >&2
+        exit 1 ;;
+    esac
     exit 0
   fi
   sleep 1

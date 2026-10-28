@@ -22,7 +22,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from saumgm import __version__
-from saumgm.db import get_session, server_version
+from saumgm.db import code_schema_revision, get_session, schema_revision, server_version
 
 router = APIRouter(tags=["system"])
 log = logging.getLogger(__name__)
@@ -33,6 +33,10 @@ class Health(BaseModel):
     version: str
     database: Literal["ok", "error"]
     database_version: str | None = None
+    # The migration the database is at, and whether that is the newest one in this code. False
+    # after an update means `alembic upgrade head` still has to run.
+    schema_revision: str | None = None
+    schema_current: bool | None = None
 
 
 @router.get("/health")
@@ -44,4 +48,12 @@ def health(response: Response, session: Annotated[Session, Depends(get_session)]
         log.exception("Health check could not reach the database")
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return Health(status="error", version=__version__, database="error")
-    return Health(status="ok", version=__version__, database="ok", database_version=db_version)
+    revision = schema_revision(session)
+    return Health(
+        status="ok",
+        version=__version__,
+        database="ok",
+        database_version=db_version,
+        schema_revision=revision,
+        schema_current=revision == code_schema_revision(),
+    )

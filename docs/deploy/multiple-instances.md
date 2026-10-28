@@ -173,7 +173,8 @@ sudo /opt/saumgm-acme/deploy/update.sh --instance acme
 
 Same steps as for the single instance (backup, pull, packages, migrations, frontend, restart, health
 check), for that instance only. A good routine: update the `test` instance first, try it, then
-update the others one at a time.
+update the others one at a time. To move an instance to a new version, add
+`--branch release/vX.Y` after reading [../upgrading.md](../upgrading.md).
 
 ## A demo instance
 
