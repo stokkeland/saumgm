@@ -1,7 +1,7 @@
 # SauMGM 2.0 plan
 
-Status: **draft for review**. Nothing here is built yet. Decisions marked **(decide)** need an
-answer before that part starts; each has a recommendation.
+Status: **agreed in outline**, nothing built yet. The owner's decisions are recorded in
+[section 4](#4-decisions).
 
 Version 1.0 is on the branch `release/v1.0`. 2.0 is developed on `main`, one feature branch and
 pull request per part below, so it can be built, reviewed and merged a piece at a time.
@@ -15,11 +15,12 @@ Contents:
    - [B. Layout: modules and an Admin section](#b-layout-modules-and-an-admin-section)
    - [C. Email (Resend)](#c-email-resend)
    - [D. Reports: income by payment date, PDF/print, email](#d-reports-income-by-payment-date-pdfprint-email)
-   - [E. Subscription packages](#e-subscription-packages)
+   - [E. Subscriptions: what you bill and what you pay](#e-subscriptions-what-you-bill-and-what-you-pay)
+   - [I. Reminders: to-do list, digest email, scheduled job](#i-reminders-to-do-list-digest-email-scheduled-job)
    - [F. Banking: accounts and registers](#f-banking-accounts-and-registers)
    - [G. Assets (CMDB, first step)](#g-assets-cmdb-first-step)
    - [H. Knowledge base](#h-knowledge-base)
-4. [Decisions needed](#4-decisions-needed)
+4. [Decisions](#4-decisions)
 
 ---
 
@@ -90,13 +91,15 @@ email) and keeps each step reviewable.
 | 2 | B. Layout: modules, grouped navigation, Admin section | every new module plugs into it | M |
 | 3 | C. Email (Resend), first use: email an invoice or receipt | reports and the knowledge base reuse it | M |
 | 4 | D. Reports: income by payment date, PDF/print, email a report | uses C | M |
-| 5 | E. Subscription packages | flushes or converts subscription data | M |
-| 6 | F. Banking | the biggest new area | L |
-| 7 | G. Assets | new module | M |
-| 8 | H. Knowledge base | new module, uses C | M |
-| 9 | Release 2.0: `release/v2.0`, tag `v2.0.0`, upgrade the server | | S |
+| 5 | E. Subscriptions: client subscriptions with packages, vendor subscriptions | converts subscription data | M |
+| 6 | I. Reminders: to-do list, digest email, `notify` command and timer | uses C and E | M |
+| 7 | F. Banking | the biggest new area | L |
+| 8 | G. Assets | new module | M |
+| 9 | H. Knowledge base | new module, uses C | M |
+| 10 | Release 2.0: `release/v2.0`, tag `v2.0.0`, upgrade the server | | S |
 
-The order of 5–8 can change freely; they do not depend on each other.
+The order of 7–9 can change freely. Each module adds its own items to the reminders (I) as it
+arrives: banking (accounts not reconciled), assets (warranties ending).
 
 ## 3. The parts
 
@@ -144,7 +147,8 @@ Groups fold open and closed; on a phone the same menu is in the drawer.
 `frontend/src/modules/<name>/` (pages, components, `module.ts` with routes and nav items), and
 the shell builds routes and navigation from the list of modules. On the backend each module
 already has its own router, models, schemas and service; that stays, with one registry for
-routers. Adding a module then means adding a folder and one line, without touching the shell.
+routers and for the module's **reminder items** (see I). Adding a module then means adding a
+folder and one line, without touching the shell.
 
 **Admin section.** Settings, Users (moved out of Settings), Email settings, Audit log and About
 (version, database version) move under `/admin`. Only owners see it, as with the audit log now;
@@ -163,8 +167,9 @@ One email service used everywhere, like `storage.py` for files:
   - `resend://` with `RESEND_API_KEY=...` (your account),
   - `console://` for development: logs the message instead of sending (the default),
   - SMTP can be added later without touching the callers.
-- **`EMAIL_FROM`** (for example `billing@yourdomain`, on a domain verified in Resend) and
-  optional `EMAIL_REPLY_TO`.
+- **Sender, configurable:** the from address and name, and an optional reply-to, are business
+  settings in Admin → Email; `EMAIL_FROM` in `.env` is only the default until they are set. The
+  address must be on a domain verified in Resend; a "Send test email" button checks the setup.
 - **Safety on the development PC:** the development database holds real client addresses.
   `EMAIL_REDIRECT_TO=you@example.com` sends every message to that address instead, with the
   real recipients noted at the top. Recommended on any non-production installation.
@@ -177,8 +182,8 @@ One email service used everywhere, like `storage.py` for files:
   Admin → Email, with placeholders such as `{invoice_number}`, `{client_name}`, `{total}`,
   `{due_date}`.
 - **First uses in this step:** email an invoice (its stored PDF) and a payment receipt.
-- Sending is synchronous (Resend answers in well under a second); a background queue comes with
-  scheduled mail (document-expiry reminders, overdue reminders), which is a later step.
+- Sending is synchronous (Resend answers in well under a second). Scheduled mail (the reminder
+  digest) runs from a timer on the server, see I.
 
 ### D. Reports: income by payment date, PDF/print, email
 
@@ -203,26 +208,102 @@ every browser. The same PDF is what gets emailed.
 **Email a report:** an **Email** button opens the dialog from C with the PDF attached, addressed
 to yourself by default.
 
-### E. Subscription packages
+### E. Subscriptions: what you bill and what you pay
 
-Today one subscription is one catalog item. In 2.0 a subscription is a **header with lines**:
+Recurring things come in two kinds that rarely line up one to one:
 
-- **Subscription** (header): client, what it is for (`service_identifier`, e.g. the domain),
-  billing interval, start / next bill / end date, auto-renew, status, notes.
-- **Subscription lines**: catalog item, description, quantity, price override, discount, and per
-  line the vendor, vendor renewal date and unit cost (the domain renews at the registrar, the
-  hosting elsewhere).
-- The billing run makes **one invoice per subscription**, with one line per subscription line.
-  (Subscriptions of one client due on the same day can be combined onto one invoice too: an
-  option on the billing run.)
-- **Packages** in the catalog: a named set of items with default prices (e.g. "Hosting + domain"),
-  used to fill a new subscription's lines in one click. The lines stay editable per client.
-  Optional for this step; easy to add afterwards.
+- **Client subscriptions**, what you **bill**: hosting, domains, support plans you sell. Some
+  have a vendor behind them, some are only your own work.
+- **Vendor subscriptions**, what you **pay**: the server you rent, domain registrations, software
+  licenses, phone and internet. One server may carry many clients' hosting; some vendor costs
+  belong to no client at all.
 
-**Data:** you said test subscriptions can be flushed. The migration can instead convert each
-existing subscription into a header with one line, which loses nothing and costs little.
-**(decide)** convert (recommended) or flush. Invoice lines already created by the billing run
-keep their link to the subscription.
+They become two separate lists with their own screens, due dates and reminders, joined only by
+an optional link.
+
+**Client subscriptions** (Sales → Subscriptions). In 1.0 a subscription is one catalog item; in
+2.0 it is a **header with lines**, so hosting and a domain go on one invoice:
+
+- **Header:** client, what it is for (`service_identifier`, e.g. the domain), billing interval,
+  start / next bill / end date, auto-renew, status, notes.
+- **Lines:** catalog item, description, quantity, price override, discount.
+- The billing run makes **one invoice per subscription**, one invoice line per subscription
+  line, and can optionally combine a client's subscriptions due on the same day into one invoice.
+- **Packages** in the catalog: a named set of items with default prices ("Hosting + domain") that
+  fills a new subscription's lines in one click; the lines stay editable per client.
+
+**Vendor subscriptions** (Money → Vendor subscriptions; new):
+
+| Field | Notes |
+|---|---|
+| vendor | a contact with the vendor role |
+| name, what it is for | "VPS host-01", "example.com registration" |
+| amount, interval | monthly, yearly, every N months |
+| next due date, end date | |
+| expense account | the category the cost is booked to |
+| paid from | a bank or card account (once F exists); optional before that |
+| autopay | charged automatically (a card on file) or paid by you; affects the reminder wording |
+| auto-renew, status, notes | cancelled ones stay for history |
+
+**Record payment** on a vendor subscription creates the expense (vendor, account, amount; once F
+exists also the register line on the "paid from" account) and moves the next due date on by one
+interval. Nothing else is created automatically.
+
+**The optional link** "uses": a client subscription line can name the vendor subscription(s) it
+depends on, many-to-many. It is information only, never billing logic:
+- on a client subscription: the cost behind it and the margin;
+- on a vendor subscription: which clients depend on it, before you cancel or let it lapse.
+
+**Data:** existing subscriptions are **converted**: each becomes a header with one line. Where a
+1.0 subscription has vendor details (vendor, vendor renewal date, unit cost), a vendor
+subscription is created from them and linked. Invoice lines created by earlier billing runs keep
+their link to the subscription.
+
+### I. Reminders: to-do list, digest email, scheduled job
+
+One place that answers "what needs doing", on screen and by email, with **billing clients and
+paying bills kept apart**.
+
+**The to-do list** (a page, and a summary on the dashboard), in sections:
+
+| Section | Items | Default lead time |
+|---|---|---|
+| **Bill clients** | client subscriptions due for billing; button to the billing run | 14 days |
+| **Pay vendors** | vendor subscriptions due; autopay ones marked "will be charged, check the account" | 10 days |
+| **Collect** | overdue invoices | when overdue |
+| **Documents** | contact documents expiring (the 1.0 `remind_days_before` setting) | per document |
+| **Assets** | warranties and support contracts ending (with G) | 30 days |
+| **Banking** | accounts not reconciled for a while (with F) | 35 days |
+
+Lead times are business settings (Admin → Reminders). Each module provides its own section
+through the module registry (B), so new modules join without changing this one.
+
+**The digest email:** the same list, sent to the owners (or the addresses set in Admin →
+Reminders), grouped by section, with links into the app. It says how long it has been since
+anyone signed in, using the `last_login_at` the app already records, e.g. *"Nobody has signed in
+for 20 days. 3 client subscriptions are due for billing within 14 days; 2 vendor payments are
+due within 10 days."*
+
+**The `notify` command** builds and sends the digest, for a timer or cron job:
+
+```sh
+cd /opt/saumgm/backend
+sudo -u saumgm .venv/bin/python -m saumgm notify               # send if anything is due
+sudo -u saumgm .venv/bin/python -m saumgm notify --dry-run     # print it, send nothing
+sudo -u saumgm .venv/bin/python -m saumgm notify --json        # the data, for your own scripts
+sudo -u saumgm .venv/bin/python -m saumgm notify --if-idle 20  # only if nobody signed in for 20 days
+```
+
+- It sends nothing when nothing is due (unless `--always`), so a daily schedule does not create
+  noise.
+- **Scheduling:** a systemd timer `saumgm-notify.timer` (daily at 07:00, plus the `@` template for
+  several instances), installed like the backup timer. A plain cron line works too:
+  `0 7 * * * cd /opt/saumgm/backend && sudo -u saumgm .venv/bin/python -m saumgm notify`.
+- Every digest is logged as an email message (C), so Admin → Email shows what was sent when.
+
+**From other machines, later:** read-only API tokens (Admin → API tokens) so a script elsewhere
+can call `GET /api/reminders` with a token instead of a browser login. Not needed for the timer
+on the server; a small step once someone needs it.
 
 ### F. Banking: accounts and registers
 
@@ -259,7 +340,8 @@ and a running balance in the register. For a credit card the screen shows "owed"
 1. **Deposit → register:** recording a deposit on an account adds the matching register line
    (deposits get a bank account instead of only a bank contact).
 2. **Expense → register:** an expense can say "paid from" an account (checking, or a card); that
-   adds the register line. This covers bill pay: enter the bill as an expense, paid from checking.
+   adds the register line. This covers bill pay: enter the bill as an expense, paid from checking,
+   or press "Record payment" on a vendor subscription (E), which does both.
 3. **Transfer:** money from one account to another, as one action that writes both sides.
    **Paying the credit card** is a transfer from checking to the card account.
 
@@ -271,9 +353,17 @@ expense or deposit updates its register line; deleting one removes it.
 that appear on it, the difference must be zero, then they become reconciled) is part of this
 step if time allows, otherwise next. **Importing a bank's CSV or OFX file** is a later step.
 
-**History (decide):** start each register at an opening balance on a chosen date (recommended:
-the date you start using it), or also create register lines for older deposits and expenses.
-Old Access data has no "paid from" information, so backfilling would be guesswork.
+**Starting point:** each register starts at an **opening balance on a start date you choose**
+per account; older deposits and expenses are not copied in (the Access data does not say which
+account paid what). To match history:
+- add manual entries dated after the start date (e.g. set the start to the last statement you
+  trust and enter the months since by hand);
+- the start date and opening balance can be changed later, and the balances follow;
+- a **balance adjustment** entry (marked as such) brings the register in line with a statement
+  when the difference is not worth tracing.
+
+Entries dated before the start date are refused, so the opening balance always means "the
+balance on that day".
 
 ### G. Assets (CMDB, first step)
 
@@ -305,9 +395,9 @@ software; IP address and MAC for network equipment. They are stored with the ass
 switch connects these), maintenance log, links to subscriptions (the hosting server behind a
 client's subscription), network discovery or agents.
 
-**(decide)** Is the inventory only for your own business's equipment, or also for equipment you
-manage at clients? Recommended: allow both from the start (owner = any contact, defaulting to
-your business); it costs one field now and is hard to add later.
+**Whose equipment:** both your own and equipment you manage at clients. The owner field is any
+contact, defaulting to your business; the asset list filters by owner, and a client's page gets
+an Assets tab.
 
 ### H. Knowledge base
 
@@ -330,16 +420,25 @@ and in the backend for email and PDF (`markdown-it-py`, MIT). Rendered HTML is s
 
 Later: public share links (a read-only page per article without login), client portal.
 
-## 4. Decisions needed
+## 4. Decisions
 
-| # | Question | Recommendation |
+Decided by the owner:
+
+| Part | Decision |
+|---|---|
+| E | Existing subscriptions are **converted**, not flushed. |
+| E | Subscriptions are **two kinds**: client subscriptions (billed) and vendor subscriptions (paid), separate lists and reminders, joined by an optional information-only link. |
+| F | Registers start at an **opening balance on a start date chosen per account**, with manual entries and balance adjustments to match history. |
+| G | Assets cover **both** the business's own equipment and equipment managed at clients. |
+| C | The **sender address is configurable** (business setting, `.env` default). |
+| I | Added: reminders with separate "bill clients" and "pay vendors" sections, a digest email and a `notify` command for a timer or cron. |
+
+Going ahead with the recommendation unless the owner says otherwise:
+
+| Part | Question | Recommendation |
 |---|---|---|
-| 1 | A: drop `legacy_data` (JSON "Old system" tabs) together with the legacy tables? | keep it; it is small and holds the old notes |
-| 2 | E: convert existing subscriptions to the new shape, or flush them? | convert |
-| 3 | E: may the billing run combine several subscriptions of one client into one invoice? | yes, as an option |
-| 4 | F: register history: opening balance on a start date, or backfill old deposits/expenses? | opening balance |
-| 5 | F: statement reconciliation in the first banking step? | yes if it fits, otherwise next |
-| 6 | G: assets for your business only, or for clients' equipment too? | both |
-| 7 | H: public share links for articles now, or email only? | email only for now |
-| 8 | C: which sender address (on a domain verified in Resend)? | e.g. `billing@` your domain |
-| 9 | General: anything in this list more urgent than the order in section 2? | |
+| A | Drop `legacy_data` (JSON "Old system" tabs) with the legacy tables? | keep it; it is small and holds the old notes |
+| E | Billing run may combine a client's subscriptions due the same day into one invoice? | yes, as an option |
+| F | Statement reconciliation in the first banking step? | yes if it fits, otherwise next |
+| H | Public share links for articles now, or email only? | email only for now |
+| I | API tokens for scripts on other machines now? | later; the `notify` command covers the server |
