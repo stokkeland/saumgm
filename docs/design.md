@@ -324,6 +324,7 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
 5. **Documents + reports** ✅ — file storage interface (`saumgm/storage.py`, `file://` backend), business logo upload (and importer option), ReportLab PDFs for invoices (kept as issued and per revision), receipts and deposit slips; write-offs for uncollectible invoices; sales-tax filing periods; reports API + screen with CSV downloads (sales, sales tax, expenses, profit & loss, aging). 119 backend tests, 17 end-to-end tests.
 6. **Deploy** — install guide [docs/deploy/ubuntu.md](deploy/ubuntu.md) and `deploy/` (prerequisite check/install script, systemd unit, Apache vhost, nightly backup timer, update script, database export for MariaDB 10.11); then install on the Ubuntu server and cut over from Access.
 7. **Post-v1** — email invoices, SSO (OIDC → SAML), Docker images/compose, recurring auto-issue, project module redesign.
+8. **2.0** (in progress on `main`; 1.0 is on `release/v1.0`) — banking, email, report PDFs and income by payment date, subscription packages, assets, knowledge base, modular layout: see [plan-v2.md](plan-v2.md).
 
 ---
 
