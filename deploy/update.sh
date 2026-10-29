@@ -17,25 +17,37 @@
 # Update a running installation to the latest code of the checked-out branch.
 #
 #   sudo /opt/saumgm/deploy/update.sh                          # pull, install, migrate, build, restart
+#   sudo /opt/saumgm/deploy/update.sh --branch release/v2.0    # move to another branch first
 #   sudo /opt/saumgm/deploy/update.sh --no-pull                # use the code already there
 #   sudo /opt/saumgm-acme/deploy/update.sh --instance acme     # one of several instances
 #
-# Takes a backup first. The frontend is built here if Node.js is installed; otherwise copy a
-# frontend/dist built elsewhere before running this (see docs/deploy/ubuntu.md, step 6).
+# Read docs/upgrading.md before moving to a new version. Takes a backup first. The frontend is
+# built here if Node.js is installed; otherwise copy a frontend/dist built elsewhere before
+# running this (see docs/deploy/ubuntu.md, step 6).
 # Instances: /opt/saumgm-NAME, service saumgm@NAME, port from /etc/saumgm/NAME.env
 # (docs/deploy/multiple-instances.md).
+# The checkout may belong to root or to an admin account (docs/deploy/ubuntu.md, section 3); git,
+# pip and npm run as whoever owns it.
 set -euo pipefail
 
 PULL=1
+BACKUP=1
 INSTANCE=""
+BRANCH=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --no-pull) PULL=0 ;;
+    --skip-backup) BACKUP=0 ;;  # used when the script restarts itself after pulling
+    --branch) BRANCH="${2:?--branch needs a name}"; shift ;;
     --instance) INSTANCE="${2:?--instance needs a name}"; shift ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
   shift
 done
+if [ -n "$BRANCH" ] && [ "$PULL" -eq 0 ]; then
+  echo "--branch fetches from git, so it cannot be combined with --no-pull" >&2
+  exit 2
+fi
 
 if [ -n "$INSTANCE" ]; then
   case "$INSTANCE" in
@@ -61,22 +73,55 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 cd "$APP_DIR"
 
-echo "== Backup"
-"$APP_DIR/deploy/backup.sh" "${BACKUP_ARGS[@]}"
+# Git refuses a repository owned by another user ("dubious ownership"), and files pip or npm
+# create as root would lock the owner out of their own checkout, so those run as the owner.
+CODE_OWNER=$(stat -c %U "$APP_DIR")
+as_owner() {
+  if [ "$CODE_OWNER" = root ]; then "$@"; else sudo -u "$CODE_OWNER" -H -- "$@"; fi
+}
+# .env is meant to belong to root, readable by the service's group.
+STRAY=$(find "$APP_DIR" -path "$APP_DIR/backend/.env" -prune -o ! -user "$CODE_OWNER" -print -quit)
+if [ -n "$STRAY" ]; then
+  echo "$STRAY (maybe more) is not owned by $CODE_OWNER, who owns $APP_DIR. Fix it once with:" >&2
+  echo "  sudo chown -R $CODE_OWNER: $APP_DIR" >&2
+  echo "  sudo chown root:$SERVICE_USER $APP_DIR/backend/.env && sudo chmod 640 $APP_DIR/backend/.env" >&2
+  exit 1
+fi
+
+if [ "$PULL" -eq 1 ] && [ -n "$(as_owner git status --porcelain --untracked-files=no)" ]; then
+  echo "Files in $APP_DIR were changed by hand (git status); commit, stash or undo them first" >&2
+  exit 1
+fi
+
+if [ "$BACKUP" -eq 1 ]; then
+  echo "== Backup"
+  "$APP_DIR/deploy/backup.sh" "${BACKUP_ARGS[@]}"
+fi
 
 if [ "$PULL" -eq 1 ]; then
-  echo "== Pull"
-  git pull --ff-only
+  if [ -n "$BRANCH" ] && [ "$BRANCH" != "$(as_owner git rev-parse --abbrev-ref HEAD)" ]; then
+    echo "== Switch to $BRANCH"
+    as_owner git fetch origin
+    as_owner git switch "$BRANCH"
+  fi
+  echo "== Pull ($(as_owner git rev-parse --abbrev-ref HEAD))"
+  as_owner git pull --ff-only
+  # The pull may have replaced this script while bash is reading it. Continue with the new copy,
+  # so the remaining steps are those of the version just pulled. (This block is parsed whole
+  # before it runs, so the exec is safe.)
+  INSTANCE_ARGS=()
+  [ -n "$INSTANCE" ] && INSTANCE_ARGS=(--instance "$INSTANCE")
+  exec bash "$APP_DIR/deploy/update.sh" --no-pull --skip-backup "${INSTANCE_ARGS[@]}"
 fi
 
 echo "== Backend"
-backend/.venv/bin/pip install --quiet --upgrade pip
-backend/.venv/bin/pip install --quiet -e backend
+as_owner backend/.venv/bin/pip install --quiet --upgrade pip
+as_owner backend/.venv/bin/pip install --quiet -e backend
 (cd backend && sudo -u "$SERVICE_USER" .venv/bin/alembic upgrade head)
 
 if command -v npm >/dev/null; then
   echo "== Frontend"
-  (cd frontend && npm ci --no-audit --no-fund && npm run build)
+  (cd frontend && as_owner npm ci --no-audit --no-fund && as_owner npm run build)
 else
   echo "== Frontend: Node.js not installed; using the frontend/dist that is already here"
 fi
@@ -86,7 +131,13 @@ echo "== Restart $SERVICE"
 systemctl restart "$SERVICE"
 for _ in $(seq 1 20); do
   if curl -fsS "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1; then
-    echo "API is up: $(curl -fsS "http://127.0.0.1:$PORT/api/health")"
+    HEALTH=$(curl -fsS "http://127.0.0.1:$PORT/api/health")
+    echo "API is up: $HEALTH"
+    case "$HEALTH" in
+      *'"schema_current":false'*)
+        echo "The database schema is not the newest one; see: alembic current / alembic heads" >&2
+        exit 1 ;;
+    esac
     exit 0
   fi
   sleep 1
