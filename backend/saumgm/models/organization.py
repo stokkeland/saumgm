@@ -60,6 +60,10 @@ class Organization(IdMixin, TimestampMixin, Base):
     tax_label: Mapped[str] = mapped_column(String(50), default="Sales Tax")
     prices_include_tax: Mapped[bool] = mapped_column(Boolean, default=False)
     tax_basis: Mapped[TaxBasis] = mapped_column(str_enum(TaxBasis), default=TaxBasis.ACCRUAL)
+    # Sales and profit & loss: count income by invoice date (accrual) or payment date (cash).
+    income_basis: Mapped[TaxBasis] = mapped_column(
+        str_enum(TaxBasis), default=TaxBasis.ACCRUAL, server_default=TaxBasis.ACCRUAL.value
+    )
 
     # Invoicing defaults
     default_terms_days: Mapped[int] = mapped_column(Integer, default=30)

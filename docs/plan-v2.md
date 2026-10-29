@@ -219,6 +219,14 @@ every browser. The same PDF is what gets emailed.
 **Email a report:** an **Email** button opens the dialog from C with the PDF attached, addressed
 to yourself by default.
 
+Built in part D as described, with these details: there are no refund records yet, so by
+payment date a credit note counts nowhere (it only lowers what is still owed); payment amounts
+not applied to an invoice wait until they are; the profit & loss by payment date has no bad
+debts (what was never received was never income). The upgrade sets "Report income by" to the
+business's "Report tax by". Reports are emailed through their own endpoints
+(`/api/reports/{report}/email`) rather than a record type, since a report is a query, not a
+stored record; the message has its own template.
+
 ### E. Subscriptions: what you bill and what you pay
 
 Recurring things come in two kinds that rarely line up one to one:

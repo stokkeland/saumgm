@@ -71,6 +71,10 @@ DEFAULT_TEMPLATES: dict[EmailKind, tuple[str, str]] = {
         "attached.\n\n"
         "{business_name}",
     ),
+    EmailKind.REPORT: (
+        "{report_title}, {period}",
+        "Attached: {report_title} for {period}.\n\n{business_name}",
+    ),
     EmailKind.TEST: (
         "Test message from {business_name}",
         "This is a test message from SauMGM. If you can read it, sending email works.",
@@ -103,6 +107,11 @@ PLACEHOLDERS: dict[EmailKind, dict[str, str]] = {
         "reference": "Check number or other reference",
         "invoices": "Invoices the payment was applied to",
         "client_name": "Client name",
+        "business_name": "Your business name",
+    },
+    EmailKind.REPORT: {
+        "report_title": "Name of the report, e.g. Profit & loss",
+        "period": "The period it covers, or the day for receivables aging",
         "business_name": "Your business name",
     },
     EmailKind.TEST: {"business_name": "Your business name"},
@@ -247,6 +256,24 @@ def compose(session: Session, org: Organization, record_type: str, record_id: in
             raise LookupError("Payment")
         return _payment_draft(session, org, payment)
     raise LookupError(f"Email for {record_type!r}")
+
+
+def report_draft(
+    session: Session, org: Organization, user: User, title: str, period: str, pdf: Attachment
+) -> Draft:
+    """A report goes to the person sending it unless they change the recipients."""
+    values = {"report_title": title, "period": period, "business_name": org.display_name}
+    subject, body, _ = template(session, org.id, EmailKind.REPORT)
+    return Draft(
+        kind=EmailKind.REPORT,
+        entity_type="report",
+        entity_id=pdf.filename.removesuffix(".pdf"),
+        to=[user.email],
+        cc=[],
+        subject=fill(subject, values),
+        body=fill(body, values),
+        attachments=[pdf],
+    )
 
 
 def test_draft(session: Session, org: Organization, user: User) -> Draft:

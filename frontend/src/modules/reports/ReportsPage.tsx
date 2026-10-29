@@ -39,7 +39,8 @@ import { Link } from 'react-router'
 import { api, unwrap } from '../../api/client'
 import { useJurisdictions, useOrganization } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
-import { DateText, Money, PageHeader } from '../../components/ui'
+import { ReportEmailButton } from '../../components/EmailDialog'
+import { DateText, Money, PageHeader, PdfButton } from '../../components/ui'
 import { formatDate, formatRate, todayIso } from '../../lib/format'
 import { useUrlState } from '../../lib/useUrlState'
 
@@ -161,14 +162,35 @@ function FilingPeriodPicker({ onChange }: { onChange: (from: string, to: string)
   )
 }
 
-function CsvButton({ path, query }: { path: string; query: Record<string, string> }) {
+type ReportName = 'sales' | 'sales-tax' | 'expenses' | 'profit-loss' | 'aging'
+
+/** The report as shown, as a PDF (to print or save), as CSV, and by email. */
+function ReportActions({ report, query }: { report: ReportName; query: Record<string, string> }) {
+  const { canEdit } = useAuth()
   const params = new URLSearchParams(Object.entries(query).filter(([, v]) => v !== ''))
   return (
-    <Button component="a" href={`${path}?${params}`} variant="default" leftSection={<IconDownload size={16} />}>
-      Download CSV
-    </Button>
+    <Group gap="xs">
+      <PdfButton href={`/api/reports/${report}.pdf?${params}`} />
+      <Button
+        component="a"
+        href={`/api/reports/${report}.csv?${params}`}
+        variant="default"
+        leftSection={<IconDownload size={16} />}
+      >
+        CSV
+      </Button>
+      {canEdit && <ReportEmailButton report={report} query={Object.fromEntries(params)} />}
+    </Group>
   )
 }
+
+const BASES = [
+  { value: 'accrual', label: 'By invoice date' },
+  { value: 'cash', label: 'By payment date' },
+]
+
+type Basis = 'accrual' | 'cash'
+type BasisProps = { basis: string; setBasis: (b: string) => void }
 
 function useReport<T>(key: unknown[], enabled: boolean, load: () => Promise<T>) {
   return useQuery({ queryKey: ['report', ...key], queryFn: load, enabled, placeholderData: keepPreviousData })
@@ -186,24 +208,38 @@ const num = { style: { textAlign: 'right' as const } }
 
 type Range = { from: string; to: string }
 
-function SalesReport({ range, group, setGroup }: { range: Range; group: string; setGroup: (g: string) => void }) {
-  const query = { date_from: range.from, date_to: range.to, group: group as 'month' | 'client' | 'revenue_category' }
+function SalesReport({
+  range,
+  group,
+  setGroup,
+  basis,
+  setBasis,
+}: { range: Range; group: string; setGroup: (g: string) => void } & BasisProps) {
+  const query = {
+    date_from: range.from,
+    date_to: range.to,
+    group: group as 'month' | 'client' | 'revenue_category',
+    ...(basis ? { basis: basis as Basis } : {}),
+  }
   const { data, isLoading, error } = useReport(['sales', query], true, async () =>
     unwrap(await api.GET('/api/reports/sales', { params: { query } })),
   )
   return (
     <Stack>
       <Group justify="space-between">
-        <SegmentedControl
-          value={group}
-          onChange={setGroup}
-          data={[
-            { value: 'month', label: 'By month' },
-            { value: 'client', label: 'By client' },
-            { value: 'revenue_category', label: 'By category' },
-          ]}
-        />
-        <CsvButton path="/api/reports/sales.csv" query={query} />
+        <Group>
+          <SegmentedControl
+            value={group}
+            onChange={setGroup}
+            data={[
+              { value: 'month', label: 'By month' },
+              { value: 'client', label: 'By client' },
+              { value: 'revenue_category', label: 'By category' },
+            ]}
+          />
+          <SegmentedControl value={basis || data?.basis || 'accrual'} onChange={setBasis} data={BASES} />
+        </Group>
+        <ReportActions report="sales" query={query} />
       </Group>
       <Status isLoading={isLoading} error={error} />
       {data && (
@@ -268,8 +304,9 @@ function SalesReport({ range, group, setGroup }: { range: Range; group: string; 
         </Table>
       )}
       <Text size="xs" c="dimmed">
-        Issued invoices dated in the period, less credit notes. Sales are before tax; written-off invoices
-        still count as sales.
+        {data?.basis === 'cash'
+          ? 'Payments received in the period, applied to invoices, without their tax. Unpaid and written-off amounts do not count.'
+          : 'Issued invoices dated in the period, less credit notes. Sales are before tax; written-off invoices still count as sales.'}
       </Text>
     </Stack>
   )
@@ -288,12 +325,12 @@ function Figure({ label, value, strong }: { label: string; value: string; strong
   )
 }
 
-function SalesTaxReport({ range, basis, setBasis }: { range: Range; basis: string; setBasis: (b: string) => void }) {
+function SalesTaxReport({ range, basis, setBasis }: { range: Range } & BasisProps) {
   const { locale } = useAuth()
   const query = {
     date_from: range.from,
     date_to: range.to,
-    ...(basis ? { basis: basis as 'accrual' | 'cash' } : {}),
+    ...(basis ? { basis: basis as Basis } : {}),
   }
   const { data, isLoading, error } = useReport(['sales-tax', query], true, async () =>
     unwrap(await api.GET('/api/reports/sales-tax', { params: { query } })),
@@ -301,15 +338,8 @@ function SalesTaxReport({ range, basis, setBasis }: { range: Range; basis: strin
   return (
     <Stack>
       <Group justify="space-between">
-        <SegmentedControl
-          value={basis || data?.basis || 'accrual'}
-          onChange={setBasis}
-          data={[
-            { value: 'accrual', label: 'By invoice date' },
-            { value: 'cash', label: 'By payment date' },
-          ]}
-        />
-        <CsvButton path="/api/reports/sales-tax.csv" query={query} />
+        <SegmentedControl value={basis || data?.basis || 'accrual'} onChange={setBasis} data={BASES} />
+        <ReportActions report="sales-tax" query={query} />
       </Group>
       <Status isLoading={isLoading} error={error} />
       {data && (
@@ -399,7 +429,7 @@ function ExpensesReport({ range, group, setGroup }: { range: Range; group: strin
             { value: 'month', label: 'By month' },
           ]}
         />
-        <CsvButton path="/api/reports/expenses.csv" query={query} />
+        <ReportActions report="expenses" query={query} />
       </Group>
       <Status isLoading={isLoading} error={error} />
       {data && (
@@ -429,8 +459,8 @@ function ExpensesReport({ range, group, setGroup }: { range: Range; group: strin
   )
 }
 
-function ProfitLossReport({ range }: { range: Range }) {
-  const query = { date_from: range.from, date_to: range.to }
+function ProfitLossReport({ range, basis, setBasis }: { range: Range } & BasisProps) {
+  const query = { date_from: range.from, date_to: range.to, ...(basis ? { basis: basis as Basis } : {}) }
   const { data, isLoading, error } = useReport(['profit-loss', query], true, async () =>
     unwrap(await api.GET('/api/reports/profit-loss', { params: { query } })),
   )
@@ -446,8 +476,9 @@ function ProfitLossReport({ range }: { range: Range }) {
   )
   return (
     <Stack>
-      <Group justify="flex-end">
-        <CsvButton path="/api/reports/profit-loss.csv" query={query} />
+      <Group justify="space-between">
+        <SegmentedControl value={basis || data?.basis || 'accrual'} onChange={setBasis} data={BASES} />
+        <ReportActions report="profit-loss" query={query} />
       </Group>
       <Status isLoading={isLoading} error={error} />
       {data && (
@@ -477,8 +508,8 @@ function ProfitLossReport({ range }: { range: Range }) {
         </Table>
       )}
       <Text size="xs" c="dimmed">
-        Sales by invoice date, before tax. Expenses by expense date; accounts of type “cost of goods” are
-        subtracted first.
+        Sales by {data?.basis === 'cash' ? 'payment date' : 'invoice date'}, before tax. Expenses by expense
+        date; accounts of type “cost of goods” are subtracted first.
       </Text>
     </Stack>
   )
@@ -500,7 +531,7 @@ function AgingReport() {
           What clients owe today{data && ` (${formatDate(data.as_of, locale.locale)})`}, by days past the due
           date.
         </Text>
-        <CsvButton path="/api/reports/aging.csv" query={{}} />
+        <ReportActions report="aging" query={{}} />
       </Group>
       <Status isLoading={isLoading} error={error} />
       {data && (
@@ -551,7 +582,8 @@ const DEFAULTS = {
   to: '',
   sales: 'month',
   expenses: 'account',
-  basis: '',
+  basis: '', // sales tax; empty means the business setting
+  income: '', // sales and profit & loss
 }
 
 export function ReportsPage() {
@@ -594,7 +626,13 @@ export function ReportsPage() {
         ) : (
           <>
             <Tabs.Panel value="sales">
-              <SalesReport range={range} group={f.sales} setGroup={(sales) => setF({ sales })} />
+              <SalesReport
+                range={range}
+                group={f.sales}
+                setGroup={(sales) => setF({ sales })}
+                basis={f.income}
+                setBasis={(income) => setF({ income })}
+              />
             </Tabs.Panel>
             <Tabs.Panel value="tax">
               <SalesTaxReport range={range} basis={f.basis} setBasis={(basis) => setF({ basis })} />
@@ -603,7 +641,7 @@ export function ReportsPage() {
               <ExpensesReport range={range} group={f.expenses} setGroup={(expenses) => setF({ expenses })} />
             </Tabs.Panel>
             <Tabs.Panel value="pl">
-              <ProfitLossReport range={range} />
+              <ProfitLossReport range={range} basis={f.income} setBasis={(income) => setF({ income })} />
             </Tabs.Panel>
             <Tabs.Panel value="aging">
               <AgingReport />

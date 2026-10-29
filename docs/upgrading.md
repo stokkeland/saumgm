@@ -175,6 +175,15 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
 - Invoice lines have a SKU, copied from the catalog item when the line is saved (existing lines
   are filled from their item). It shows on the invoice screen, in the editor and on the PDF
   when a line has one. PDFs of invoices issued before the upgrade stay as they were.
+- Reports: the sales report and the profit & loss can count income **by invoice date** (as in
+  1.0) or **by payment date**. The default is a new business setting, "Report income by" (Admin
+  → Settings → Business), which the upgrade sets to the same choice as "Report tax by"; each
+  report screen can switch it.
+- Every report has **PDF** (opens in the browser, to save or print), **CSV** and **Email**
+  buttons. Emailed reports go to yourself unless you change the recipient; their message has a
+  template in Admin → Email. Report CSVs now have the column headings shown on the screen,
+  include the total row, and their file names say the basis
+  (`sales-by-month-accrual-2026-01-01-2026-12-31.csv`).
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →

@@ -15,11 +15,19 @@
 
 """Report calculations. Every report works on issued documents only; void invoices never count.
 
-Sales are amounts before tax (total - tax); credit notes subtract. Written-off invoices still
-count as sales (the bad debt shows up in the profit & loss and as a sales-tax credit instead).
+Sales are amounts before tax (total - tax). Income is counted one of two ways (`TaxBasis`):
+
+- by invoice date (accrual): an invoice counts in full on its date and credit notes subtract.
+  Written-off invoices still count as sales (the bad debt shows up in the profit & loss and as a
+  sales-tax credit instead).
+- by payment date (cash): what was received counts on the day it was received, with its share of
+  tax taken out. Unpaid and written-off amounts never count. A credit note only lowers what is
+  still owed, so it would count when money goes back; refunds are not recorded yet, so credit
+  notes do not appear in this basis. Payment amounts not applied to an invoice wait until they are.
 """
 
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
@@ -72,6 +80,48 @@ def _sign(invoice: Invoice) -> int:
     return -1 if invoice.kind == InvoiceKind.CREDIT_NOTE else 1
 
 
+@dataclass
+class Received:
+    """The part of a payment applied to one invoice, split into sales and tax."""
+
+    invoice: Invoice
+    received_date: date
+    amount: Decimal
+    tax: Decimal
+
+    @property
+    def sales(self) -> Decimal:
+        return self.amount - self.tax
+
+
+def received(session: Session, org_id: int, date_from: date, date_to: date) -> list[Received]:
+    rows = session.execute(
+        select(PaymentAllocation, Payment.received_date, Invoice)
+        .join(Payment, Payment.id == PaymentAllocation.payment_id)
+        .join(Invoice, Invoice.id == PaymentAllocation.invoice_id)
+        .where(
+            Payment.organization_id == org_id,
+            Payment.received_date >= date_from,
+            Payment.received_date <= date_to,
+            Invoice.status == InvoiceStatus.ISSUED,
+        )
+        .options(selectinload(Invoice.lines))
+        .order_by(Payment.received_date, PaymentAllocation.id)
+    ).all()
+    out = []
+    for allocation, day, invoice in rows:
+        assert day is not None  # the date range leaves out payments without one
+        if allocation.legacy_sales_tax is not None:
+            # Imported payments carry the tax the old system recorded for them.
+            tax = allocation.legacy_sales_tax
+        elif invoice.total:
+            tax = allocation.amount * invoice.tax_total / invoice.total
+        else:
+            tax = ZERO
+        out.append(Received(invoice, day, allocation.amount, tax))
+    return out
+
+
 # -- sales ----------------------------------------------------------------------------------------
 
 SalesGroup = Literal["month", "client", "revenue_category"]
@@ -88,31 +138,29 @@ class SalesRow:
 
 
 def sales(
-    session: Session, org: Organization, date_from: date, date_to: date, group: SalesGroup
+    session: Session,
+    org: Organization,
+    date_from: date,
+    date_to: date,
+    group: SalesGroup,
+    basis: TaxBasis = TaxBasis.ACCRUAL,
 ) -> list[SalesRow]:
     rows: dict[str, SalesRow] = {}
     counted: dict[str, set[int]] = defaultdict(set)
-    invoices = _issued(session, org.id, date_from, date_to)
 
     def row(key: str, label: str) -> SalesRow:
         if key not in rows:
             rows[key] = SalesRow(key, label)
         return rows[key]
 
+    if basis == TaxBasis.CASH:
+        payments = received(session, org.id, date_from, date_to)
+        _cash_sales(session, org, payments, group, row, counted)
+        return _finish(rows, counted, group)
+
+    invoices = _issued(session, org.id, date_from, date_to)
     if group == "revenue_category":
-        names = {
-            c.id: c.name
-            for c in session.scalars(
-                select(RevenueCategory).where(RevenueCategory.organization_id == org.id)
-            )
-        }
-        item_category = dict(
-            session.execute(
-                select(CatalogItem.id, CatalogItem.revenue_category_id).where(
-                    CatalogItem.organization_id == org.id
-                )
-            ).all()
-        )
+        names, item_category = _line_categories(session, org.id)
         for invoice in invoices:
             for line in invoice.lines:
                 category = line.revenue_category_id or item_category.get(line.catalog_item_id or 0)
@@ -139,12 +187,83 @@ def sales(
             r.tax += sign * invoice.tax_total
             r.total += sign * invoice.total
             counted[key].add(invoice.id)
+    return _finish(rows, counted, group)
 
+
+def _finish(
+    rows: dict[str, SalesRow], counted: dict[str, set[int]], group: SalesGroup
+) -> list[SalesRow]:
     for key, r in rows.items():
         r.documents = len(counted[key])
         r.sales, r.tax, r.total = cents(r.sales), cents(r.tax), cents(r.total)
-    ordered = sorted(rows.values(), key=lambda r: r.key if group == "month" else r.label.lower())
-    return ordered
+    return sorted(rows.values(), key=lambda r: r.key if group == "month" else r.label.lower())
+
+
+def _line_categories(session: Session, org_id: int) -> tuple[dict[int, str], dict[int, int | None]]:
+    """Revenue category names, and the category of each catalog item that has one."""
+    names = {
+        c.id: c.name
+        for c in session.scalars(
+            select(RevenueCategory).where(RevenueCategory.organization_id == org_id)
+        )
+    }
+    item_category = {
+        item_id: category_id
+        for item_id, category_id in session.execute(
+            select(CatalogItem.id, CatalogItem.revenue_category_id).where(
+                CatalogItem.organization_id == org_id,
+                CatalogItem.revenue_category_id.is_not(None),
+            )
+        )
+    }
+    return names, item_category
+
+
+def _cash_sales(
+    session: Session,
+    org: Organization,
+    payments: list[Received],
+    group: SalesGroup,
+    row: Callable[[str, str], SalesRow],
+    counted: dict[str, set[int]],
+) -> None:
+    if group == "revenue_category":
+        names, item_category = _line_categories(session, org.id)
+        for p in payments:
+            lines = p.invoice.lines
+            lines_total = sum((line.line_total for line in lines), ZERO)
+            # The amount received is spread over the invoice's lines by their share of it.
+            shares = (
+                [
+                    (
+                        line.revenue_category_id or item_category.get(line.catalog_item_id or 0),
+                        p.sales * line.line_total / lines_total,
+                    )
+                    for line in lines
+                ]
+                if lines_total
+                else [(None, p.sales)]
+            )
+            for category, amount in shares:
+                key = str(category or 0)
+                r = row(key, names.get(category or 0, "Uncategorized"))
+                r.sales += amount
+                r.total += amount
+                counted[key].add(p.invoice.id)
+        return
+    party_names = dict(
+        session.execute(select(Party.id, Party.name).where(Party.organization_id == org.id)).all()
+    )
+    for p in payments:
+        if group == "month":
+            key = label = p.received_date.strftime("%Y-%m")
+        else:
+            key, label = str(p.invoice.party_id), party_names.get(p.invoice.party_id, "?")
+        r = row(key, label)
+        r.sales += p.sales
+        r.tax += p.tax
+        r.total += p.amount
+        counted[key].add(p.invoice.id)
 
 
 # -- sales tax ------------------------------------------------------------------------------------
@@ -333,6 +452,7 @@ def expenses(
 
 @dataclass
 class ProfitAndLoss:
+    basis: TaxBasis
     date_from: date
     date_to: date
     sales: Decimal
@@ -358,26 +478,37 @@ class ProfitAndLoss:
 
 
 def profit_and_loss(
-    session: Session, org: Organization, date_from: date, date_to: date
+    session: Session,
+    org: Organization,
+    date_from: date,
+    date_to: date,
+    basis: TaxBasis = TaxBasis.ACCRUAL,
 ) -> ProfitAndLoss:
-    total_sales = sum(
-        (_sign(i) * (i.total - i.tax_total) for i in _issued(session, org.id, date_from, date_to)),
-        ZERO,
-    )
     by_account = expenses(session, org, date_from, date_to, "account")
-    written_off = session.scalars(
-        select(Invoice).where(
-            Invoice.organization_id == org.id,
-            Invoice.write_off_date >= date_from,
-            Invoice.write_off_date <= date_to,
+    if basis == TaxBasis.CASH:
+        total_sales = sum((p.sales for p in received(session, org.id, date_from, date_to)), ZERO)
+        # What was never received was never counted as income, so there is no bad debt.
+        bad_debts = ZERO
+    else:
+        issued = _issued(session, org.id, date_from, date_to)
+        total_sales = sum((_sign(i) * (i.total - i.tax_total) for i in issued), ZERO)
+        written_off = session.scalars(
+            select(Invoice).where(
+                Invoice.organization_id == org.id,
+                Invoice.write_off_date >= date_from,
+                Invoice.write_off_date <= date_to,
+            )
         )
-    )
-    # The tax part of a bad debt is a tax credit, not a business expense.
-    bad_debts = sum(
-        ((i.write_off_amount or ZERO) - invoice_service.written_off_tax(i) for i in written_off),
-        ZERO,
-    )
+        # The tax part of a bad debt is a tax credit, not a business expense.
+        bad_debts = sum(
+            (
+                (i.write_off_amount or ZERO) - invoice_service.written_off_tax(i)
+                for i in written_off
+            ),
+            ZERO,
+        )
     return ProfitAndLoss(
+        basis=basis,
         date_from=date_from,
         date_to=date_to,
         sales=cents(total_sales),

@@ -97,8 +97,10 @@ class DocumentStatus(StrEnum):
 
 
 class TaxBasis(StrEnum):
-    ACCRUAL = "accrual"  # tax reported by invoice date
-    CASH = "cash"  # tax reported by payment date
+    """How tax and income are reported (separate settings for each)."""
+
+    ACCRUAL = "accrual"  # by invoice date
+    CASH = "cash"  # by payment date
 
 
 class InvoiceKind(StrEnum):
@@ -159,6 +161,7 @@ class EmailKind(StrEnum):
     INVOICE = "invoice"
     CREDIT_NOTE = "credit_note"
     RECEIPT = "receipt"
+    REPORT = "report"
     TEST = "test"
 
 

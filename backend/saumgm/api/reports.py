@@ -13,28 +13,37 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Reports as JSON for the screens, and the same reports as CSV downloads (…/report.csv)."""
+"""Reports as JSON for the screens; the same reports as CSV (…/report.csv), as a PDF
+(…/report.pdf) and by email (…/report/email). All three are made from one `ReportDocument`."""
 
 import csv
 import io
-from collections.abc import Iterable, Sequence
-from datetime import date
+from dataclasses import dataclass
+from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Annotated, Any, Literal, get_args
+from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from pydantic import BaseModel
 
 from saumgm import audit
-from saumgm.api.deps import Auth, DbSession, Reader
+from saumgm.api.deps import Auth, DbSession, Editor, Reader
+from saumgm.api.email import draft_out, send_draft
+from saumgm.documents import Formatter, Rate, ReportDocument, ReportRow, report_pdf
+from saumgm.email import Attachment
 from saumgm.enums import TaxBasis
 from saumgm.models import Organization
+from saumgm.schemas.email import DraftOut, MessageOut, SendIn
 from saumgm.schemas.types import Amount, RateValue
-from saumgm.services import reports
+from saumgm.services import emailing, reports
 from saumgm.timeutil import today_in
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+BASIS_LABELS = {TaxBasis.ACCRUAL: "By invoice date", TaxBasis.CASH: "By payment date"}
+BasisParam = Query(None, description="Defaults to the business setting")
 
 
 def _org(db: DbSession, auth: Auth) -> Organization:
@@ -43,21 +52,8 @@ def _org(db: DbSession, auth: Auth) -> Organization:
     return org
 
 
-def _csv(
-    db: DbSession, name: str, header: Sequence[str], rows: Iterable[Sequence[Any]]
-) -> Response:
-    buffer = io.StringIO()
-    writer = csv.writer(buffer)
-    writer.writerow(header)
-    for row in rows:
-        writer.writerow([str(v) if isinstance(v, Decimal) else v for v in row])
-    audit.record(db, "export", entity_type="report", entity_id=name)
-    db.commit()
-    return Response(
-        buffer.getvalue(),
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{name}.csv"'},
-    )
+def _period(f: Formatter, date_from: date, date_to: date) -> str:
+    return f"{f.date(date_from)} - {f.date(date_to)}"
 
 
 # -- sales ----------------------------------------------------------------------------------------
@@ -73,6 +69,7 @@ class SalesRowOut(BaseModel):
 
 
 class SalesReport(BaseModel):
+    basis: TaxBasis
     date_from: date
     date_to: date
     group: reports.SalesGroup
@@ -83,10 +80,17 @@ class SalesReport(BaseModel):
 
 
 def _sales(
-    db: DbSession, auth: Auth, date_from: date, date_to: date, group: reports.SalesGroup
+    db: DbSession,
+    org: Organization,
+    date_from: date,
+    date_to: date,
+    group: reports.SalesGroup,
+    basis: TaxBasis | None,
 ) -> SalesReport:
-    rows = reports.sales(db, _org(db, auth), date_from, date_to, group)
+    basis = basis or org.income_basis
+    rows = reports.sales(db, org, date_from, date_to, group, basis)
     return SalesReport(
+        basis=basis,
         date_from=date_from,
         date_to=date_to,
         group=group,
@@ -97,6 +101,46 @@ def _sales(
     )
 
 
+SALES_GROUPS = {"month": "Month", "client": "Client", "revenue_category": "Category"}
+
+
+def _sales_document(f: Formatter, r: SalesReport) -> ReportDocument:
+    by_category = r.group == "revenue_category"
+    header = [SALES_GROUPS[r.group], "Invoices", "Sales"]
+    if by_category:
+        widths = [4.6, 1.0, 1.6]
+        rows = [ReportRow([x.label, x.documents, x.sales]) for x in r.rows]
+        total = ReportRow(["Total", None, r.sales], strong=True)
+    else:
+        header += ["Tax", "Total"]
+        widths = [3.0, 1.0, 1.1, 1.0, 1.1]
+        rows = [ReportRow([x.label, x.documents, x.sales, x.tax, x.total]) for x in r.rows]
+        total = ReportRow(["Total", None, r.sales, r.tax, r.total], strong=True)
+    if r.basis == TaxBasis.CASH:
+        note = (
+            "Payments received in the period, applied to invoices, without their tax. Unpaid "
+            "and written-off amounts do not count."
+        )
+    else:
+        note = (
+            "Issued invoices dated in the period, less credit notes. Sales are before tax; "
+            "written-off invoices still count as sales."
+        )
+    return ReportDocument(
+        name=f"sales-by-{r.group}-{r.basis.value}-{r.date_from}-{r.date_to}",
+        title="Sales",
+        facts=[
+            ("Period", _period(f, r.date_from, r.date_to)),
+            ("Basis", BASIS_LABELS[r.basis]),
+            ("Grouped by", SALES_GROUPS[r.group]),
+        ],
+        header=header,
+        widths=widths,
+        rows=[*rows, total],
+        note=note,
+    )
+
+
 @router.get("/sales")
 def sales_report(
     auth: Reader,
@@ -104,21 +148,9 @@ def sales_report(
     date_from: date,
     date_to: date,
     group: reports.SalesGroup = "month",
+    basis: TaxBasis | None = BasisParam,
 ) -> SalesReport:
-    return _sales(db, auth, date_from, date_to, group)
-
-
-@router.get("/sales.csv")
-def sales_csv(
-    auth: Reader, db: DbSession, date_from: date, date_to: date, group: reports.SalesGroup = "month"
-) -> Response:
-    report = _sales(db, auth, date_from, date_to, group)
-    return _csv(
-        db,
-        f"sales-by-{group}-{date_from}-{date_to}",
-        [group, "documents", "sales", "tax", "total"],
-        [[r.label, r.documents, r.sales, r.tax, r.total] for r in report.rows],
-    )
+    return _sales(db, _org(db, auth), date_from, date_to, group, basis)
 
 
 # -- sales tax ------------------------------------------------------------------------------------
@@ -147,9 +179,9 @@ class SalesTaxOut(BaseModel):
 
 
 def _sales_tax(
-    db: DbSession, auth: Auth, date_from: date, date_to: date, basis: TaxBasis | None
+    db: DbSession, org: Organization, date_from: date, date_to: date, basis: TaxBasis | None
 ) -> SalesTaxOut:
-    r = reports.sales_tax(db, _org(db, auth), date_from, date_to, basis)
+    r = reports.sales_tax(db, org, date_from, date_to, basis)
     return SalesTaxOut(
         basis=r.basis,
         date_from=r.date_from,
@@ -164,40 +196,42 @@ def _sales_tax(
     )
 
 
+def _sales_tax_document(f: Formatter, r: SalesTaxOut) -> ReportDocument:
+    return ReportDocument(
+        name=f"sales-tax-{r.basis.value}-{r.date_from}-{r.date_to}",
+        title="Sales tax",
+        facts=[("Period", _period(f, r.date_from, r.date_to)), ("Basis", BASIS_LABELS[r.basis])],
+        header=["Jurisdiction", "Tax", "Rate", "Taxable", "Tax amount"],
+        widths=[2.4, 1.9, 0.8, 1.1, 1.0],
+        right_from=2,
+        rows=[ReportRow([x.jurisdiction, x.name, Rate(x.rate), x.taxable, x.tax]) for x in r.lines],
+        summary=[
+            ReportRow(["Gross sales", "", "", r.gross_sales, ""]),
+            ReportRow(["Non-taxable sales", "", "", r.non_taxable_sales, ""]),
+            ReportRow(["Taxable sales", "", "", r.taxable_sales, ""]),
+            ReportRow(["Tax collected", "", "", "", r.tax_collected]),
+            ReportRow(["Bad-debt tax credit", "", "", "", r.bad_debt_tax_credit]),
+            ReportRow(["Net tax", "", "", "", r.net_tax], strong=True),
+        ],
+        note=(
+            "The share of tax in payments received in the period (for imported payments, the "
+            "tax the old system recorded)."
+            if r.basis == TaxBasis.CASH
+            else "Tax on invoices issued in the period, with a credit for the tax part of "
+            "invoices written off in it."
+        ),
+    )
+
+
 @router.get("/sales-tax")
 def sales_tax_report(
     auth: Reader,
     db: DbSession,
     date_from: date,
     date_to: date,
-    basis: TaxBasis | None = Query(None, description="Defaults to the business setting"),
+    basis: TaxBasis | None = BasisParam,
 ) -> SalesTaxOut:
-    return _sales_tax(db, auth, date_from, date_to, basis)
-
-
-@router.get("/sales-tax.csv")
-def sales_tax_csv(
-    auth: Reader, db: DbSession, date_from: date, date_to: date, basis: TaxBasis | None = None
-) -> Response:
-    r = _sales_tax(db, auth, date_from, date_to, basis)
-    rows: list[list[Any]] = [
-        [line.jurisdiction, line.name, line.rate, line.taxable, line.tax] for line in r.lines
-    ]
-    rows += [
-        [],
-        ["Gross sales", "", "", r.gross_sales, ""],
-        ["Non-taxable sales", "", "", r.non_taxable_sales, ""],
-        ["Taxable sales", "", "", r.taxable_sales, ""],
-        ["Tax collected", "", "", "", r.tax_collected],
-        ["Bad-debt tax credit", "", "", "", r.bad_debt_tax_credit],
-        ["Net tax", "", "", "", r.net_tax],
-    ]
-    return _csv(
-        db,
-        f"sales-tax-{r.basis.value}-{date_from}-{date_to}",
-        ["jurisdiction", "tax", "rate", "taxable", "tax_amount"],
-        rows,
-    )
+    return _sales_tax(db, _org(db, auth), date_from, date_to, basis)
 
 
 # -- expenses and profit & loss -------------------------------------------------------------------
@@ -220,15 +254,36 @@ class ExpensesReport(BaseModel):
 
 
 def _expenses(
-    db: DbSession, auth: Auth, date_from: date, date_to: date, group: reports.ExpenseGroup
+    db: DbSession, org: Organization, date_from: date, date_to: date, group: reports.ExpenseGroup
 ) -> ExpensesReport:
-    rows = reports.expenses(db, _org(db, auth), date_from, date_to, group)
+    rows = reports.expenses(db, org, date_from, date_to, group)
     return ExpensesReport(
         date_from=date_from,
         date_to=date_to,
         group=group,
         rows=[ExpenseRowOut(**vars(r)) for r in rows],
         total=sum((r.total for r in rows), Decimal(0)),
+    )
+
+
+EXPENSE_GROUPS = {"account": "Account", "vendor": "Vendor", "month": "Month"}
+
+
+def _expenses_document(f: Formatter, r: ExpensesReport) -> ReportDocument:
+    return ReportDocument(
+        name=f"expenses-by-{r.group}-{r.date_from}-{r.date_to}",
+        title="Expenses",
+        facts=[
+            ("Period", _period(f, r.date_from, r.date_to)),
+            ("Grouped by", EXPENSE_GROUPS[r.group]),
+        ],
+        header=[EXPENSE_GROUPS[r.group], "Entries", "Total"],
+        widths=[4.8, 1.0, 1.4],
+        rows=[
+            *(ReportRow([x.label, x.entries, x.total]) for x in r.rows),
+            ReportRow(["Total", None, r.total], strong=True),
+        ],
+        note="Expenses by expense date.",
     )
 
 
@@ -240,27 +295,11 @@ def expenses_report(
     date_to: date,
     group: reports.ExpenseGroup = "account",
 ) -> ExpensesReport:
-    return _expenses(db, auth, date_from, date_to, group)
-
-
-@router.get("/expenses.csv")
-def expenses_csv(
-    auth: Reader,
-    db: DbSession,
-    date_from: date,
-    date_to: date,
-    group: reports.ExpenseGroup = "account",
-) -> Response:
-    report = _expenses(db, auth, date_from, date_to, group)
-    return _csv(
-        db,
-        f"expenses-by-{group}-{date_from}-{date_to}",
-        [group, "type", "entries", "total"],
-        [[r.label, r.account_type or "", r.entries, r.total] for r in report.rows],
-    )
+    return _expenses(db, _org(db, auth), date_from, date_to, group)
 
 
 class ProfitLossOut(BaseModel):
+    basis: TaxBasis
     date_from: date
     date_to: date
     sales: Amount
@@ -273,9 +312,12 @@ class ProfitLossOut(BaseModel):
     net_profit: Amount
 
 
-def _profit_loss(db: DbSession, auth: Auth, date_from: date, date_to: date) -> ProfitLossOut:
-    r = reports.profit_and_loss(db, _org(db, auth), date_from, date_to)
+def _profit_loss(
+    db: DbSession, org: Organization, date_from: date, date_to: date, basis: TaxBasis | None
+) -> ProfitLossOut:
+    r = reports.profit_and_loss(db, org, date_from, date_to, basis or org.income_basis)
     return ProfitLossOut(
+        basis=r.basis,
         date_from=date_from,
         date_to=date_to,
         sales=r.sales,
@@ -289,24 +331,46 @@ def _profit_loss(db: DbSession, auth: Auth, date_from: date, date_to: date) -> P
     )
 
 
+def _profit_loss_document(f: Formatter, r: ProfitLossOut) -> ReportDocument:
+    rows = [ReportRow(["Sales", "", r.sales], strong=True)]
+    if r.cost_of_goods:
+        rows += [ReportRow(["Cost of goods", x.label, x.total]) for x in r.cost_of_goods]
+        rows += [
+            ReportRow(["Cost of goods", "Total", r.cost_of_goods_total]),
+            ReportRow(["Gross profit", "", r.gross_profit], strong=True),
+        ]
+    rows += [ReportRow(["Expenses", x.label, x.total]) for x in r.expenses]
+    if r.bad_debts:
+        rows.append(ReportRow(["Expenses", "Bad debts (written off)", r.bad_debts]))
+    rows += [
+        ReportRow(["Expenses", "Total", r.expenses_total]),
+        ReportRow(["Net profit", "", r.net_profit], strong=True),
+    ]
+    sales = "by payment date" if r.basis == TaxBasis.CASH else "by invoice date"
+    return ReportDocument(
+        name=f"profit-loss-{r.basis.value}-{r.date_from}-{r.date_to}",
+        title="Profit & loss",
+        facts=[("Period", _period(f, r.date_from, r.date_to)), ("Basis", BASIS_LABELS[r.basis])],
+        header=["Section", "Account", "Amount"],
+        widths=[1.6, 4.0, 1.6],
+        right_from=2,
+        rows=rows,
+        note=(
+            f"Sales {sales}, before tax. Expenses by expense date; accounts of type "
+            '"cost of goods" are subtracted first.'
+        ),
+    )
+
+
 @router.get("/profit-loss")
 def profit_loss_report(
-    auth: Reader, db: DbSession, date_from: date, date_to: date
+    auth: Reader,
+    db: DbSession,
+    date_from: date,
+    date_to: date,
+    basis: TaxBasis | None = BasisParam,
 ) -> ProfitLossOut:
-    return _profit_loss(db, auth, date_from, date_to)
-
-
-@router.get("/profit-loss.csv")
-def profit_loss_csv(auth: Reader, db: DbSession, date_from: date, date_to: date) -> Response:
-    r = _profit_loss(db, auth, date_from, date_to)
-    rows: list[list[Any]] = [["Sales", "", r.sales]]
-    rows += [["Cost of goods", x.label, x.total] for x in r.cost_of_goods]
-    rows += [["Gross profit", "", r.gross_profit]]
-    rows += [["Expense", x.label, x.total] for x in r.expenses]
-    if r.bad_debts:
-        rows += [["Expense", "Bad debts (written off)", r.bad_debts]]
-    rows += [["Net profit", "", r.net_profit]]
-    return _csv(db, f"profit-loss-{date_from}-{date_to}", ["section", "account", "amount"], rows)
+    return _profit_loss(db, _org(db, auth), date_from, date_to, basis)
 
 
 # -- receivables aging ----------------------------------------------------------------------------
@@ -330,8 +394,7 @@ class AgingReport(BaseModel):
     totals: AgingRowOut
 
 
-def _aging(db: DbSession, auth: Auth) -> AgingReport:
-    org = _org(db, auth)
+def _aging(db: DbSession, org: Organization) -> AgingReport:
     today = today_in(org.timezone)
     rows = reports.aging(db, org, today)
     out = [AgingRowOut(**vars(r), total=r.total) for r in rows]
@@ -343,30 +406,149 @@ def _aging(db: DbSession, auth: Auth) -> AgingReport:
     )
 
 
+def _aging_document(f: Formatter, r: AgingReport) -> ReportDocument:
+    def cells(x: AgingRowOut) -> list[Any]:
+        buckets = [x.current, x.days_1_30, x.days_31_60, x.days_61_90, x.days_over_90]
+        # Empty rather than 0.00, as on the screen, so the amounts owed stand out.
+        return [x.party_name, x.invoices, *(b or None for b in buckets), x.total]
+
+    return ReportDocument(
+        name=f"receivables-aging-{r.as_of}",
+        title="Receivables aging",
+        facts=[("As of", f.date(r.as_of))],
+        header=["Client", "Invoices", "Current", "1-30", "31-60", "61-90", "Over 90", "Total"],
+        widths=[1.8, 0.72, *[0.78] * 6],
+        rows=[*(ReportRow(cells(x)) for x in r.rows), ReportRow(cells(r.totals), strong=True)],
+        note="What clients owe, by days past the due date.",
+    )
+
+
 @router.get("/aging")
 def aging_report(auth: Reader, db: DbSession) -> AgingReport:
-    return _aging(db, auth)
+    return _aging(db, _org(db, auth))
 
 
-@router.get("/aging.csv")
-def aging_csv(auth: Reader, db: DbSession) -> Response:
-    report = _aging(db, auth)
-    header = ["client", "invoices", "current", "1-30", "31-60", "61-90", "over 90", "total"]
-    return _csv(
-        db,
-        f"receivables-aging-{report.as_of}",
-        header,
-        [
-            [
-                r.party_name,
-                r.invoices,
-                r.current,
-                r.days_1_30,
-                r.days_31_60,
-                r.days_61_90,
-                r.days_over_90,
-                r.total,
-            ]
-            for r in [*report.rows, report.totals]
-        ],
+# -- any report as CSV, PDF or email --------------------------------------------------------------
+
+ReportName = Literal["sales", "sales-tax", "expenses", "profit-loss", "aging"]
+
+
+@dataclass
+class ReportParams:
+    """The query of a report screen; each report uses the parts it needs."""
+
+    date_from: date | None = None
+    date_to: date | None = None
+    group: str | None = None
+    basis: TaxBasis | None = None
+
+
+Params = Annotated[ReportParams, Depends()]
+
+
+def _invalid(message: str) -> HTTPException:
+    return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, message)
+
+
+def _document(
+    db: DbSession, org: Organization, name: ReportName, p: ReportParams
+) -> ReportDocument:
+    f = Formatter(org)
+    if name == "aging":
+        return _aging_document(f, _aging(db, org))
+    if p.date_from is None or p.date_to is None:
+        raise _invalid("date_from and date_to are required")
+    if name == "sales":
+        group = p.group or "month"
+        if group not in get_args(reports.SalesGroup):
+            raise _invalid(f"Unknown grouping {group!r}")
+        report = _sales(db, org, p.date_from, p.date_to, group, p.basis)  # type: ignore[arg-type]
+        return _sales_document(f, report)
+    if name == "sales-tax":
+        return _sales_tax_document(f, _sales_tax(db, org, p.date_from, p.date_to, p.basis))
+    if name == "expenses":
+        group = p.group or "account"
+        if group not in get_args(reports.ExpenseGroup):
+            raise _invalid(f"Unknown grouping {group!r}")
+        expenses = _expenses(db, org, p.date_from, p.date_to, group)  # type: ignore[arg-type]
+        return _expenses_document(f, expenses)
+    return _profit_loss_document(f, _profit_loss(db, org, p.date_from, p.date_to, p.basis))
+
+
+def _csv_value(value: Any) -> Any:
+    if value is None:
+        return ""
+    if isinstance(value, Rate):
+        return "" if value.value is None else str(value.value)
+    if isinstance(value, Decimal | date):
+        return str(value)
+    return value
+
+
+def _pdf(db: DbSession, org: Organization, report: ReportDocument) -> bytes:
+    return report_pdf(db, org, report, datetime.now(ZoneInfo(org.timezone)))
+
+
+@router.get("/{report}.csv")
+def report_csv(report: ReportName, params: Params, auth: Reader, db: DbSession) -> Response:
+    doc = _document(db, _org(db, auth), report, params)
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(doc.header)
+    for row in doc.rows:
+        writer.writerow([_csv_value(v) for v in row.cells])
+    if doc.summary:
+        writer.writerow([])
+        for row in doc.summary:
+            writer.writerow([_csv_value(v) for v in row.cells])
+    audit.record(db, "export", entity_type="report", entity_id=doc.name)
+    db.commit()
+    return Response(
+        buffer.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{doc.name}.csv"'},
     )
+
+
+@router.get("/{report}.pdf")
+def report_pdf_download(
+    report: ReportName, params: Params, auth: Reader, db: DbSession
+) -> Response:
+    """The report as a document to save or print (opens in the browser)."""
+    org = _org(db, auth)
+    doc = _document(db, org, report, params)
+    content = _pdf(db, org, doc)
+    audit.record(db, "export", entity_type="report", entity_id=doc.name)
+    db.commit()
+    return Response(
+        content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{doc.name}.pdf"'},
+    )
+
+
+def _email_draft(
+    db: DbSession, org: Organization, auth: Auth, report: ReportName, params: ReportParams
+) -> emailing.Draft:
+    doc = _document(db, org, report, params)
+    pdf = Attachment(f"{doc.name}.pdf", _pdf(db, org, doc), "application/pdf")
+    period = next(value for label, value in doc.facts if label in ("Period", "As of"))
+    if report == "aging":
+        period = f"as of {period}"
+    return emailing.report_draft(db, org, auth.user, doc.title, period, pdf)
+
+
+@router.get("/{report}/email")
+def compose_report_email(
+    report: ReportName, params: Params, auth: Editor, db: DbSession
+) -> DraftOut:
+    """The report by email, addressed to yourself, with the PDF attached."""
+    return draft_out(_email_draft(db, _org(db, auth), auth, report, params))
+
+
+@router.post("/{report}/email")
+def send_report_email(
+    report: ReportName, body: SendIn, params: Params, auth: Editor, db: DbSession
+) -> MessageOut:
+    org = _org(db, auth)
+    return send_draft(db, org, _email_draft(db, org, auth, report, params), body, auth.user.id)
