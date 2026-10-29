@@ -174,6 +174,7 @@ def build_line(session: Session, org_id: int, data: LineIn, order: int) -> Invoi
         sort_order=order,
         catalog_item_id=item.id if item else None,
         subscription_id=data.subscription_id,
+        sku=data.sku if "sku" in data.model_fields_set else (item.sku if item else None),
         description=description,
         quantity=data.quantity,
         unit=data.unit if "unit" in data.model_fields_set else (item.unit if item else None),

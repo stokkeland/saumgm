@@ -105,7 +105,7 @@ arrives: banking (accounts not reconciled), assets (warranties ending).
 
 ### A. Clean-up: legacy tables, SKU on invoices
 
-**Legacy tables.** The database has 21 `legacy_*` tables (`legacy_tblinvoicehdr`, ...). They
+**Legacy tables.** The database has 20 `legacy_*` tables (`legacy_tblinvoicehdr`, ...). They
 are verbatim copies of the Access tables, written once by the importer; the application never
 reads them. A migration drops them. Before it runs, `update.sh` makes a backup, and the original
 `.mdb` and the 1.0 SQL export remain the reference.
@@ -117,7 +117,7 @@ What stays, because 1.0 data depends on it:
 | `payment_allocation.legacy_sales_tax`, `legacy_taxable_amount` | cash-basis sales-tax report for old payments (Access stored tax per payment) |
 | `invoice_line.legacy_unit_tax` | the tax column on old invoices |
 | `legacy_id` columns | links back to the Access record numbers; harmless |
-| `legacy_data` (JSON per contact, invoice, expense, ...) | the "Old system" tab; small. **(decide)** keep, or drop with the tables |
+| `legacy_data` (JSON per contact, invoice, expense, ...) | the "Old system" tab; small, so kept |
 
 The importer keeps working (it recreates the copies only when it is run on a new database).
 

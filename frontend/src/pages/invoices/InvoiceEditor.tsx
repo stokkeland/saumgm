@@ -54,6 +54,7 @@ interface LineForm {
   key: string
   catalog_item_id: string | null
   subscription_id: number | null
+  sku: string
   description: string
   quantity: number | string
   unit: string
@@ -86,6 +87,7 @@ function blankLine(): LineForm {
     key: newKey(),
     catalog_item_id: null,
     subscription_id: null,
+    sku: '',
     description: '',
     quantity: 1,
     unit: '',
@@ -104,6 +106,7 @@ function fromLine(line: Schemas['LineOut']): LineForm {
     key: newKey(),
     catalog_item_id: line.catalog_item_id ? String(line.catalog_item_id) : null,
     subscription_id: line.subscription_id ?? null,
+    sku: line.sku ?? '',
     description: line.description,
     quantity: Number(line.quantity),
     unit: line.unit ?? '',
@@ -119,6 +122,7 @@ function toLineIn(line: LineForm): LineIn {
   const base = {
     catalog_item_id: line.catalog_item_id ? Number(line.catalog_item_id) : null,
     subscription_id: line.subscription_id,
+    sku: line.sku.trim() || null,
     description: line.description.trim() || null,
     quantity: String(line.quantity === '' ? 0 : line.quantity),
     unit: line.unit.trim() || null,
@@ -297,6 +301,7 @@ export function InvoiceEditor({
     form.setFieldValue(`lines.${index}`, {
       ...line,
       catalog_item_id: id,
+      sku: item?.sku ?? '',
       ...(item && {
         description: !line.description || line.catalog_item_id ? item.name : line.description,
         unit_price: Number(item.price),
@@ -382,11 +387,12 @@ export function InvoiceEditor({
         </Card>
 
         <Card withBorder p={0}>
-          <Table.ScrollContainer minWidth={900}>
+          <Table.ScrollContainer minWidth={1000}>
             <Table verticalSpacing={6}>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th w={230}>Item</Table.Th>
+                  <Table.Th w={110}>SKU</Table.Th>
                   <Table.Th>Description</Table.Th>
                   <Table.Th w={90}>Qty</Table.Th>
                   <Table.Th w={80}>Unit</Table.Th>
@@ -412,6 +418,9 @@ export function InvoiceEditor({
                         value={line.catalog_item_id}
                         onChange={(id) => pickItem(i, id)}
                       />
+                    </Table.Td>
+                    <Table.Td>
+                      <TextInput aria-label="SKU" {...form.getInputProps(`lines.${i}.sku`)} />
                     </Table.Td>
                     <Table.Td>
                       <TextInput aria-label="Description" {...form.getInputProps(`lines.${i}.description`)} />

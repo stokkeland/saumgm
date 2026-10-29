@@ -375,21 +375,20 @@ def invoice_pdf(session: Session, org: Organization, invoice: Invoice) -> bytes:
     )
     story += [boxed("Bill to", bill_to, 3.4 * inch), Spacer(1, 14)]
 
+    # The SKU column only when a line has one; it takes its width from the description.
+    with_sku = any(line.sku for line in invoice.lines)
     rows = []
     for line in invoice.lines:
         qty = f.number(line.quantity) + (f" {line.unit}" if line.unit else "")
         discount = f.money(line.unit_discount) if line.unit_discount else ""
-        rows.append(
-            [line.description, qty, f.money(line.unit_price), discount, f.money(line.line_total)]
-        )
-    story.append(
-        items_table(
-            ["Description", "Qty", "Unit price", "Discount", "Amount"],
-            rows,
-            [3.25 * inch, 0.9 * inch, 1.0 * inch, 0.9 * inch, 1.15 * inch],
-            1,
-        )
-    )
+        row = [line.description, qty, f.money(line.unit_price), discount, f.money(line.line_total)]
+        rows.append([line.sku or "", *row] if with_sku else row)
+    header = ["Description", "Qty", "Unit price", "Discount", "Amount"]
+    widths = [3.25 * inch, 0.9 * inch, 1.0 * inch, 0.9 * inch, 1.15 * inch]
+    if with_sku:
+        header = ["SKU", *header]
+        widths = [1.15 * inch, 2.1 * inch, *widths[1:]]
+    story.append(items_table(header, rows, widths, 2 if with_sku else 1))
     story.append(Spacer(1, 8))
 
     totals: list[tuple[str, str, bool]] = [("Subtotal", f.money(invoice.subtotal), False)]
