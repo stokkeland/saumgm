@@ -436,18 +436,21 @@ sudo /opt/saumgm/deploy/update.sh
 ```
 
 The script:
-1. Backs up the database and files.
-2. Runs `git pull`.
-3. Updates the Python packages.
-4. Applies database migrations.
-5. Builds the frontend, if Node.js is installed.
-6. Restarts the API and waits for the health check.
+1. Stops if files in `/opt/saumgm` were edited by hand.
+2. Backs up the database and files.
+3. Runs `git pull` on the branch that is checked out (with `--branch NAME`, switches to that
+   branch first).
+4. Updates the Python packages.
+5. Applies database migrations.
+6. Builds the frontend, if Node.js is installed.
+7. Restarts the API and waits for the health check, which must report the newest schema.
 
 If you copy code instead of using git, run it with `--no-pull` (and copy a fresh `frontend/dist`
 if the server has no Node.js).
 
-Database migrations only ever move forward. Read the release notes (the git log) before
-updating, and keep the backup that the script just made until the new version has run for a day.
+**Moving to a new version** (another `release/...` branch) has its own steps and notes per
+version: read [docs/upgrading.md](../upgrading.md) first. Database migrations only ever move
+forward; keep the backup that the script just made until the new version has run for a few days.
 
 ## 11. Switching over from Access
 

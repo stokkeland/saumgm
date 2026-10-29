@@ -25,13 +25,17 @@ Compatibility rules (production runs MariaDB 10.11, possibly Galera later):
 
 from collections.abc import Iterator
 from datetime import datetime
+from functools import lru_cache
 from typing import Any
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import BigInteger, DateTime, MetaData, create_engine, func, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
-from saumgm.config import get_settings
+from saumgm.config import BACKEND_DIR, get_settings
 
 # Deterministic constraint names, so Alembic migrations are stable across databases.
 # Foreign-key names must be unique per *database* on MariaDB 10.x, so their parts are separated by
@@ -103,6 +107,22 @@ def get_session() -> Iterator[Session]:
 
 def server_version(session: Session) -> str:
     return str(session.execute(text("SELECT VERSION()")).scalar_one())
+
+
+def schema_revision(session: Session) -> str | None:
+    """The Alembic revision the database is at; None if it has never been migrated."""
+    try:
+        revision = session.execute(text("SELECT version_num FROM alembic_version")).scalar()
+    except ProgrammingError:  # no alembic_version table
+        return None
+    return str(revision) if revision else None
+
+
+@lru_cache
+def code_schema_revision() -> str | None:
+    """The newest migration in this checkout (what `alembic upgrade head` migrates to)."""
+    config = Config(str(BACKEND_DIR / "alembic.ini"))
+    return ScriptDirectory.from_config(config).get_current_head()
 
 
 # Every session writes its row changes to audit_log (docs/design.md 4.9). Installed here because

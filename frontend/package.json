@@ -1,7 +1,7 @@
 {
   "name": "saumgm-frontend",
   "private": true,
-  "version": "0.1.0",
+  "version": "2.0.0-dev.0",
   "license": "GPL-3.0-or-later",
   "author": "J. Thomas Stokkeland",
   "homepage": "https://www.saumgm.com/",

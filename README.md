@@ -87,6 +87,9 @@ See [docs/deploy/ubuntu.md](docs/deploy/ubuntu.md): packages (with a check-and-i
 `deploy/install-prereqs.sh`), database, systemd service, Apache vhost with HTTPS, backups, updates
 and the switch-over from Access. The service, vhost, backup and update files are in [deploy/](deploy/).
 
+Upgrading a server or the development PC to newer code, and the notes per version:
+[docs/upgrading.md](docs/upgrading.md).
+
 Several independent installations on one server (separate businesses, a demo, a test instance),
 each in its own folder with its own database, port, web address and backups:
 [docs/deploy/multiple-instances.md](docs/deploy/multiple-instances.md).

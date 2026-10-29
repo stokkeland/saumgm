@@ -31,6 +31,8 @@ def test_health_ok(client: TestClient) -> None:
     assert body["database"] == "ok"
     assert body["version"] == __version__
     assert "MariaDB" in body["database_version"]
+    assert body["schema_revision"]
+    assert body["schema_current"] is True
     assert response.headers["X-Request-ID"]
 
 
