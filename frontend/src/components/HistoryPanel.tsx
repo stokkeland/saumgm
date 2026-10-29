@@ -60,7 +60,11 @@ export function HistoryPanel({ entityType, entityId }: { entityType: string; ent
   return (
     <Timeline bulletSize={14} lineWidth={2}>
       {data.items.map((entry) => {
-        const changes = Object.entries(entry.changes ?? {}) as [string, [unknown, unknown]][]
+        // Row changes are [before, after] pairs; events such as "issue" or "revise" store plain values.
+        const changes = Object.entries(entry.changes ?? {}).map(([field, change]) => [
+          field,
+          Array.isArray(change) && change.length === 2 ? change : [null, change],
+        ]) as [string, [unknown, unknown]][]
         return (
           <Timeline.Item
             key={entry.id}
