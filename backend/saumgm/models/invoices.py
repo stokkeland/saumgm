@@ -131,6 +131,9 @@ class InvoiceLine(IdMixin, Base):
     subscription_id: Mapped[int | None] = mapped_column(
         BigInteger, fk("subscription.id"), index=True
     )
+    # Copied from the catalog item like the description, so a later catalog change leaves
+    # issued invoices alone.
+    sku: Mapped[str | None] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(String(500))
     quantity: Mapped[Decimal] = mapped_column(Quantity)
     unit: Mapped[str | None] = mapped_column(String(20))

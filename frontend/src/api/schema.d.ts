@@ -3066,6 +3066,8 @@ export interface components {
             catalog_item_id?: number | null;
             /** Subscription Id */
             subscription_id?: number | null;
+            /** Sku */
+            sku?: string | null;
             /** Description */
             description?: string | null;
             /**
@@ -3096,6 +3098,8 @@ export interface components {
             catalog_item_id: number | null;
             /** Subscription Id */
             subscription_id: number | null;
+            /** Sku */
+            sku?: string | null;
             /** Description */
             description: string;
             /** Quantity */

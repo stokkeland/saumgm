@@ -138,7 +138,13 @@ request.
 
 **New settings (`.env`):** none yet.
 
-**Data removed by migrations:** none yet.
+**Data removed by migrations:**
+
+- The `legacy_*` tables (20 in the first installation): the verbatim copies of the MS Access
+  tables that the importer made. The application never read them. Everything imported from
+  them stays, including each record's "Old system" tab (`legacy_data`) and the old tax amounts
+  the reports use. To keep a copy, the backup `update.sh` makes before migrating has them, as
+  do the 1.0 SQL export and the original `.mdb`.
 
 **Changes:**
 
@@ -147,6 +153,11 @@ request.
 - `update.sh --branch NAME` switches to another branch before pulling, and continues with the
   newly pulled copy of itself, so each version's own update steps are used.
 - `update.sh` refuses to pull over files edited by hand in the installation folder.
+- `update.sh` runs git, pip and npm as the owner of the installation folder, which can be your
+  admin account instead of root ([deploy/ubuntu.md, section 3](deploy/ubuntu.md#3-code-and-python-environment)).
+- Invoice lines have a SKU, copied from the catalog item when the line is saved (existing lines
+  are filled from their item). It shows on the invoice screen, in the editor and on the PDF
+  when a line has one. PDFs of invoices issued before the upgrade stay as they were.
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`.

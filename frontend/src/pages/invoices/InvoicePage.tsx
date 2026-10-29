@@ -251,6 +251,7 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
     invoice.bill_to_phone,
   ].filter(Boolean)
   const showLegacyTax = invoice.lines.some((l) => l.legacy_unit_tax && Number(l.legacy_unit_tax) !== 0)
+  const showSku = invoice.lines.some((l) => l.sku)
 
   return (
     <Stack>
@@ -299,6 +300,7 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
           <Table verticalSpacing="xs">
             <Table.Thead>
               <Table.Tr>
+                {showSku && <Table.Th>SKU</Table.Th>}
                 <Table.Th>Description</Table.Th>
                 <Table.Th ta="right">Qty</Table.Th>
                 <Table.Th ta="right">Price</Table.Th>
@@ -310,6 +312,7 @@ function InvoiceView({ invoice }: { invoice: Invoice }) {
             <Table.Tbody>
               {invoice.lines.map((l) => (
                 <Table.Tr key={l.id}>
+                  {showSku && <Table.Td>{l.sku}</Table.Td>}
                   <Table.Td>{l.description}</Table.Td>
                   <Table.Td ta="right">
                     {formatNumber(l.quantity, locale.locale)} {l.unit}

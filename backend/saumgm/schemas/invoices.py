@@ -34,6 +34,7 @@ class LineIn(BaseModel):
 
     catalog_item_id: int | None = None
     subscription_id: int | None = None
+    sku: str | None = Field(None, max_length=50)
     description: str | None = Field(None, max_length=500)
     quantity: Amount = Field(Decimal(1), max_digits=12, decimal_places=4)
     unit: str | None = Field(None, max_length=20)
@@ -138,6 +139,7 @@ class LineOut(BaseModel):
     sort_order: int
     catalog_item_id: int | None
     subscription_id: int | None
+    sku: str | None = None
     description: str
     quantity: Amount
     unit: str | None

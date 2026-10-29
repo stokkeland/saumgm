@@ -470,6 +470,7 @@ class AccessImporter:
         return InvoiceLine(
             sort_order=order,
             catalog_item_id=item.id if item else None,
+            sku=item.sku if item else None,
             description=cv.clean(d["ItemDescr"]) or (item.name if item else ""),
             quantity=quantity,
             unit=cv.clean(d["ItemUnit"]),

@@ -13,12 +13,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import io
 from datetime import date
 from decimal import Decimal
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pypdf import PdfReader
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -89,6 +91,7 @@ def test_draft_uses_contact_and_catalog_defaults(
         ],
     )
     assert draft["status"] == "draft" and draft["number"] is None
+    assert [line["sku"] for line in draft["lines"]] == [None, None]
     assert (draft["bill_to_company"], draft["bill_to_name"]) == ("Acme Corporation", "Ann Smith")
     assert draft["bill_to_email"] == "ann@acme.example"
     assert (draft["terms_days"], draft["terms_text"]) == (30, "Net 30 days")
@@ -105,6 +108,28 @@ def test_draft_uses_contact_and_catalog_defaults(
         "8.0000",
         "322.0000",
     )
+
+
+def test_lines_keep_the_sku_they_were_saved_with(
+    owner_client: TestClient, acme: dict[str, Any], items: dict[str, Any]
+) -> None:
+    router = items["router"]["id"]
+    owner_client.patch(f"/api/catalog/{router}", json={"sku": "RTR-1"})
+    draft = new_invoice(
+        owner_client,
+        acme["id"],
+        [{"catalog_item_id": router}, {"catalog_item_id": router, "sku": "SPECIAL"},
+         {"description": "Labor", "unit_price": "50"}],
+    )  # fmt: skip
+    assert [line["sku"] for line in draft["lines"]] == ["RTR-1", "SPECIAL", None]
+
+    owner_client.patch(f"/api/catalog/{router}", json={"sku": "RTR-2"})
+    issued = owner_client.post(f"/api/invoices/{draft['id']}/issue", json={}).json()
+    assert [line["sku"] for line in issued["lines"]] == ["RTR-1", "SPECIAL", None]
+
+    pdf = owner_client.get(f"/api/invoices/{draft['id']}/pdf")
+    text = "\n".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf.content)).pages)
+    assert "SKU" in text and "RTR-1" in text and "RTR-2" not in text
 
 
 def test_issue_assigns_number_and_due_date(
