@@ -201,7 +201,9 @@ SQL
 
 ## 3. Code and Python environment
 
-Put the repository in `/opt/saumgm`, owned by root (the service user only reads it). Choose one:
+Put the repository in `/opt/saumgm`. The service user only reads it, so it can belong to root
+(the commands below) or to your own admin account (see "Owned by your admin account" after the
+list). Choose one:
 
 - **git over HTTPS (recommended; updates become `git pull`).** The repository
   <https://github.com/stokkeland/saumgm> is public, so no key or login is needed:
@@ -230,6 +232,25 @@ Put the repository in `/opt/saumgm`, owned by root (the service user only reads 
       --exclude storage --exclude '.env' ./ admin@server:/tmp/saumgm/
   # then on the server:  sudo mv /tmp/saumgm /opt/saumgm && sudo chown -R root:root /opt/saumgm
   ```
+
+**Owned by your admin account** instead of root: then git works without `sudo`, with your own
+SSH key, and nothing else changes. Create the folder for yourself and run the clone and the
+`venv`/`pip` commands below without `sudo`:
+
+```sh
+sudo install -d -o "$USER" -g "$USER" /opt/saumgm
+git clone --branch release/v1.0 https://github.com/stokkeland/saumgm.git /opt/saumgm
+```
+
+Everything in `/opt/saumgm` must then belong to you, except `backend/.env` (root:saumgm, step
+4), and stay readable by others (the default umask 022 does that). `update.sh` runs git, pip
+and npm as the folder's owner and stops if it finds files owned by someone else, which happens
+after running `sudo git ...` or `sudo npm ...` by hand in a folder you own. It prints the fix:
+
+```sh
+sudo chown -R "$USER": /opt/saumgm
+sudo chown root:saumgm /opt/saumgm/backend/.env && sudo chmod 640 /opt/saumgm/backend/.env
+```
 
 Create the Python environment and install the backend:
 
@@ -444,6 +465,11 @@ The script:
 5. Applies database migrations.
 6. Builds the frontend, if Node.js is installed.
 7. Restarts the API and waits for the health check, which must report the newest schema.
+
+Run it with `sudo` either way: it runs git, pip and npm as the owner of `/opt/saumgm` (root or
+your admin account, see section 3) and the rest as root. When you work in the folder by hand,
+do the same: git, pip and npm as the folder's owner (with `sudo` only if that is root),
+`alembic` and `python -m saumgm` as `sudo -u saumgm`, and `systemctl` with `sudo`.
 
 If you copy code instead of using git, run it with `--no-pull` (and copy a fresh `frontend/dist`
 if the server has no Node.js).

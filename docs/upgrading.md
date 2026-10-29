@@ -52,8 +52,8 @@ know `--branch` yet, so the switch is done by hand the first time:
 
 ```sh
 cd /opt/saumgm
-sudo git fetch origin
-sudo git switch release/v2.0
+git fetch origin                         # with sudo only if root owns /opt/saumgm
+git switch release/v2.0
 sudo deploy/update.sh --no-pull          # backup, packages, migrations, frontend, restart
 ```
 
@@ -122,7 +122,8 @@ Migrations only move forward, so going back to an older version means restoring 
 2. Restore the database and files from `/var/backups/saumgm` (the newest `saumgm-db-...` and
    `saumgm-files-...` from before the upgrade), as in
    [deploy/ubuntu.md, section 9](deploy/ubuntu.md#9-backups).
-3. `cd /opt/saumgm && sudo git switch release/v1.0` (the version you came from).
+3. `cd /opt/saumgm && git switch release/v1.0` (the version you came from; `sudo git` if root
+   owns the folder).
 4. `sudo deploy/update.sh --no-pull`
 
 Anything entered after the upgrade is lost, so decide quickly, and keep the backup until the new
