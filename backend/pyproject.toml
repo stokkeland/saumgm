@@ -19,7 +19,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "saumgm"
-version = "0.1.0"
+version = "1.0.0"
 description = "SauMGM - small business management system (contacts, catalog, invoicing, payments, expenses, sales tax)"
 requires-python = ">=3.12"
 license = "GPL-3.0-or-later"
