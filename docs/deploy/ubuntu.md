@@ -323,7 +323,7 @@ User accounts and passwords come along, so sign in exactly as on the PC.
 If the development database has stored files (an uploaded logo, PDFs of invoices issued there),
 copy the PC's `storage/` folder into `/var/lib/saumgm/storage/` as well and run
 `sudo chown -R saumgm:saumgm /var/lib/saumgm/storage`. Otherwise just upload the logo again in
-Settings → Business.
+Admin → Settings → Business.
 
 ### Option B: a new, empty business
 
@@ -488,9 +488,9 @@ forward; keep the backup that the script just made until the new version has run
    - Dashboard: receivables and overdue match what you expect.
    - Reports → Receivables aging: the totals per client look right.
    - Open a few recent invoices and their PDFs.
-4. Upload the logo (Settings → Business) and check the business details, addresses and sales-tax
+4. Upload the logo (Admin → Settings → Business) and check the business details, addresses and sales-tax
    registration (Settings).
-5. Create accounts for anyone else who needs access (Settings → Users).
+5. Create accounts for anyone else who needs access (Admin → Users).
 6. Keep the `.mdb` and the import report: the import keeps the raw old records too, but the
    original file is your reference.
 
@@ -503,7 +503,7 @@ forward; keep the backup that the script just made until the new version has run
 | Sign-in succeeds but you are immediately signed out | browsing over plain `http://` with `ENVIRONMENT=production`: finish step 8 (HTTPS), or set `COOKIE_SECURE=false` temporarily |
 | A page reload on `/invoices/123` gives 404 | `FallbackResource` missing from the vhost, or `DocumentRoot` doesn't point at `frontend/dist` |
 | Logo upload fails | `/var/lib/saumgm/storage` must be owned by `saumgm`; uploads are limited to 20 MB |
-| PDFs show the wrong address | the remit-to address valid on the invoice date is used: Settings → Addresses, valid from/to |
+| PDFs show the wrong address | the remit-to address valid on the invoice date is used: Admin → Settings → Addresses, valid from/to |
 | Apache errors | `/var/log/apache2/saumgm-error.log`; `sudo apache2ctl configtest` |
 | Slow pages | Apache can log each request's duration: add `%D` (microseconds) to the `LogFormat` used by `saumgm-access.log`; check `SHOW PROCESSLIST` in MariaDB |
 

@@ -178,7 +178,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
   - A setting can restrict revising to the owner role.
 
 - **Write-offs (bad debt)** — an issued invoice the client will never pay can be written off (one at a time or many from the list), with a reason and a date. `write_off_date`, `write_off_amount` (the balance at that moment) and `write_off_reason` are stored on the invoice; its payment status becomes *written off*, the balance due becomes zero and it no longer counts as receivable or overdue. The sale itself is unchanged. A written-off invoice cannot be revised or voided; *undo write-off* (owner, with a reason) reopens it if the client pays after all. Reports show the write-off as a bad-debt expense and its tax share as a sales-tax credit.
-- **Documents** — issuing renders the invoice PDF (`saumgm/documents.py`) and keeps it (`pdf_file_id`); revising keeps the previous PDF on the revision and stores a new one, so the document as sent is always available. Drafts and imported invoices are rendered on request. Receipts and deposit slips are rendered on request. The letterhead uses the business logo (Settings → Business), the remit-to address valid on the invoice date and the invoice footer text; amounts and dates use the business locale (Babel).
+- **Documents** — issuing renders the invoice PDF (`saumgm/documents.py`) and keeps it (`pdf_file_id`); revising keeps the previous PDF on the revision and stores a new one, so the document as sent is always available. Drafts and imported invoices are rendered on request. Receipts and deposit slips are rendered on request. The letterhead uses the business logo (Admin → Settings → Business), the remit-to address valid on the invoice date and the invoice footer text; amounts and dates use the business locale (Babel).
 - Implementation notes: totals are rounded to the currency's minor units (2 for USD) and always returned with 4 decimals in JSON; an invoice counts as settled when within half a cent of its total (old totals had fractions of a cent); credit notes are numbered `CN-1`, `CN-2`, ...; imported invoices keep their stored tax when revised.
 
 ### 4.5 Payments and deposits (replaces tblInvoicePayment, tblPaymentReceived, tblDeposit*)
@@ -213,7 +213,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 
 Defaults chosen while building: a line with no tax category, or a category without any rule up the tree, is taxable; freight and adjustments are not taxed; new organizations get a "Non-taxable" rule at country level.
 
-**Filing periods**: monthly, quarterly or annual, counted from the registration's first month (`saumgm/services/tax_periods.py`); Settings → Sales tax lists each year's periods and whether they are filed.
+**Filing periods**: monthly, quarterly or annual, counted from the registration's first month (`saumgm/services/tax_periods.py`); Admin → Settings → Sales tax lists each year's periods and whether they are filed.
 
 **Reporting** (`saumgm/services/reports.py`): sales tax by jurisdiction for any date range or filing period — gross sales, non-taxable, taxable, tax collected, bad-debt credit and net tax due (shaped like NY ST-100/ST-101). Basis is a setting that the report can override:
 - *Invoice date (accrual)*: tax on invoices issued in the period (credit notes subtract), less the tax share of invoices written off in the period.
@@ -231,7 +231,7 @@ Defaults chosen while building: a line with no tax category, or a category witho
   `audit_log` — `id`, `occurred_at`, `user_id`, `action` (create/update/delete/login/logout/login_failed/export/issue/void/revise/settings_change), `entity_type`, `entity_id`, `changes` (JSON: field → [old, new]), `reason` (when the action asks for one), `request_id`, `ip_address`, `user_agent`.
 - Imports and billing runs log as a system actor, with a batch id.
 - Append-only: the application never updates or deletes audit rows. Optional hardening: a separate DB user that can only `INSERT`/`SELECT` on `audit_log`.
-- UI: a *History* tab on every record (contact, invoice, payment, expense, setting) and a global, filterable Audit screen for the owner role; CSV export.
+- UI: a *History* tab on every record (contact, invoice, payment, expense, setting) and a global, filterable audit log (Admin → Audit log) for the owner role; CSV export.
 - Retention: keep forever by default (volume is small); a setting allows archiving entries older than N years.
 
 ### 4.10 Files and storage

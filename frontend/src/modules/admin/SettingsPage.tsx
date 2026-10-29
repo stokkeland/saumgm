@@ -16,19 +16,20 @@
  */
 
 import { Alert, Tabs } from '@mantine/core'
-import { useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
 
 import { useAuth } from '../../auth/context'
 import { PageHeader } from '../../components/ui'
 import { AccountsTab, CategoriesTab } from './AccountsTabs'
 import { AddressesTab, BusinessTab, NumberingTab } from './BusinessTabs'
 import { TaxTab } from './TaxTab'
-import { UsersTab } from './UsersTab'
 
 export function SettingsPage() {
   const { isOwner } = useAuth()
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') ?? 'business'
+  // Users moved to their own page under Admin in 2.0.
+  if (tab === 'users') return <Navigate to="/admin/users" replace />
   return (
     <>
       <PageHeader title="Settings" subtitle="How the business is set up" />
@@ -45,7 +46,6 @@ export function SettingsPage() {
           <Tabs.Tab value="accounts">Accounts</Tabs.Tab>
           <Tabs.Tab value="categories">Categories</Tabs.Tab>
           <Tabs.Tab value="numbering">Numbering</Tabs.Tab>
-          {isOwner && <Tabs.Tab value="users">Users</Tabs.Tab>}
         </Tabs.List>
         <Tabs.Panel value="business">
           <BusinessTab />
@@ -65,11 +65,6 @@ export function SettingsPage() {
         <Tabs.Panel value="numbering">
           <NumberingTab />
         </Tabs.Panel>
-        {isOwner && (
-          <Tabs.Panel value="users">
-            <UsersTab />
-          </Tabs.Panel>
-        )}
       </Tabs>
     </>
   )

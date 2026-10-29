@@ -37,14 +37,14 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import { api, unwrap, type Schemas } from '../api/client'
-import { useAuth } from '../auth/context'
-import { ContactSelect } from '../components/ContactSelect'
-import { DataTable } from '../components/DataTable'
-import { DateText, Money, PageHeader, SearchInput } from '../components/ui'
-import { todayIso } from '../lib/format'
-import { notifyError, notifySaved } from '../lib/notify'
-import { useUrlState } from '../lib/useUrlState'
+import { api, unwrap, type Schemas } from '../../api/client'
+import { useAuth } from '../../auth/context'
+import { ContactSelect } from '../../components/ContactSelect'
+import { DataTable } from '../../components/DataTable'
+import { DateText, Money, PageHeader, SearchInput } from '../../components/ui'
+import { todayIso } from '../../lib/format'
+import { notifyError, notifySaved } from '../../lib/notify'
+import { useUrlState } from '../../lib/useUrlState'
 
 type Sub = Schemas['SubscriptionOut']
 const LIMIT = 50

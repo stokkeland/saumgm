@@ -41,6 +41,26 @@ from saumgm.api import settings as settings_api
 from saumgm.config import get_settings
 from saumgm.request_logging import configure_logging, request_id_middleware
 
+# Every module's API, all under /api. A new module adds its router here (the frontend's list of
+# modules is frontend/src/modules/index.ts).
+ROUTERS = (
+    health.router,
+    dashboard.router,
+    auth.router,
+    contacts.router,
+    catalog.router,
+    invoices.router,
+    payments.router,
+    expenses.router,
+    subscriptions.router,
+    tax.router,
+    settings_api.router,
+    audit.router,
+    files.router,
+    reports.router,
+    party_documents.router,
+)
+
 
 def create_app() -> FastAPI:
     settings = get_settings()
@@ -77,21 +97,8 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
 
-    app.include_router(health.router, prefix="/api")
-    app.include_router(dashboard.router, prefix="/api")
-    app.include_router(auth.router, prefix="/api")
-    app.include_router(contacts.router, prefix="/api")
-    app.include_router(catalog.router, prefix="/api")
-    app.include_router(invoices.router, prefix="/api")
-    app.include_router(payments.router, prefix="/api")
-    app.include_router(expenses.router, prefix="/api")
-    app.include_router(subscriptions.router, prefix="/api")
-    app.include_router(tax.router, prefix="/api")
-    app.include_router(settings_api.router, prefix="/api")
-    app.include_router(audit.router, prefix="/api")
-    app.include_router(files.router, prefix="/api")
-    app.include_router(reports.router, prefix="/api")
-    app.include_router(party_documents.router, prefix="/api")
+    for router in ROUTERS:
+        app.include_router(router, prefix="/api")
     return app
 
 

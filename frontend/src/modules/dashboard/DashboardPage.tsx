@@ -21,11 +21,11 @@ import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
-import { api, unwrap } from '../api/client'
-import { useAuth } from '../auth/context'
-import { DateText, Money, PageHeader } from '../components/ui'
-import { DOCUMENT_TYPES, labelOf } from '../lib/labels'
-import { DocumentStatusBadge } from './contacts/ContactDocuments'
+import { api, unwrap } from '../../api/client'
+import { useAuth } from '../../auth/context'
+import { DateText, Money, PageHeader } from '../../components/ui'
+import { DOCUMENT_TYPES, labelOf } from '../../lib/labels'
+import { DocumentStatusBadge } from '../contacts/ContactDocuments'
 
 function Stat({
   label,

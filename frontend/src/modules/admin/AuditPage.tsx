@@ -19,12 +19,12 @@ import { Badge, Button, Code, Group, Select, Text, TextInput } from '@mantine/co
 import { IconDownload } from '@tabler/icons-react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
-import { api, unwrap, type Schemas } from '../api/client'
-import { useAuth } from '../auth/context'
-import { DataTable } from '../components/DataTable'
-import { PageHeader } from '../components/ui'
-import { formatDateTime } from '../lib/format'
-import { useUrlState } from '../lib/useUrlState'
+import { api, unwrap, type Schemas } from '../../api/client'
+import { useAuth } from '../../auth/context'
+import { DataTable } from '../../components/DataTable'
+import { PageHeader } from '../../components/ui'
+import { formatDateTime } from '../../lib/format'
+import { useUrlState } from '../../lib/useUrlState'
 
 type Entry = Schemas['AuditEntry']
 const LIMIT = 100
