@@ -25,6 +25,7 @@ from saumgm.models import Organization
 from saumgm.services.reports import bucket
 from tests.api_helpers import contact, issued_invoice, ok
 from tests.tax_setup import NewYork, setup_new_york
+from tests.test_documents import pdf_text
 
 QUARTER = {"date_from": "2026-01-01", "date_to": "2026-03-31"}
 
@@ -138,7 +139,7 @@ def test_sales_tax_accrual_and_cash(owner_client: TestClient, books: dict[str, A
     response = owner_client.get("/api/reports/sales-tax.csv", params=QUARTER | {"basis": "accrual"})
     assert response.status_code == 200 and response.headers["content-type"].startswith("text/csv")
     rows = list(csv.reader(io.StringIO(response.text)))
-    assert rows[0] == ["jurisdiction", "tax", "rate", "taxable", "tax_amount"]
+    assert rows[0] == ["Jurisdiction", "Tax", "Rate", "Taxable", "Tax amount"]
     assert ["Net tax", "", "", "", "4.00"] in rows
 
 
@@ -182,3 +183,77 @@ def test_aging_buckets() -> None:
         "current", "current", "days_1_30", "days_1_30", "days_31_60", "days_61_90",
         "days_over_90",
     ]  # fmt: skip
+
+
+def test_sales_and_profit_loss_by_payment_date(
+    owner_client: TestClient, books: dict[str, Any]
+) -> None:
+    cash = QUARTER | {"basis": "cash"}
+    # Only the 104 received in February counts, without its 4 of tax; the unpaid and the
+    # written-off amounts never do.
+    by_month = ok(owner_client.get("/api/reports/sales", params=cash))
+    assert by_month["basis"] == "cash"
+    assert [(r["key"], r["documents"], r["sales"], r["tax"]) for r in by_month["rows"]] == [
+        ("2026-02", 1, "100.0000", "4.0000")
+    ]
+    assert by_month["total"] == "104.0000"
+    by_client = ok(owner_client.get("/api/reports/sales", params=cash | {"group": "client"}))
+    assert [(r["label"], r["sales"]) for r in by_client["rows"]] == [("Olean Shop", "100.0000")]
+    by_category = ok(
+        owner_client.get("/api/reports/sales", params=cash | {"group": "revenue_category"})
+    )
+    assert [(r["label"], r["sales"]) for r in by_category["rows"]] == [
+        ("Uncategorized", "100.0000")
+    ]
+
+    pl = ok(owner_client.get("/api/reports/profit-loss", params=cash))
+    assert (pl["basis"], pl["sales"], pl["gross_profit"], pl["bad_debts"], pl["net_profit"]) == (
+        "cash",
+        "100.0000",
+        "50.0000",
+        "0.0000",
+        "30.0000",
+    )
+
+
+def test_income_basis_defaults_to_the_business_setting(
+    owner_client: TestClient, books: dict[str, Any]
+) -> None:
+    assert ok(owner_client.get("/api/reports/sales", params=QUARTER))["basis"] == "accrual"
+    ok(owner_client.patch("/api/settings/organization", json={"income_basis": "cash"}))
+    assert ok(owner_client.get("/api/reports/sales", params=QUARTER))["total"] == "104.0000"
+    assert ok(owner_client.get("/api/reports/profit-loss", params=QUARTER))["basis"] == "cash"
+    # the sales-tax report keeps its own setting
+    assert ok(owner_client.get("/api/reports/sales-tax", params=QUARTER))["basis"] == "accrual"
+    response = owner_client.get("/api/reports/sales.csv", params=QUARTER)
+    assert (
+        'filename="sales-by-month-cash-2026-01-01-2026-03-31.csv"'
+        in (response.headers["content-disposition"])
+    )
+
+
+def test_report_pdfs(owner_client: TestClient, books: dict[str, Any]) -> None:
+    sales = pdf_text(owner_client.get("/api/reports/sales.pdf", params=QUARTER | {"basis": "cash"}))
+    assert "Sales" in sales and "By payment date" in sales and "$104.00" in sales
+    assert "Page 1 of 1" in sales
+
+    tax = pdf_text(owner_client.get("/api/reports/sales-tax.pdf", params=QUARTER))
+    assert "New York State" in tax and "Net tax" in tax and "4%" in tax
+
+    pl = pdf_text(owner_client.get("/api/reports/profit-loss.pdf", params=QUARTER))
+    assert "Profit & loss" in pl and "Bad debts (written off)" in pl and "$130.00" in pl
+
+    expenses = owner_client.get("/api/reports/expenses.pdf", params=QUARTER | {"group": "vendor"})
+    assert "No vendor" in pdf_text(expenses)
+    aging = pdf_text(owner_client.get("/api/reports/aging.pdf"))
+    assert "ACME Inc" in aging and "Invoices" in aging and "■" not in aging
+
+    audit = ok(owner_client.get("/api/audit", params={"action": "export"}))["items"]
+    assert any(e["entity_id"] == "sales-by-month-cash-2026-01-01-2026-03-31" for e in audit)
+
+
+def test_report_downloads_check_their_query(owner_client: TestClient) -> None:
+    assert owner_client.get("/api/reports/sales.pdf").status_code == 422
+    bad_group = owner_client.get("/api/reports/expenses.csv", params=QUARTER | {"group": "x"})
+    assert bad_group.status_code == 422
+    assert owner_client.get("/api/reports/nothing.pdf", params=QUARTER).status_code == 422

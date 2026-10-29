@@ -172,7 +172,7 @@ def test_bad_addresses_are_refused(owner_client: TestClient, outbox: Outbox) -> 
 
 def test_templates(owner_client: TestClient, outbox: Outbox) -> None:
     templates = ok_list(owner_client.get("/api/email/templates"))
-    assert [t["kind"] for t in templates] == ["invoice", "credit_note", "receipt"]
+    assert [t["kind"] for t in templates] == ["invoice", "credit_note", "receipt", "report"]
     assert not any(t["customized"] for t in templates)
     assert "due_date" in templates[0]["placeholders"]
 
@@ -276,3 +276,22 @@ def test_resend_request(monkeypatch: pytest.MonkeyPatch) -> None:
         ResendBackend("key-1").send(message)
     with pytest.raises(EmailError, match="RESEND_API_KEY"):
         ResendBackend(None).send(message)
+
+
+def test_report_by_email(owner_client: TestClient, outbox: Outbox) -> None:
+    query = {"date_from": "2026-01-01", "date_to": "2026-03-31", "basis": "accrual"}
+    draft = ok(owner_client.get("/api/reports/profit-loss/email", params=query))
+    assert draft["to"] == ["owner@example.com"]
+    assert draft["subject"].startswith("Profit & loss, Jan 1, 2026")
+    assert draft["attachments"] == ["profit-loss-accrual-2026-01-01-2026-03-31.pdf"]
+
+    set_sender(owner_client)
+    body = {"to": draft["to"], "subject": draft["subject"], "body": draft["body"]}
+    sent = ok(owner_client.post("/api/reports/profit-loss/email", params=query, json=body))
+    assert sent["entity_type"] == "report" and sent["kind"] == "report"
+    [message] = outbox.messages
+    [pdf] = message.attachments
+    assert pdf.content.startswith(b"%PDF")
+
+    aging = ok(owner_client.get("/api/reports/aging/email"))
+    assert "as of" in aging["subject"]

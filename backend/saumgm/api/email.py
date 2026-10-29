@@ -42,7 +42,7 @@ router = APIRouter(tags=["email"])
 
 RecordType = Literal["invoice", "payment"]
 # Kinds with a template the business can change (the test message is fixed).
-EDITABLE = [EmailKind.INVOICE, EmailKind.CREDIT_NOTE, EmailKind.RECEIPT]
+EDITABLE = [EmailKind.INVOICE, EmailKind.CREDIT_NOTE, EmailKind.RECEIPT, EmailKind.REPORT]
 
 
 def _org(db: DbSession, org_id: int) -> Organization:
@@ -97,6 +97,30 @@ def _sent(db: DbSession, message: EmailMessage) -> MessageOut:
 
 def _bad_request(exc: EmailError) -> HTTPException:
     return HTTPException(status.HTTP_400_BAD_REQUEST, str(exc))
+
+
+def draft_out(draft: emailing.Draft) -> DraftOut:
+    return DraftOut(
+        kind=draft.kind,
+        to=draft.to,
+        cc=draft.cc,
+        subject=draft.subject,
+        body=draft.body,
+        attachments=[a.filename for a in draft.attachments],
+        redirect_to=get_settings().email_redirect_to,
+    )
+
+
+def send_draft(
+    db: DbSession, org: Organization, draft: emailing.Draft, body: SendIn, user_id: int
+) -> MessageOut:
+    """Send the draft with the recipients and text the user approved."""
+    draft.to, draft.cc, draft.subject, draft.body = body.to, body.cc, body.subject, body.body
+    try:
+        message = emailing.send(db, org, draft, user_id)
+    except EmailError as exc:
+        raise _bad_request(exc) from None
+    return _sent(db, message)
 
 
 # -- settings and templates (owner) ---------------------------------------------------------------
@@ -203,16 +227,7 @@ def _draft(db: DbSession, org: Organization, record_type: str, record_id: int) -
 @router.get("/email/compose/{record_type}/{record_id}")
 def compose(record_type: RecordType, record_id: int, auth: Editor, db: DbSession) -> DraftOut:
     """The email as it would go out: recipients, subject and message from the template."""
-    draft = _draft(db, _org(db, auth.organization_id), record_type, record_id)
-    return DraftOut(
-        kind=draft.kind,
-        to=draft.to,
-        cc=draft.cc,
-        subject=draft.subject,
-        body=draft.body,
-        attachments=[a.filename for a in draft.attachments],
-        redirect_to=get_settings().email_redirect_to,
-    )
+    return draft_out(_draft(db, _org(db, auth.organization_id), record_type, record_id))
 
 
 @router.post("/email/send/{record_type}/{record_id}")
@@ -221,13 +236,7 @@ def send(
 ) -> MessageOut:
     """Send the record by email, with the recipients and text the user approved."""
     org = _org(db, auth.organization_id)
-    draft = _draft(db, org, record_type, record_id)
-    draft.to, draft.cc, draft.subject, draft.body = body.to, body.cc, body.subject, body.body
-    try:
-        message = emailing.send(db, org, draft, auth.user.id)
-    except EmailError as exc:
-        raise _bad_request(exc) from None
-    return _sent(db, message)
+    return send_draft(db, org, _draft(db, org, record_type, record_id), body, auth.user.id)
 
 
 # -- the log (owner) ------------------------------------------------------------------------------

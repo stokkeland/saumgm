@@ -53,6 +53,7 @@ class OrganizationOut(BaseModel):
     tax_label: str
     prices_include_tax: bool
     tax_basis: TaxBasis
+    income_basis: TaxBasis
     default_terms_days: int
     invoice_revision_owner_only: bool
 
@@ -76,6 +77,7 @@ class OrganizationPatch(BaseModel):
     tax_label: str | None = Field(None, min_length=1, max_length=50)
     prices_include_tax: bool | None = None
     tax_basis: TaxBasis | None = None
+    income_basis: TaxBasis | None = None
     default_terms_days: int | None = Field(None, ge=0, le=3650)
     invoice_revision_owner_only: bool | None = None
 

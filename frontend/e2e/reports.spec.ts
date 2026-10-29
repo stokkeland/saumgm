@@ -54,10 +54,19 @@ test('reports show sales, sales tax, profit and aging with CSV downloads', async
   await expect(page).toHaveURL(/basis=cash/)
   await screenshot(page, 'reports-sales-tax')
 
-  const csv = page.getByRole('link', { name: 'Download CSV' })
+  const csv = page.getByRole('link', { name: 'CSV', exact: true })
   const download = await page.request.get((await csv.getAttribute('href'))!)
   expect(download.headers()['content-type']).toContain('text/csv')
   expect(await download.text()).toContain('Net tax')
+  const pdf = page.getByRole('link', { name: 'PDF', exact: true })
+  expect(await pdf.getAttribute('href')).toContain('/api/reports/sales-tax.pdf?')
+  const document = await page.request.get((await pdf.getAttribute('href'))!)
+  expect(document.headers()['content-type']).toBe('application/pdf')
+
+  await page.getByRole('tab', { name: 'Sales', exact: true }).click()
+  await page.getByText('By payment date', { exact: true }).click()
+  await expect(page).toHaveURL(/income=cash/)
+  await expect(page.getByText(/Payments received in the period/)).toBeVisible()
 
   await page.getByRole('tab', { name: 'Profit & loss' }).click()
   await expect(page.getByText('Net profit')).toBeVisible()

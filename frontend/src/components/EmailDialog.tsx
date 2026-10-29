@@ -26,6 +26,16 @@ import { notifyError, notifySaved } from '../lib/notify'
 
 type RecordType = 'invoice' | 'payment'
 type Draft = Schemas['DraftOut']
+type ReportName = 'sales' | 'sales-tax' | 'expenses' | 'profit-loss' | 'aging'
+type ReportQuery = { date_from?: string; date_to?: string; group?: string; basis?: 'accrual' | 'cash' }
+
+/** What is being sent: how to get the draft, how to send it, and what to refresh afterwards. */
+type Source = {
+  key: unknown[]
+  compose: () => Promise<Draft>
+  send: (body: Schemas['SendIn']) => Promise<Schemas['MessageOut']>
+  history?: unknown[]
+}
 
 /** A button that opens the "Send by email" dialog for one record (its PDF goes along). */
 export function EmailButton({
@@ -37,6 +47,28 @@ export function EmailButton({
   recordId: number
   label?: string
 }) {
+  const path = { record_type: recordType, record_id: recordId }
+  const source: Source = {
+    key: [recordType, recordId],
+    compose: async () => unwrap(await api.GET('/api/email/compose/{record_type}/{record_id}', { params: { path } })),
+    send: async (body) => unwrap(await api.POST('/api/email/send/{record_type}/{record_id}', { params: { path }, body })),
+    history: ['history', recordType, String(recordId)],
+  }
+  return <EmailDialogButton source={source} label={label} />
+}
+
+/** The same dialog for a report as shown: its PDF goes along, addressed to yourself. */
+export function ReportEmailButton({ report, query }: { report: ReportName; query: ReportQuery }) {
+  const params = { path: { report }, query }
+  const source: Source = {
+    key: ['report', report, query],
+    compose: async () => unwrap(await api.GET('/api/reports/{report}/email', { params })),
+    send: async (body) => unwrap(await api.POST('/api/reports/{report}/email', { params, body })),
+  }
+  return <EmailDialogButton source={source} label="Email" />
+}
+
+function EmailDialogButton({ source, label }: { source: Source; label: string }) {
   const [opened, setOpened] = useState(false)
   return (
     <>
@@ -44,21 +76,16 @@ export function EmailButton({
         {label}
       </Button>
       <Modal opened={opened} onClose={() => setOpened(false)} title="Send by email" size="lg">
-        {opened && <EmailForm recordType={recordType} recordId={recordId} onDone={() => setOpened(false)} />}
+        {opened && <EmailForm source={source} onDone={() => setOpened(false)} />}
       </Modal>
     </>
   )
 }
 
-function EmailForm({ recordType, recordId, onDone }: { recordType: RecordType; recordId: number; onDone: () => void }) {
+function EmailForm({ source, onDone }: { source: Source; onDone: () => void }) {
   const draft = useQuery({
-    queryKey: ['email-compose', recordType, recordId],
-    queryFn: async () =>
-      unwrap(
-        await api.GET('/api/email/compose/{record_type}/{record_id}', {
-          params: { path: { record_type: recordType, record_id: recordId } },
-        }),
-      ),
+    queryKey: ['email-compose', ...source.key],
+    queryFn: source.compose,
     // Always the current template and recipients.
     gcTime: 0,
     retry: false,
@@ -71,36 +98,20 @@ function EmailForm({ recordType, recordId, onDone }: { recordType: RecordType; r
       </Alert>
     )
   }
-  return <Composer draft={draft.data} recordType={recordType} recordId={recordId} onDone={onDone} />
+  return <Composer draft={draft.data} source={source} onDone={onDone} />
 }
 
-function Composer({
-  draft,
-  recordType,
-  recordId,
-  onDone,
-}: {
-  draft: Draft
-  recordType: RecordType
-  recordId: number
-  onDone: () => void
-}) {
+function Composer({ draft, source, onDone }: { draft: Draft; source: Source; onDone: () => void }) {
   const queryClient = useQueryClient()
   const [to, setTo] = useState(draft.to)
   const [cc, setCc] = useState(draft.cc)
   const [subject, setSubject] = useState(draft.subject)
   const [body, setBody] = useState(draft.body)
   const send = useMutation({
-    mutationFn: async () =>
-      unwrap(
-        await api.POST('/api/email/send/{record_type}/{record_id}', {
-          params: { path: { record_type: recordType, record_id: recordId } },
-          body: { to, cc, subject, body },
-        }),
-      ),
+    mutationFn: () => source.send({ to, cc, subject, body }),
     onSuccess: (sent) => {
       notifySaved(sent.redirected_to ? `Sent to ${sent.redirected_to} (redirected)` : `Sent to ${sent.to_addresses}`)
-      queryClient.invalidateQueries({ queryKey: ['history', recordType, String(recordId)] })
+      if (source.history) queryClient.invalidateQueries({ queryKey: source.history })
       queryClient.invalidateQueries({ queryKey: ['email-messages'] })
       onDone()
     },

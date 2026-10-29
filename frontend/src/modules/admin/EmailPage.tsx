@@ -55,6 +55,7 @@ const KIND_LABELS: Record<string, string> = {
   invoice: 'Invoice',
   credit_note: 'Credit note',
   receipt: 'Payment receipt',
+  report: 'Report',
   test: 'Test message',
 }
 
@@ -310,6 +311,7 @@ function LogTab() {
   })
   const record = (m: Message) => {
     const base = m.entity_type ? RECORD_LINKS[m.entity_type] : undefined
+    if (m.entity_type === 'report') return <Text size="sm">{m.entity_id}</Text>
     if (!base || !m.entity_id) return null
     return (
       <Anchor component={Link} to={`${base}/${m.entity_id}`} size="sm">

@@ -1484,23 +1484,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/reports/sales.csv": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Sales Csv */
-        get: operations["sales_csv_api_reports_sales_csv_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/reports/sales-tax": {
         parameters: {
             query?: never;
@@ -1510,23 +1493,6 @@ export interface paths {
         };
         /** Sales Tax Report */
         get: operations["sales_tax_report_api_reports_sales_tax_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/reports/sales-tax.csv": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Sales Tax Csv */
-        get: operations["sales_tax_csv_api_reports_sales_tax_csv_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1552,23 +1518,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/reports/expenses.csv": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Expenses Csv */
-        get: operations["expenses_csv_api_reports_expenses_csv_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/reports/profit-loss": {
         parameters: {
             query?: never;
@@ -1578,23 +1527,6 @@ export interface paths {
         };
         /** Profit Loss Report */
         get: operations["profit_loss_report_api_reports_profit_loss_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/reports/profit-loss.csv": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Profit Loss Csv */
-        get: operations["profit_loss_csv_api_reports_profit_loss_csv_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1620,17 +1552,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/reports/aging.csv": {
+    "/api/reports/{report}.csv": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Aging Csv */
-        get: operations["aging_csv_api_reports_aging_csv_get"];
+        /** Report Csv */
+        get: operations["report_csv_api_reports__report__csv_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report}.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Report Pdf Download
+         * @description The report as a document to save or print (opens in the browser).
+         */
+        get: operations["report_pdf_download_api_reports__report__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reports/{report}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compose Report Email
+         * @description The report by email, addressed to yourself, with the PDF attached.
+         */
+        get: operations["compose_report_email_api_reports__report__email_get"];
+        put?: never;
+        /** Send Report Email */
+        post: operations["send_report_email_api_reports__report__email_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2595,7 +2568,7 @@ export interface components {
          * @description What an email is about; each kind has its own template (Admin -> Email).
          * @enum {string}
          */
-        EmailKind: "invoice" | "credit_note" | "receipt" | "test";
+        EmailKind: "invoice" | "credit_note" | "receipt" | "report" | "test";
         /** EmailSettingsOut */
         EmailSettingsOut: {
             /** From Address */
@@ -3482,6 +3455,7 @@ export interface components {
             /** Prices Include Tax */
             prices_include_tax: boolean;
             tax_basis: components["schemas"]["TaxBasis"];
+            income_basis: components["schemas"]["TaxBasis"];
             /** Default Terms Days */
             default_terms_days: number;
             /** Invoice Revision Owner Only */
@@ -3524,6 +3498,7 @@ export interface components {
             /** Prices Include Tax */
             prices_include_tax?: boolean | null;
             tax_basis?: components["schemas"]["TaxBasis"] | null;
+            income_basis?: components["schemas"]["TaxBasis"] | null;
             /** Default Terms Days */
             default_terms_days?: number | null;
             /** Invoice Revision Owner Only */
@@ -3982,6 +3957,7 @@ export interface components {
         };
         /** ProfitLossOut */
         ProfitLossOut: {
+            basis: components["schemas"]["TaxBasis"];
             /**
              * Date From
              * Format: date
@@ -4150,6 +4126,7 @@ export interface components {
         };
         /** SalesReport */
         SalesReport: {
+            basis: components["schemas"]["TaxBasis"];
             /**
              * Date From
              * Format: date
@@ -4385,6 +4362,7 @@ export interface components {
         SubscriptionStatus: "active" | "paused" | "cancelled";
         /**
          * TaxBasis
+         * @description How tax and income are reported (separate settings for each).
          * @enum {string}
          */
         TaxBasis: "accrual" | "cash";
@@ -8469,6 +8447,8 @@ export interface operations {
                 date_from: string;
                 date_to: string;
                 group?: "month" | "client" | "revenue_category";
+                /** @description Defaults to the business setting */
+                basis?: components["schemas"]["TaxBasis"] | null;
             };
             header?: never;
             path?: never;
@@ -8483,39 +8463,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SalesReport"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    sales_csv_api_reports_sales_csv_get: {
-        parameters: {
-            query: {
-                date_from: string;
-                date_to: string;
-                group?: "month" | "client" | "revenue_category";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -8563,39 +8510,6 @@ export interface operations {
             };
         };
     };
-    sales_tax_csv_api_reports_sales_tax_csv_get: {
-        parameters: {
-            query: {
-                date_from: string;
-                date_to: string;
-                basis?: components["schemas"]["TaxBasis"] | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     expenses_report_api_reports_expenses_get: {
         parameters: {
             query: {
@@ -8629,44 +8543,13 @@ export interface operations {
             };
         };
     };
-    expenses_csv_api_reports_expenses_csv_get: {
-        parameters: {
-            query: {
-                date_from: string;
-                date_to: string;
-                group?: "account" | "vendor" | "month";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     profit_loss_report_api_reports_profit_loss_get: {
         parameters: {
             query: {
                 date_from: string;
                 date_to: string;
+                /** @description Defaults to the business setting */
+                basis?: components["schemas"]["TaxBasis"] | null;
             };
             header?: never;
             path?: never;
@@ -8681,38 +8564,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfitLossOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    profit_loss_csv_api_reports_profit_loss_csv_get: {
-        parameters: {
-            query: {
-                date_from: string;
-                date_to: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -8746,11 +8597,18 @@ export interface operations {
             };
         };
     };
-    aging_csv_api_reports_aging_csv_get: {
+    report_csv_api_reports__report__csv_get: {
         parameters: {
-            query?: never;
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                group?: string | null;
+                basis?: components["schemas"]["TaxBasis"] | null;
+            };
             header?: never;
-            path?: never;
+            path: {
+                report: "sales" | "sales-tax" | "expenses" | "profit-loss" | "aging";
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -8762,6 +8620,127 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    report_pdf_download_api_reports__report__pdf_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                group?: string | null;
+                basis?: components["schemas"]["TaxBasis"] | null;
+            };
+            header?: never;
+            path: {
+                report: "sales" | "sales-tax" | "expenses" | "profit-loss" | "aging";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compose_report_email_api_reports__report__email_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                group?: string | null;
+                basis?: components["schemas"]["TaxBasis"] | null;
+            };
+            header?: never;
+            path: {
+                report: "sales" | "sales-tax" | "expenses" | "profit-loss" | "aging";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_report_email_api_reports__report__email_post: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                group?: string | null;
+                basis?: components["schemas"]["TaxBasis"] | null;
+            };
+            header?: never;
+            path: {
+                report: "sales" | "sales-tax" | "expenses" | "profit-loss" | "aging";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

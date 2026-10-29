@@ -13,7 +13,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""PDF documents: invoices and credit notes, payment receipts, deposit slips.
+"""PDF documents: invoices and credit notes, payment receipts, deposit slips, reports.
 
 Everything business-specific comes from the organization's settings (logo, name, addresses valid on
 the document date, "payable to", footer, locale and currency), so the layout works for anyone.
@@ -21,12 +21,13 @@ the document date, "payable to", footer, locale and currency), so the layout wor
 
 import io
 from collections.abc import Sequence
-from datetime import date
+from dataclasses import dataclass, field
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 from xml.sax.saxutils import escape
 
-from babel.dates import format_date
+from babel.dates import format_date, format_datetime
 from babel.numbers import format_currency, format_decimal, format_percent
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
@@ -101,6 +102,10 @@ class Formatter:
     def date(self, value: date | None) -> str:
         return "" if value is None else format_date(value, "medium", locale=self.locale)
 
+    def timestamp(self, value: datetime) -> str:
+        # Babel puts a narrow no-break space before AM/PM, which the PDF fonts do not have.
+        return format_datetime(value, "short", locale=self.locale).replace("\u202f", " ")
+
 
 def text(value: Any, style: ParagraphStyle = BODY) -> Paragraph:
     """A paragraph from plain text (escaped; newlines kept)."""
@@ -169,6 +174,8 @@ def letterhead(
     on: date | None,
     title: str,
     meta: Sequence[tuple[str, str]],
+    title_style: ParagraphStyle = TITLE,
+    label_width: float = 1.1 * inch,
 ) -> Table:
     """Logo/name and business details on the left; document title and key facts on the right."""
     physical = org_address(session, org, on, AddressType.PHYSICAL, AddressType.REMIT)
@@ -182,7 +189,7 @@ def letterhead(
 
     facts = Table(
         [[text(label, SMALL), text(value, RIGHT)] for label, value in meta],
-        colWidths=[1.1 * inch, 1.6 * inch],
+        colWidths=[label_width, 2.7 * inch - label_width],
         style=TableStyle(
             [
                 ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
@@ -191,7 +198,7 @@ def letterhead(
             ]
         ),
     )
-    right = [text(title, TITLE), Spacer(1, 6), facts]
+    right = [text(title, title_style), Spacer(1, 6), facts]
     return Table(
         [[left, right]],
         colWidths=[4.3 * inch, 2.9 * inch],
@@ -530,3 +537,108 @@ def deposit_slip_pdf(session: Session, org: Organization, deposit: Deposit) -> b
     if deposit.notes:
         story += [Spacer(1, 12), boxed("Notes", deposit.notes, 7.2 * inch)]
     return build(story, f"{org.display_name} · Deposit {deposit.id}")
+
+
+# -- reports --------------------------------------------------------------------------------------
+
+
+@dataclass
+class Rate:
+    """A tax rate in a report cell (formatted as a percentage, not as money)."""
+
+    value: Decimal | None
+
+
+@dataclass
+class ReportRow:
+    cells: list[Any]  # str, int (a count), Decimal (money), Rate, date or None
+    strong: bool = False  # a subtotal or total
+
+
+@dataclass
+class ReportDocument:
+    """One report as a table, the same for the CSV download, the PDF and the email."""
+
+    name: str  # file name without the extension, e.g. "sales-by-month-cash-2026-01-01-2026-12-31"
+    title: str
+    facts: list[tuple[str, str]]  # period, basis, grouping... (PDF heading)
+    header: list[str]
+    widths: list[float]  # inches; together 7.2 (the width between the margins)
+    rows: list[ReportRow]
+    right_from: int = 1  # the columns from here on are numbers
+    summary: list[ReportRow] = field(default_factory=list)  # totals under the table
+    note: str | None = None
+
+
+REPORT_TITLE = ParagraphStyle("report-title", parent=TITLE, fontSize=15, leading=18)
+
+
+def _cell(f: Formatter, value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, Decimal):
+        return f.money(value)
+    if isinstance(value, Rate):
+        return f.rate(value.value)
+    if isinstance(value, date):
+        return f.date(value)
+    return str(value)
+
+
+def report_pdf(
+    session: Session, org: Organization, report: ReportDocument, generated: datetime
+) -> bytes:
+    f = Formatter(org)
+    story: list[Flowable] = [
+        # Narrow labels, so a period ("Jan 1, 2026 - Dec 31, 2026") fits on one line.
+        letterhead(
+            session, org, generated.date(), report.title, report.facts, REPORT_TITLE, 0.75 * inch
+        ),
+        Spacer(1, 16),
+    ]
+    strong_body = ParagraphStyle("strong-body", parent=BOLD)
+    strong_right = ParagraphStyle("strong-right", parent=BOLD, alignment=TA_RIGHT)
+    rows: list[list[Any]] = []
+    for row in report.rows:
+        cells = [_cell(f, v) for v in row.cells]
+        if row.strong:
+            rows.append(
+                [
+                    text(c, strong_right if i >= report.right_from else strong_body)
+                    for i, c in enumerate(cells)
+                ]
+            )
+        else:
+            rows.append(cells)
+    if not rows:
+        rows.append(["Nothing in this period", *[""] * (len(report.header) - 1)])
+    table = items_table(report.header, rows, [w * inch for w in report.widths], report.right_from)
+    table.setStyle(
+        TableStyle(
+            [
+                cmd
+                for i, row in enumerate(report.rows, start=1)
+                if row.strong
+                for cmd in (
+                    ("LINEABOVE", (0, i), (-1, i), 0.75, ACCENT),
+                    ("BACKGROUND", (0, i), (-1, i), LIGHT),
+                )
+            ]
+        )
+    )
+    story.append(table)
+    if report.summary:
+        story.append(Spacer(1, 10))
+        summary = [
+            (
+                str(row.cells[0]),
+                _cell(f, next((v for v in reversed(row.cells) if v not in (None, "")), None)),
+                row.strong,
+            )
+            for row in report.summary
+        ]
+        story.append(KeepTogether(totals_table(summary)))
+    if report.note:
+        story += [Spacer(1, 12), text(report.note, SMALL)]
+    footer = f"{org.display_name} · {report.title} · generated {f.timestamp(generated)}"
+    return build(story, footer)

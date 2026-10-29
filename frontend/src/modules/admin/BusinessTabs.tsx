@@ -71,6 +71,7 @@ function BusinessForm({ org }: { org: Org }) {
       fiscal_year_start_month: String(org.fiscal_year_start_month),
       tax_label: org.tax_label,
       tax_basis: org.tax_basis,
+      income_basis: org.income_basis,
       default_terms_days: org.default_terms_days,
       invoice_revision_owner_only: org.invoice_revision_owner_only,
       footer_text: org.footer_text ?? '',
@@ -93,6 +94,7 @@ function BusinessForm({ org }: { org: Org }) {
             currency_code: v.currency_code.toUpperCase(),
             fiscal_year_start_month: Number(v.fiscal_year_start_month),
             tax_basis: v.tax_basis as Org['tax_basis'],
+            income_basis: v.income_basis as Org['income_basis'],
           },
         }),
       ),
@@ -149,6 +151,15 @@ function BusinessForm({ org }: { org: Org }) {
                   { value: 'cash', label: 'Payment date (cash)' },
                 ]}
                 {...form.getInputProps('tax_basis')}
+              />
+              <Select
+                label="Report income by"
+                description="Sales and profit & loss"
+                data={[
+                  { value: 'accrual', label: 'Invoice date (accrual)' },
+                  { value: 'cash', label: 'Payment date (cash)' },
+                ]}
+                {...form.getInputProps('income_basis')}
               />
             </SimpleGrid>
             <Checkbox
