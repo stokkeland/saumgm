@@ -141,18 +141,20 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 - `revenue_category` — small editable list.
 - Cleanup: all old products are imported; unused ones are marked inactive; a merge tool lets you fold duplicates together without breaking historical invoice lines.
 
-### 4.3 Client subscriptions (new)
-- `subscription`
-  - `party_id` (client), `catalog_item_id`, `quantity`
-  - `price_override`, `discount_pct` (client-specific pricing)
-  - `service_identifier` — what this subscription is *for*: a domain name, hosting account, server name, contract number
-  - `billing_interval`, `start_date`, `next_bill_date`, `end_date`, `auto_renew`
+### 4.3 Subscriptions: client (billed) and vendor (paid)
+- `subscription` (client subscription, what is billed)
+  - `party_id` (client), `service_identifier` — what this subscription is *for*: a domain name, hosting account, server name, contract number
+  - `billing_interval_months`, `start_date`, `next_bill_date`, `end_date`, `auto_renew`
   - `status`: active, paused, cancelled
-  - `vendor_party_id`, `vendor_renewal_date`, `unit_cost` — e.g. the registrar and the renewal date there, so upcoming vendor renewals and margin are visible
   - `notes`
-- **Pricing**: each billing period bills `quantity` × unit price (the subscription's override or the catalog price); periods are billed in advance unless the catalog item says arrears.
-- **Billing run**: "Generate invoices for subscriptions due through date X" → one **draft** invoice per client, a line per subscription with the period in the description (e.g. `example.com — 2026-11-01 to 2027-10-31`), then `next_bill_date` advances. You review and issue drafts manually.
-- **Views**: upcoming renewals (next 30/60/90 days), per-client subscription list on the contact page, vendor renewals due.
+- `subscription_line` — `catalog_item_id`, `description` (copied from the item, editable), `quantity`, `price_override`, `discount_pct` (client-specific pricing), `sort_order`. Hosting and a domain go on one subscription and one invoice.
+- `vendor_subscription` (what is paid: a rented server, a domain registration, a license, phone and internet) — `party_id` (vendor), `name`, `service_identifier`, `amount`, `interval_months`, `next_due_date`, `end_date`, `expense_account_id`, `autopay` (charged automatically; changes only how reminders read), `auto_renew`, `status`, `notes`. **Record payment** makes an expense (vendor, account, amount; `expense.vendor_subscription_id` links it) and moves `next_due_date` on by one interval; nothing else is automatic.
+- `subscription_use` — a client subscription line uses a vendor subscription (many-to-many). Information only, never billing logic: the client subscription shows its cost share and margin per month (a vendor subscription used by several active lines is split equally between them); the vendor subscription lists who depends on it.
+- `catalog_package` / `catalog_package_item` — a named set of items with default quantity, price and discount ("Hosting + domain") that fills a new subscription's lines; the lines stay editable, and changing the package later leaves subscriptions alone.
+- **Pricing**: each billing period bills, per line, `quantity` × unit price (the line's override or the catalog price); periods are billed in advance unless the line's catalog item says arrears.
+- **Billing run**: "Generate invoices for subscriptions due through date X" → one **draft** invoice per subscription (or, as an option, one per client for its subscriptions due on the same day), a line per subscription line with the period in the description (e.g. `Hosting - example.com (2026-11-01 to 2027-10-31)`), then `next_bill_date` advances. You review and issue drafts manually.
+- **Views**: upcoming renewals (dashboard), client subscriptions (Sales), vendor subscriptions with their next due dates (Money), packages (Catalog).
+- **From 1.0**: each subscription became a header with one line; its vendor details (vendor, vendor renewal date, unit cost) became a linked vendor subscription.
 - **Import aid**: the importer proposes subscriptions from recent recurring invoice lines (same client + recurring product within the last ~13 months) as a review list — not created automatically.
 
 ### 4.4 Invoices (replaces tblInvoiceHdr / tblInvoiceDtl)
@@ -271,7 +273,7 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - **Dashboard** — open receivables, overdue, YTD sales vs expenses, upcoming subscription renewals, tax due this period.
 - **Contacts** — searchable list with role filters; contact page with addresses, people, subscriptions, invoices, payments, expenses, balance.
 - **Catalog** — items by type, inactive toggle, merge duplicates.
-- **Subscriptions** — list, upcoming renewals, billing run.
+- **Subscriptions** — client subscriptions with lines and packages, the billing run; vendor subscriptions with payments.
 - **Invoices** — list (default: unpaid, not archived), editor (line entry with catalog search, live totals and tax), issue/void/credit note, PDF.
 - **Payments** — receive payment, undeposited funds, deposits + slip.
 - **Expenses** — list by period/account/vendor, quick entry with receipts.
@@ -324,7 +326,7 @@ Known data issues are reported, not silently fixed: 3 client/vendor files withou
 5. **Documents + reports** ✅ — file storage interface (`saumgm/storage.py`, `file://` backend), business logo upload (and importer option), ReportLab PDFs for invoices (kept as issued and per revision), receipts and deposit slips; write-offs for uncollectible invoices; sales-tax filing periods; reports API + screen with CSV downloads (sales, sales tax, expenses, profit & loss, aging). 119 backend tests, 17 end-to-end tests.
 6. **Deploy** — install guide [docs/deploy/ubuntu.md](deploy/ubuntu.md) and `deploy/` (prerequisite check/install script, systemd unit, Apache vhost, nightly backup timer, update script, database export for MariaDB 10.11); then install on the Ubuntu server and cut over from Access.
 7. **Post-v1** — email invoices, SSO (OIDC → SAML), Docker images/compose, recurring auto-issue, project module redesign.
-8. **2.0** (in progress on `main`; 1.0 is on `release/v1.0`) — banking, email, report PDFs and income by payment date, subscription packages, assets, knowledge base, modular layout: see [plan-v2.md](plan-v2.md).
+8. **2.0** (in progress on `main`; 1.0 is on `release/v1.0`) — banking, email, report PDFs and income by payment date, subscriptions with lines, packages and vendor subscriptions, assets, knowledge base, modular layout: see [plan-v2.md](plan-v2.md).
 
 ---
 

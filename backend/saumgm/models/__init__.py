@@ -18,7 +18,7 @@
 from saumgm.db import Base
 from saumgm.models.accounts import Account
 from saumgm.models.audit import AuditLog
-from saumgm.models.catalog import CatalogItem, RevenueCategory
+from saumgm.models.catalog import CatalogItem, CatalogPackage, CatalogPackageItem, RevenueCategory
 from saumgm.models.email import EmailMessage, EmailTemplate
 from saumgm.models.expenses import Expense, ExpenseAttachment, ExpenseLine
 from saumgm.models.files import StoredFile
@@ -27,7 +27,12 @@ from saumgm.models.organization import NumberSequence, Organization, Organizatio
 from saumgm.models.parties import Party, PartyAddress, PartyContact, PartyRole
 from saumgm.models.party_documents import PartyDocument
 from saumgm.models.payments import Deposit, DepositItem, Payment, PaymentAllocation
-from saumgm.models.subscriptions import Subscription
+from saumgm.models.subscriptions import (
+    Subscription,
+    SubscriptionLine,
+    SubscriptionUse,
+    VendorSubscription,
+)
 from saumgm.models.tax import (
     TaxabilityRule,
     TaxCategory,
@@ -45,6 +50,8 @@ __all__ = [
     "AuthSession",
     "Base",
     "CatalogItem",
+    "CatalogPackage",
+    "CatalogPackageItem",
     "Deposit",
     "DepositItem",
     "EmailMessage",
@@ -69,6 +76,8 @@ __all__ = [
     "RevenueCategory",
     "StoredFile",
     "Subscription",
+    "SubscriptionLine",
+    "SubscriptionUse",
     "TaxCategory",
     "TaxExemption",
     "TaxFiling",
@@ -79,4 +88,5 @@ __all__ = [
     "User",
     "UserIdentity",
     "UserRole",
+    "VendorSubscription",
 ]

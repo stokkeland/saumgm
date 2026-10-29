@@ -25,7 +25,6 @@ from sqlalchemy import func, select
 from saumgm.api.deps import DbSession, Reader
 from saumgm.enums import InvoiceKind, InvoiceStatus, SubscriptionStatus
 from saumgm.models import (
-    CatalogItem,
     Expense,
     ExpenseLine,
     Invoice,
@@ -48,7 +47,7 @@ class Renewal(BaseModel):
     subscription_id: int
     party_id: int
     party_name: str
-    item_name: str
+    summary: str
     service_identifier: str | None
     next_bill_date: date
 
@@ -127,9 +126,8 @@ def dashboard(auth: Reader, db: DbSession) -> Dashboard:
     )
 
     renewals = db.execute(
-        select(Subscription, Party.name, CatalogItem.name)
+        select(Subscription, Party.name)
         .join(Party, Party.id == Subscription.party_id)
-        .join(CatalogItem, CatalogItem.id == Subscription.catalog_item_id)
         .where(
             Subscription.organization_id == org.id,
             Subscription.status == SubscriptionStatus.ACTIVE,
@@ -157,11 +155,11 @@ def dashboard(auth: Reader, db: DbSession) -> Dashboard:
                 subscription_id=sub.id,
                 party_id=sub.party_id,
                 party_name=party_name,
-                item_name=item_name,
+                summary=", ".join(line.description for line in sub.lines),
                 service_identifier=sub.service_identifier,
                 next_bill_date=sub.next_bill_date,
             )
-            for sub, party_name, item_name in renewals
+            for sub, party_name in renewals
             if sub.next_bill_date is not None
         ],
     )

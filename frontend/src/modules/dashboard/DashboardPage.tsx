@@ -207,7 +207,7 @@ export function DashboardPage() {
                           </Anchor>
                         </Table.Td>
                         <Table.Td>
-                          {r.item_name}
+                          {r.summary}
                           {r.service_identifier && ` – ${r.service_identifier}`}
                         </Table.Td>
                       </Table.Tr>

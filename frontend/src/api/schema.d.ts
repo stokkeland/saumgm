@@ -321,6 +321,46 @@ export interface paths {
         patch: operations["update_item_api_catalog__item_id__patch"];
         trace?: never;
     };
+    "/api/packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Packages */
+        get: operations["list_packages_api_packages_get"];
+        put?: never;
+        /** Create Package */
+        post: operations["create_package_api_packages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/packages/{package_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Package */
+        get: operations["get_package_api_packages__package_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Package
+         * @description Subscriptions filled from a package keep their lines.
+         */
+        delete: operations["delete_package_api_packages__package_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Package */
+        patch: operations["update_package_api_packages__package_id__patch"];
+        trace?: never;
+    };
     "/api/revenue-categories": {
         parameters: {
             query?: never;
@@ -941,6 +981,63 @@ export interface paths {
          * @description Create draft invoices for everything due through a date. With dry_run nothing is saved.
          */
         post: operations["billing_run_api_subscriptions_billing_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/vendor-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Vendor Subscriptions */
+        get: operations["list_vendor_subscriptions_api_vendor_subscriptions_get"];
+        put?: never;
+        /** Create Vendor Subscription */
+        post: operations["create_vendor_subscription_api_vendor_subscriptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/vendor-subscriptions/{subscription_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Vendor Subscription */
+        get: operations["get_vendor_subscription_api_vendor_subscriptions__subscription_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Vendor Subscription */
+        delete: operations["delete_vendor_subscription_api_vendor_subscriptions__subscription_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Vendor Subscription */
+        patch: operations["update_vendor_subscription_api_vendor_subscriptions__subscription_id__patch"];
+        trace?: never;
+    };
+    "/api/vendor-subscriptions/{subscription_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Payment
+         * @description Book the payment as an expense and move the next due date on by one interval.
+         */
+        post: operations["record_payment_api_vendor_subscriptions__subscription_id__payments_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2107,6 +2204,43 @@ export interface components {
             /** Ip Address */
             ip_address: string | null;
         };
+        /** BillingRunInvoice */
+        BillingRunInvoice: {
+            /** Amount Paid */
+            amount_paid: string;
+            /** Amount Credited */
+            amount_credited: string;
+            /** Balance Due */
+            balance_due: string;
+            payment_status: components["schemas"]["PaymentStatus"];
+            /** Is Overdue */
+            is_overdue: boolean;
+            /** Id */
+            id: number;
+            kind: components["schemas"]["InvoiceKind"];
+            /** Number */
+            number: string | null;
+            status: components["schemas"]["InvoiceStatus"];
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Issue Date */
+            issue_date: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Total */
+            total: string;
+            /** Is Historical */
+            is_historical: boolean;
+            /** Archived At */
+            archived_at: string | null;
+            /**
+             * Lines
+             * @description The draft's line descriptions
+             */
+            lines: string[];
+        };
         /** BillingRunRequest */
         BillingRunRequest: {
             /**
@@ -2119,6 +2253,12 @@ export interface components {
              * @default false
              */
             dry_run: boolean;
+            /**
+             * Combine
+             * @description One invoice per client for subscriptions due on the same day
+             * @default false
+             */
+            combine: boolean;
         };
         /** BillingRunResult */
         BillingRunResult: {
@@ -2129,7 +2269,7 @@ export interface components {
             /** Lines Created */
             lines_created: number;
             /** Invoices */
-            invoices: components["schemas"]["InvoiceListItem"][];
+            invoices: components["schemas"]["BillingRunInvoice"][];
         };
         /**
          * BillingTiming
@@ -2726,6 +2866,8 @@ export interface components {
             total: string;
             /** Lines */
             lines: components["schemas"]["ExpenseLineOut"][];
+            /** Vendor Subscription Id */
+            vendor_subscription_id: number | null;
             /** Archived At */
             archived_at: string | null;
             /** Legacy Data */
@@ -3504,6 +3646,86 @@ export interface components {
             /** Invoice Revision Owner Only */
             invoice_revision_owner_only?: boolean | null;
         };
+        /** PackageCreate */
+        PackageCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Items */
+            items: components["schemas"]["PackageItemIn"][];
+        };
+        /** PackageItemIn */
+        PackageItemIn: {
+            /** Catalog Item Id */
+            catalog_item_id: number;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number | string;
+            /**
+             * Price
+             * @description Empty: the catalog price
+             */
+            price?: number | string | null;
+            /** Discount Pct */
+            discount_pct?: number | string | null;
+        };
+        /** PackageItemOut */
+        PackageItemOut: {
+            /** Catalog Item Id */
+            catalog_item_id: number;
+            /**
+             * Quantity
+             * @default 1.0000
+             */
+            quantity: string;
+            /**
+             * Price
+             * @description Empty: the catalog price
+             */
+            price?: string | null;
+            /** Discount Pct */
+            discount_pct?: string | null;
+            /** Item Name */
+            item_name: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Billing Interval Months */
+            billing_interval_months: number | null;
+        };
+        /** PackageOut */
+        PackageOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Is Active */
+            is_active: boolean;
+            /** Items */
+            items: components["schemas"]["PackageItemOut"][];
+            /** Total */
+            total: string;
+        };
+        /** PackagePatch */
+        PackagePatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Items */
+            items?: components["schemas"]["PackageItemIn"][] | null;
+        };
         /** Page[AuditEntry] */
         Page_AuditEntry_: {
             /** Items */
@@ -3596,6 +3818,17 @@ export interface components {
         Page_SubscriptionOut_: {
             /** Items */
             items: components["schemas"]["SubscriptionOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[VendorSubscriptionOut] */
+        Page_VendorSubscriptionOut_: {
+            /** Items */
+            items: components["schemas"]["VendorSubscriptionOut"][];
             /** Total */
             total: number;
             /** Limit */
@@ -4049,8 +4282,8 @@ export interface components {
             party_id: number;
             /** Party Name */
             party_name: string;
-            /** Item Name */
-            item_name: string;
+            /** Summary */
+            summary: string;
             /** Service Identifier */
             service_identifier: string | null;
             /**
@@ -4238,20 +4471,12 @@ export interface components {
         SubscriptionCreate: {
             /** Party Id */
             party_id: number;
-            /** Catalog Item Id */
-            catalog_item_id: number;
-            /**
-             * Quantity
-             * @default 1
-             */
-            quantity: number | string;
-            /** Price Override */
-            price_override?: number | string | null;
-            /** Discount Pct */
-            discount_pct?: number | string | null;
             /** Service Identifier */
             service_identifier?: string | null;
-            /** Billing Interval Months */
+            /**
+             * Billing Interval Months
+             * @description Empty: the first line's catalog interval
+             */
             billing_interval_months?: number | null;
             /**
              * Start Date
@@ -4269,14 +4494,62 @@ export interface components {
             auto_renew: boolean;
             /** @default active */
             status: components["schemas"]["SubscriptionStatus"];
-            /** Vendor Party Id */
-            vendor_party_id?: number | null;
-            /** Vendor Renewal Date */
-            vendor_renewal_date?: string | null;
-            /** Unit Cost */
-            unit_cost?: number | string | null;
             /** Notes */
             notes?: string | null;
+            /** Lines */
+            lines: components["schemas"]["SubscriptionLineIn"][];
+        };
+        /** SubscriptionLineIn */
+        SubscriptionLineIn: {
+            /** Catalog Item Id */
+            catalog_item_id: number;
+            /**
+             * Description
+             * @description Empty: the item's name
+             */
+            description?: string | null;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number | string;
+            /** Price Override */
+            price_override?: number | string | null;
+            /** Discount Pct */
+            discount_pct?: number | string | null;
+            /**
+             * Uses
+             * @description Vendor subscriptions this line depends on
+             */
+            uses?: number[];
+        };
+        /** SubscriptionLineOut */
+        SubscriptionLineOut: {
+            /** Id */
+            id: number;
+            /** Catalog Item Id */
+            catalog_item_id: number;
+            /** Item Name */
+            item_name: string;
+            /** Sku */
+            sku: string | null;
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: string;
+            /** Price Override */
+            price_override: string | null;
+            /** Unit Price */
+            unit_price: string;
+            /** Discount Pct */
+            discount_pct: string | null;
+            /**
+             * Total
+             * @description Per billing period
+             */
+            total: string;
+            /** Uses */
+            uses: components["schemas"]["VendorUse"][];
         };
         /** SubscriptionOut */
         SubscriptionOut: {
@@ -4286,20 +4559,13 @@ export interface components {
             party_id: number;
             /** Party Name */
             party_name: string;
-            /** Catalog Item Id */
-            catalog_item_id: number;
-            /** Item Name */
-            item_name: string;
-            /** Quantity */
-            quantity: string;
-            /** Price Override */
-            price_override: string | null;
-            /** Unit Price */
-            unit_price: string;
-            /** Discount Pct */
-            discount_pct: string | null;
             /** Service Identifier */
             service_identifier: string | null;
+            /**
+             * Summary
+             * @description The lines' descriptions, for lists
+             */
+            summary: string;
             /** Billing Interval Months */
             billing_interval_months: number;
             /**
@@ -4314,25 +4580,30 @@ export interface components {
             /** Auto Renew */
             auto_renew: boolean;
             status: components["schemas"]["SubscriptionStatus"];
-            /** Vendor Party Id */
-            vendor_party_id: number | null;
-            /** Vendor Renewal Date */
-            vendor_renewal_date: string | null;
-            /** Unit Cost */
-            unit_cost: string | null;
             /** Notes */
             notes: string | null;
+            /** Lines */
+            lines: components["schemas"]["SubscriptionLineOut"][];
+            /**
+             * Total
+             * @description Per billing period, before tax
+             */
+            total: string;
+            /** Monthly Revenue */
+            monthly_revenue: string;
+            /**
+             * Monthly Cost
+             * @description Share of the vendor subscriptions the lines use
+             */
+            monthly_cost: string;
+            /**
+             * Billed
+             * @description Has invoice lines (cannot be deleted)
+             */
+            billed: boolean;
         };
         /** SubscriptionPatch */
         SubscriptionPatch: {
-            /** Catalog Item Id */
-            catalog_item_id?: number | null;
-            /** Quantity */
-            quantity?: number | string | null;
-            /** Price Override */
-            price_override?: number | string | null;
-            /** Discount Pct */
-            discount_pct?: number | string | null;
             /** Service Identifier */
             service_identifier?: string | null;
             /** Billing Interval Months */
@@ -4346,14 +4617,10 @@ export interface components {
             /** Auto Renew */
             auto_renew?: boolean | null;
             status?: components["schemas"]["SubscriptionStatus"] | null;
-            /** Vendor Party Id */
-            vendor_party_id?: number | null;
-            /** Vendor Renewal Date */
-            vendor_renewal_date?: string | null;
-            /** Unit Cost */
-            unit_cost?: number | string | null;
             /** Notes */
             notes?: string | null;
+            /** Lines */
+            lines?: components["schemas"]["SubscriptionLineIn"][] | null;
         };
         /**
          * SubscriptionStatus
@@ -4551,6 +4818,23 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /**
+         * UsedBy
+         * @description A client subscription that depends on a vendor subscription.
+         */
+        UsedBy: {
+            /** Subscription Id */
+            subscription_id: number;
+            /** Party Id */
+            party_id: number;
+            /** Party Name */
+            party_name: string;
+            /** Service Identifier */
+            service_identifier: string | null;
+            /** Description */
+            description: string;
+            status: components["schemas"]["SubscriptionStatus"];
+        };
         /** UserCreate */
         UserCreate: {
             /** Email */
@@ -4609,6 +4893,167 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * VendorPaymentIn
+         * @description Record a payment: makes an expense and moves the next due date on by one interval.
+         */
+        VendorPaymentIn: {
+            /**
+             * Paid Date
+             * Format: date
+             */
+            paid_date: string;
+            /**
+             * Amount
+             * @description Empty: the usual amount
+             */
+            amount?: number | string | null;
+            /**
+             * Expense Account Id
+             * @description Empty: the subscription's account
+             */
+            expense_account_id?: number | null;
+            /** Reference */
+            reference?: string | null;
+            /** Description */
+            description?: string | null;
+        };
+        /** VendorPaymentOut */
+        VendorPaymentOut: {
+            /** Expense Id */
+            expense_id: number;
+            subscription: components["schemas"]["VendorSubscriptionOut"];
+        };
+        /** VendorSubscriptionCreate */
+        VendorSubscriptionCreate: {
+            /** Service Identifier */
+            service_identifier?: string | null;
+            /** Next Due Date */
+            next_due_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Expense Account Id */
+            expense_account_id?: number | null;
+            /**
+             * Autopay
+             * @default false
+             */
+            autopay: boolean;
+            /**
+             * Auto Renew
+             * @default true
+             */
+            auto_renew: boolean;
+            /** @default active */
+            status: components["schemas"]["SubscriptionStatus"];
+            /** Notes */
+            notes?: string | null;
+            /** Party Id */
+            party_id: number;
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: number | string;
+            /** Interval Months */
+            interval_months: number;
+        };
+        /** VendorSubscriptionOut */
+        VendorSubscriptionOut: {
+            /** Service Identifier */
+            service_identifier?: string | null;
+            /** Next Due Date */
+            next_due_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Expense Account Id */
+            expense_account_id?: number | null;
+            /**
+             * Autopay
+             * @default false
+             */
+            autopay: boolean;
+            /**
+             * Auto Renew
+             * @default true
+             */
+            auto_renew: boolean;
+            /** @default active */
+            status: components["schemas"]["SubscriptionStatus"];
+            /** Notes */
+            notes?: string | null;
+            /** Id */
+            id: number;
+            /** Party Id */
+            party_id: number;
+            /** Vendor Name */
+            vendor_name: string;
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: string;
+            /** Interval Months */
+            interval_months: number;
+            /** Monthly Amount */
+            monthly_amount: string;
+            /** Expense Account Code */
+            expense_account_code: string | null;
+            /** Expense Account Name */
+            expense_account_name: string | null;
+            /** Last Paid Date */
+            last_paid_date: string | null;
+            /** Payments */
+            payments: number;
+            /** Used By */
+            used_by: components["schemas"]["UsedBy"][];
+        };
+        /** VendorSubscriptionPatch */
+        VendorSubscriptionPatch: {
+            /** Party Id */
+            party_id?: number | null;
+            /** Name */
+            name?: string | null;
+            /** Service Identifier */
+            service_identifier?: string | null;
+            /** Amount */
+            amount?: number | string | null;
+            /** Interval Months */
+            interval_months?: number | null;
+            /** Next Due Date */
+            next_due_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Expense Account Id */
+            expense_account_id?: number | null;
+            /** Autopay */
+            autopay?: boolean | null;
+            /** Auto Renew */
+            auto_renew?: boolean | null;
+            status?: components["schemas"]["SubscriptionStatus"] | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * VendorUse
+         * @description A vendor subscription a client subscription line uses, with its share of the cost.
+         */
+        VendorUse: {
+            /** Vendor Subscription Id */
+            vendor_subscription_id: number;
+            /** Name */
+            name: string;
+            /** Vendor Name */
+            vendor_name: string;
+            status: components["schemas"]["SubscriptionStatus"];
+            /** Monthly Amount */
+            monthly_amount: string;
+            /**
+             * Shared By
+             * @description Client subscription lines that use it
+             */
+            shared_by: number;
+            /** Monthly Share */
+            monthly_share: string;
         };
         /** VoidRequest */
         VoidRequest: {
@@ -5438,6 +5883,165 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_packages_api_packages_get: {
+        parameters: {
+            query?: {
+                active?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_package_api_packages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_package_api_packages__package_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_package_api_packages__package_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_package_api_packages__package_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackagePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"];
                 };
             };
             /** @description Validation Error */
@@ -7015,8 +7619,7 @@ export interface operations {
                 status?: components["schemas"]["SubscriptionStatus"] | null;
                 /** @description Next bill date on or before this day */
                 due_through?: string | null;
-                vendor_renewal_through?: string | null;
-                /** @description Search the service identifier */
+                /** @description Search the service identifier and the lines */
                 q?: string | null;
                 limit?: number;
                 offset?: number;
@@ -7195,6 +7798,207 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BillingRunResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_vendor_subscriptions_api_vendor_subscriptions_get: {
+        parameters: {
+            query?: {
+                party_id?: number | null;
+                status?: components["schemas"]["SubscriptionStatus"] | null;
+                /** @description Next due date on or before this day */
+                due_through?: string | null;
+                /** @description Search the name and what it is for */
+                q?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_VendorSubscriptionOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_vendor_subscription_api_vendor_subscriptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorSubscriptionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VendorSubscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_vendor_subscription_api_vendor_subscriptions__subscription_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VendorSubscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_vendor_subscription_api_vendor_subscriptions__subscription_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_vendor_subscription_api_vendor_subscriptions__subscription_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorSubscriptionPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VendorSubscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_payment_api_vendor_subscriptions__subscription_id__payments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                subscription_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorPaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VendorPaymentOut"];
                 };
             };
             /** @description Validation Error */

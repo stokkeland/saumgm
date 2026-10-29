@@ -66,6 +66,25 @@ export const ITEM_TYPES = [
   { value: 'subscription', label: 'Subscription' },
 ]
 
+export const SUBSCRIPTION_STATUSES = [
+  { value: 'active', label: 'Active' },
+  { value: 'paused', label: 'Paused' },
+  { value: 'cancelled', label: 'Cancelled' },
+]
+
+export const SUBSCRIPTION_STATUS_COLORS: Record<string, string> = {
+  active: 'green',
+  paused: 'yellow',
+  cancelled: 'gray',
+}
+
+/** "every month", "every year", "every 3 months" */
+export function everyMonths(months: number) {
+  if (months === 1) return 'monthly'
+  if (months === 12) return 'yearly'
+  return `every ${months} mo.`
+}
+
 export function labelOf(options: { value: string; label: string }[], value: string | null | undefined) {
   return options.find((o) => o.value === value)?.label ?? value ?? ''
 }

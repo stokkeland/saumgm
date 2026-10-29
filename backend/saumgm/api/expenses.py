@@ -100,6 +100,7 @@ def expense_out(db: Session, expense: Expense, lookups: Lookups | None = None) -
             )
             for line in expense.lines
         ],
+        vendor_subscription_id=expense.vendor_subscription_id,
         archived_at=expense.archived_at,
         legacy_data=expense.legacy_data,
     )

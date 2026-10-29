@@ -184,10 +184,26 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
   template in Admin → Email. Report CSVs now have the column headings shown on the screen,
   include the total row, and their file names say the basis
   (`sales-by-month-accrual-2026-01-01-2026-12-31.csv`).
+- Subscriptions: a client subscription has **lines** (hosting and a domain on one subscription
+  and one invoice). The upgrade turns each subscription into one with a single line. Where a 1.0
+  subscription had vendor details (vendor, vendor renewal date, our cost), a **vendor
+  subscription** is made from them and linked; a cost without a vendor is kept in the
+  subscription's notes. Invoices already billed keep their link to the subscription.
+- The billing run makes **one draft invoice per subscription** (1.0 made one per client); tick
+  "One invoice per client for subscriptions due on the same day" for the old behaviour.
+- New: **Money → Vendor subscriptions**, what you pay for regularly, with "Record payment" (makes
+  the expense and moves the next due date on), and **Catalog → Packages** to fill a new
+  subscription's lines.
+- `/api/subscriptions` takes and returns `lines`; `vendor_party_id`, `vendor_renewal_date` and
+  `unit_cost` are gone from it (see `/api/vendor-subscriptions`), as is the
+  `vendor_renewal_through` filter. The dashboard's renewals have `summary` instead of
+  `item_name`.
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →
-"Send test" arrives (servers with `resend://`).
+"Send test" arrives (servers with `resend://`); Sales → Subscriptions and Money → Vendor
+subscriptions show what you had (a vendor subscription made by the upgrade says so in its notes;
+give it an expense account before recording a payment if its item had no cost account).
 
 ### 1.0
 

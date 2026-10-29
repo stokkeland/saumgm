@@ -16,11 +16,20 @@
 from decimal import Decimal
 
 from sqlalchemy import BigInteger, Boolean, Integer, String, Text, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from saumgm.db import TABLE_ARGS, Base, IdMixin, TimestampMixin
 from saumgm.enums import BillingTiming, ItemType
-from saumgm.models.base import ZERO, LegacyMixin, Money, OrgScopedMixin, Percent, fk, str_enum
+from saumgm.models.base import (
+    ZERO,
+    LegacyMixin,
+    Money,
+    OrgScopedMixin,
+    Percent,
+    Quantity,
+    fk,
+    str_enum,
+)
 
 
 class RevenueCategory(IdMixin, OrgScopedMixin, Base):
@@ -60,3 +69,38 @@ class CatalogItem(IdMixin, OrgScopedMixin, LegacyMixin, TimestampMixin, Base):
     unit_cost: Mapped[Decimal | None] = mapped_column(Money)
     cogs_account_id: Mapped[int | None] = mapped_column(BigInteger, fk("account.id"), index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class CatalogPackage(IdMixin, OrgScopedMixin, TimestampMixin, Base):
+    """A named set of items with default prices ("Hosting + domain") that fills a new
+    subscription's lines in one go. Changing a package later leaves subscriptions alone."""
+
+    __tablename__ = "catalog_package"
+    __table_args__ = (UniqueConstraint("organization_id", "name"), TABLE_ARGS)
+
+    name: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(Text)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    items: Mapped[list["CatalogPackageItem"]] = relationship(
+        back_populates="package",
+        cascade="all, delete-orphan",
+        order_by="CatalogPackageItem.sort_order",
+    )
+
+
+class CatalogPackageItem(IdMixin, Base):
+    __tablename__ = "catalog_package_item"
+    __table_args__ = TABLE_ARGS
+
+    package_id: Mapped[int] = mapped_column(
+        BigInteger, fk("catalog_package.id", ondelete="CASCADE"), index=True
+    )
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    catalog_item_id: Mapped[int] = mapped_column(BigInteger, fk("catalog_item.id"), index=True)
+    quantity: Mapped[Decimal] = mapped_column(Quantity, default=Decimal(1))
+    # Empty: the item's catalog price.
+    price: Mapped[Decimal | None] = mapped_column(Money)
+    discount_pct: Mapped[Decimal | None] = mapped_column(Percent)
+
+    package: Mapped[CatalogPackage] = relationship(back_populates="items")

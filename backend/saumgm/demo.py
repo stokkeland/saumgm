@@ -19,8 +19,9 @@
 
 Everything goes through the same services the app uses (numbering, tax, billing run, payments,
 deposits, PDFs), so the result behaves like real data: open and overdue invoices, a credit note,
-a revision, a void, a write-off, deposits, expenses with receipts, subscriptions coming up for
-renewal, a sales-tax filing, a tax-exempt client and documents that are about to expire.
+a revision, a void, a write-off, deposits, expenses with receipts, client subscriptions coming
+up for renewal and the vendor subscriptions behind them, a sales-tax filing, a tax-exempt client
+and documents that are about to expire.
 
 Dates are relative to the day it is loaded, so a fresh demo always looks current. Names,
 addresses and numbers are made up (555 phone numbers, .example domains).
@@ -65,6 +66,8 @@ from saumgm.enums import (
 from saumgm.models import (
     Account,
     CatalogItem,
+    CatalogPackage,
+    CatalogPackageItem,
     EmailTemplate,
     Expense,
     ExpenseAttachment,
@@ -80,6 +83,8 @@ from saumgm.models import (
     Payment,
     RevenueCategory,
     Subscription,
+    SubscriptionLine,
+    SubscriptionUse,
     TaxabilityRule,
     TaxCategory,
     TaxExemption,
@@ -88,6 +93,7 @@ from saumgm.models import (
     TaxRate,
     TaxRegistration,
     User,
+    VendorSubscription,
 )
 from saumgm.schemas.invoices import LineIn
 from saumgm.seed import OrganizationSetup, create_organization
@@ -170,6 +176,7 @@ class DemoLoader:
         self.items: dict[str, CatalogItem] = {}
         self.accounts: dict[str, Account] = {}
         self.categories: dict[str, TaxCategory] = {}
+        self.vendor_subs: dict[str, VendorSubscription] = {}
         self.special: set[int] = set()  # invoices whose payment story is scripted
 
     # -- setup ------------------------------------------------------------------------------------
@@ -789,51 +796,138 @@ class DemoLoader:
     # -- subscriptions and the billing history ----------------------------------------------------
 
     def subs(self) -> None:
-        def sub(
-            key: str, item: str, days_ago: int, identifier: str | None = None, **extra: Any
-        ) -> None:
-            it = self.items[item]
-            start = self.today - timedelta(days=days_ago)
-            self.s.add(
-                Subscription(
-                    organization_id=self.org.id, party_id=self.parties[key].id,
-                    catalog_item_id=it.id, service_identifier=identifier,
-                    billing_interval_months=it.billing_interval_months or 1,
-                    start_date=start, next_bill_date=start, status=SubscriptionStatus.ACTIVE,
-                    vendor_party_id=it.default_vendor_id, unit_cost=it.unit_cost, **extra,
-                )
-            )  # fmt: skip
+        org, items = self.org, self.items
 
-        sub("HILLTOP", "HOST", 420, "hilltopdental.example")
-        sub("HILLTOP", "DOMAIN", 420, "hilltopdental.example")
-        sub("HILLTOP", "SSL", 340, "hilltopdental.example")
-        sub("HILLTOP", "BACKUP", 300)
-        sub("RIVERBEND", "HOST", 380, "riverbenddiner.example", price_override=D("199.00"))
-        sub("STMARKS", "HOST", 352, "stmarks.example", discount_pct=D("25"))
-        sub("STMARKS", "DOMAIN", 352, "stmarks.example")
-        sub("NLPHOTO", "HOST", 330, "northernlights.example")
-        sub("NLPHOTO", "DOMAIN", 330, "northernlights.example")
+        for name, entries in (
+            ("Hosting + domain", [("HOST", None), ("DOMAIN", None)]),
+            ("Website starter", [("HOST", None), ("DOMAIN", None), ("SSL", "59.00")]),
+            ("Care plan with backup", [("CARE", None), ("BACKUP", "29.00")]),
+        ):
+            package = CatalogPackage(organization_id=org.id, name=name)
+            package.items = [
+                CatalogPackageItem(sort_order=n, catalog_item_id=items[key].id,
+                                   price=D(price) if price else None)
+                for n, (key, price) in enumerate(entries)
+            ]  # fmt: skip
+            self.s.add(package)
+
+        def next_on(day: int) -> date:
+            """The next time this day of the month comes round, after today."""
+            due = self.today.replace(day=day)
+            return due if due > self.today else subscriptions.add_months(due, 1)
+
+        def anniversary(start: date) -> date:
+            due = start
+            while due <= self.today:
+                due = subscriptions.add_months(due, 12)
+            return due
+
+        def vendor_sub(
+            key: str, vendor: str, name: str, amount: str, months: int, account: str, **extra: Any
+        ) -> VendorSubscription:
+            vs = VendorSubscription(
+                organization_id=org.id, party_id=self.parties[vendor].id, name=name,
+                amount=D(amount), interval_months=months,
+                expense_account_id=self.accounts[account].id, **extra,
+            )  # fmt: skip
+            self.s.add(vs)
+            self.vendor_subs[key] = vs
+            return vs
+
+        # Paid every month in `expenses`, which links each payment to these.
+        vendor_sub("FIBER", "VALLEYFIBER", "Business fiber", "89.99", 1, "6100",
+                   next_due_date=next_on(5), autopay=True,
+                   notes="Charged to the business card")  # fmt: skip
+        vendor_sub("SERVER", "CLOUDPEAK", "Reseller server", "120.00", 1, "4010",
+                   service_identifier="host-01.cloudpeak.example", next_due_date=next_on(10),
+                   autopay=True)  # fmt: skip
+        vendor_sub("OLDPLAN", "CLOUDPEAK", "Shared hosting plan", "8.00", 1, "4010",
+                   status=SubscriptionStatus.CANCELLED, auto_renew=False,
+                   end_date=self.start + timedelta(days=30),
+                   notes="Replaced by the reseller server")  # fmt: skip
+        self.s.flush()
+
+        def sub(
+            key: str,
+            days_ago: int,
+            identifier: str | None,
+            lines: list[tuple[str, dict[str, Any]]],
+            **extra: Any,
+        ) -> None:
+            start = self.today - timedelta(days=days_ago)
+            first = items[lines[0][0]]
+            subscription = Subscription(
+                organization_id=org.id, party_id=self.parties[key].id,
+                service_identifier=identifier,
+                billing_interval_months=first.billing_interval_months or 1,
+                start_date=start, next_bill_date=start, status=SubscriptionStatus.ACTIVE,
+                **extra,
+            )  # fmt: skip
+            for n, (item_key, values) in enumerate(lines):
+                values = dict(values)
+                uses = values.pop("uses", [])
+                if item_key == "HOST":
+                    uses.append(self.vendor_subs["SERVER"])
+                if item_key == "DOMAIN" and identifier:
+                    quantity = values.get("quantity", D(1))
+                    uses.append(
+                        vendor_sub(
+                            f"DOMAIN-{identifier}",
+                            "NAMEKEEPER",
+                            f"{identifier} registration",
+                            str(D("12.50") * quantity),
+                            12,
+                            "4020",
+                            service_identifier=identifier,
+                            next_due_date=anniversary(start),
+                        )
+                    )
+                    self.s.flush()
+                line = SubscriptionLine(
+                    sort_order=n, catalog_item_id=items[item_key].id,
+                    description=values.pop("description", items[item_key].name), **values,
+                )  # fmt: skip
+                line.uses = [SubscriptionUse(vendor_subscription_id=vs.id) for vs in uses]
+                subscription.lines.append(line)
+            self.s.add(subscription)
+
+        none: dict[str, Any] = {}
+        sub(
+            "HILLTOP",
+            420,
+            "hilltopdental.example",
+            [("HOST", none), ("DOMAIN", none), ("SSL", {"price_override": D("59.00")})],
+        )
+        sub("HILLTOP", 300, None, [("BACKUP", none)])
+        sub("RIVERBEND", 380, "riverbenddiner.example", [("HOST", {"price_override": D("199.00")})])
+        sub(
+            "STMARKS",
+            352,
+            "stmarks.example",
+            [("HOST", {"discount_pct": D("25")}), ("DOMAIN", none)],
+        )
+        sub("NLPHOTO", 330, "northernlights.example", [("HOST", none), ("DOMAIN", none)])
         sub(
             "LAKESHORE",
-            "DOMAIN",
             345,
             "lakeshorerealty.example",
-            quantity=D("3"),
+            [("DOMAIN", {"quantity": D("3"), "description": "Domain registrations (.com), 3"})],
             notes="Three domains, renewed together",
         )
-        sub("PINECREST", "CARE", 200)
-        sub("PINECREST", "BACKUP", 200)
-        sub("CYSL", "DOMAIN", 100, "cysl.example")
-        self.s.add(
-            Subscription(
-                organization_id=self.org.id, party_id=self.parties["MARTINFARM"].id,
-                catalog_item_id=self.items["OLDHOST"].id, service_identifier="martinfarm.example",
-                billing_interval_months=12, start_date=self.start - timedelta(days=400),
-                next_bill_date=None, end_date=self.start + timedelta(days=30),
-                status=SubscriptionStatus.CANCELLED, auto_renew=False,
-                notes="Moved to a free site builder",
-            )
+        sub("PINECREST", 200, None, [("CARE", none), ("BACKUP", {"price_override": D("29.00")})])
+        sub("CYSL", 100, "cysl.example", [("DOMAIN", none)])
+        cancelled = Subscription(
+            organization_id=org.id, party_id=self.parties["MARTINFARM"].id,
+            service_identifier="martinfarm.example", billing_interval_months=12,
+            start_date=self.start - timedelta(days=400), next_bill_date=None,
+            end_date=self.start + timedelta(days=30), status=SubscriptionStatus.CANCELLED,
+            auto_renew=False, notes="Moved to a free site builder",
         )  # fmt: skip
+        old_line = SubscriptionLine(catalog_item_id=items["OLDHOST"].id,
+                                    description=items["OLDHOST"].name)  # fmt: skip
+        old_line.uses = [SubscriptionUse(vendor_subscription_id=self.vendor_subs["OLDPLAN"].id)]
+        cancelled.lines = [old_line]
+        self.s.add(cancelled)
         self.s.flush()
 
     # -- invoices, in date order ------------------------------------------------------------------
@@ -1056,12 +1150,14 @@ class DemoLoader:
         description: str | None = None,
         for_party: str | None = None,
         receipt: bool = False,
+        subscription: str | None = None,
     ) -> None:
         expense = Expense(
             organization_id=self.org.id, expense_date=day, entered_date=day + timedelta(days=1),
             vendor_party_id=self.parties[vendor].id if vendor else None,
             for_party_id=(self.parties[for_party] if for_party else self.parties["SELF"]).id,
             reference=reference, description=description,
+            vendor_subscription_id=self.vendor_subs[subscription].id if subscription else None,
         )  # fmt: skip
         expense.lines = [
             ExpenseLine(account_id=self.accounts[code].id, amount=D(amount), description=text,
@@ -1093,6 +1189,7 @@ class DemoLoader:
                     [("6100", "89.99", None)],
                     reference=f"VF-{on(5):%Y%m}",
                     description="Business fiber, monthly",
+                    subscription="FIBER",
                 )
             if on(10) <= self.today:
                 self.expense(
@@ -1101,6 +1198,7 @@ class DemoLoader:
                     [("4010", "120.00", "Reseller server")],
                     reference=f"CP-{40000 + n}",
                     description="Hosting platform",
+                    subscription="SERVER",
                 )
                 self.expense(
                     on(10),
