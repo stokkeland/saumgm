@@ -76,7 +76,7 @@ test('reports show sales, sales tax, profit and aging with CSV downloads', async
 test('logo can be uploaded and removed', async ({ page }) => {
   const errors = watchErrors(page)
   await login(page)
-  await page.goto('/settings?tab=business')
+  await page.goto('/admin/settings?tab=business')
   const card = page.locator('.mantine-Card-root').filter({ hasText: 'Logo' }).first()
   if (await card.getByRole('button', { name: 'Remove' }).isVisible()) {
     await card.getByRole('button', { name: 'Remove' }).click()

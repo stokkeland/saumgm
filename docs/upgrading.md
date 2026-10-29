@@ -155,6 +155,9 @@ request.
 - `update.sh` refuses to pull over files edited by hand in the installation folder.
 - `update.sh` runs git, pip and npm as the owner of the installation folder, which can be your
   admin account instead of root ([deploy/ubuntu.md, section 3](deploy/ubuntu.md#3-code-and-python-environment)).
+- The menu is grouped (Sales, Money, Reports, Admin) and the groups fold. Settings, Users
+  (formerly a Settings tab), the audit log and a new About page (versions) are under Admin, at
+  `/admin/...`; the old `/settings` and `/audit` addresses redirect there.
 - Invoice lines have a SKU, copied from the catalog item when the line is saved (existing lines
   are filled from their item). It shows on the invoice screen, in the editor and on the PDF
   when a line has one. PDFs of invoices issued before the upgrade stay as they were.

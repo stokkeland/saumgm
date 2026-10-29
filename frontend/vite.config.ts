@@ -21,6 +21,8 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Shown under Admin -> About; npm sets npm_package_version when it runs a script.
+  define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev') },
   server: {
     // In development the API runs separately (uvicorn on :8000); proxy /api to it so the
     // browser sees a single origin, exactly like production behind Apache.

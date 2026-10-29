@@ -28,8 +28,11 @@ const PAGES = [
   ['/expenses', 'expenses'],
   ['/subscriptions', 'subscriptions'],
   ['/catalog', 'catalog'],
-  ['/settings', 'settings'],
-  ['/audit', 'audit'],
+  ['/reports', 'reports'],
+  ['/admin/settings', 'settings'],
+  ['/admin/users', 'users'],
+  ['/admin/audit', 'audit'],
+  ['/admin/about', 'about'],
   ['/account', 'account'],
 ] as const
 
@@ -48,4 +51,30 @@ test('every page opens without errors', async ({ page }) => {
     await screenshot(page, name)
   }
   expect(errors).toEqual([])
+})
+
+test('addresses from 1.0 lead to their new place', async ({ page }) => {
+  await login(page)
+  await page.goto('/settings?tab=tax')
+  await expect(page).toHaveURL(/\/admin\/settings\?tab=tax$/)
+  await page.goto('/settings?tab=users')
+  await expect(page).toHaveURL(/\/admin\/users$/)
+  await page.goto('/audit')
+  await expect(page).toHaveURL(/\/admin\/audit$/)
+})
+
+test('menu sections fold, except the one holding the open page', async ({ page }) => {
+  await login(page)
+  await page.goto('/')
+  const nav = page.getByRole('navigation')
+  await expect(nav.getByRole('link', { name: 'Deposits' })).toBeVisible()
+  await nav.getByRole('button', { name: 'Money' }).click()
+  await expect(nav.getByRole('link', { name: 'Deposits' })).toBeHidden()
+  await page.reload()
+  await expect(nav.getByRole('link', { name: 'Deposits' })).toBeHidden()
+  await page.goto('/expenses')
+  await expect(nav.getByRole('link', { name: 'Deposits' })).toBeVisible()
+  await page.goto('/')
+  await nav.getByRole('button', { name: 'Money' }).click()
+  await expect(nav.getByRole('link', { name: 'Deposits' })).toBeVisible()
 })

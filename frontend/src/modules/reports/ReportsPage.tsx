@@ -36,12 +36,12 @@ import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query'
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
-import { api, unwrap } from '../api/client'
-import { useJurisdictions, useOrganization } from '../api/lookups'
-import { useAuth } from '../auth/context'
-import { DateText, Money, PageHeader } from '../components/ui'
-import { formatDate, formatRate, todayIso } from '../lib/format'
-import { useUrlState } from '../lib/useUrlState'
+import { api, unwrap } from '../../api/client'
+import { useJurisdictions, useOrganization } from '../../api/lookups'
+import { useAuth } from '../../auth/context'
+import { DateText, Money, PageHeader } from '../../components/ui'
+import { formatDate, formatRate, todayIso } from '../../lib/format'
+import { useUrlState } from '../../lib/useUrlState'
 
 // -- periods --------------------------------------------------------------------------------------
 

@@ -22,7 +22,7 @@ import { login, screenshot, watchErrors } from './support'
 test('set up NY sales tax and see it on a new invoice', async ({ page }) => {
   const errors = watchErrors(page)
   await login(page)
-  await page.goto('/settings?tab=tax')
+  await page.goto('/admin/settings?tab=tax')
 
   // Register in New York (once; the test database keeps it between runs)
   const registered = page.getByRole('cell', { name: 'New York', exact: true }).first()

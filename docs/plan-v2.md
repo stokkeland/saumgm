@@ -158,6 +158,11 @@ bookkeepers keep read access where they have it today.
 installation that does not use them (a setting per organization; it hides menus and pages, the
 API stays). Small, and keeps the app generic.
 
+Built in part B: the module folders and registry, the grouped menu (sections fold; the
+choice is remembered per browser) and the Admin section with Settings, Users, Audit log and
+About. Switching modules off comes with the first module that can be switched off (F, Banking),
+so Admin → Modules never shows an empty list.
+
 ### C. Email (Resend)
 
 One email service used everywhere, like `storage.py` for files:

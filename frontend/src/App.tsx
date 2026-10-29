@@ -20,22 +20,8 @@ import { createBrowserRouter, Link, RouterProvider, useRouteError } from 'react-
 
 import { RequireAuth } from './auth/RequireAuth'
 import { AppLayout } from './components/AppLayout'
+import { MODULES } from './modules'
 import { AccountPage } from './pages/AccountPage'
-import { AuditPage } from './pages/AuditPage'
-import { CatalogPage } from './pages/CatalogPage'
-import { ReportsPage } from './pages/ReportsPage'
-import { DashboardPage } from './pages/DashboardPage'
-import { SettingsPage } from './pages/settings/SettingsPage'
-import { SubscriptionsPage } from './pages/SubscriptionsPage'
-import { ContactPage } from './pages/contacts/ContactPage'
-import { ContactsPage } from './pages/contacts/ContactsPage'
-import { InvoicePage, NewInvoicePage } from './pages/invoices/InvoicePage'
-import { InvoicesPage } from './pages/invoices/InvoicesPage'
-import { DepositPage, DepositsPage, NewDepositPage } from './pages/deposits/DepositPages'
-import { ExpensePage, ExpensesPage, NewExpensePage } from './pages/expenses/ExpensePages'
-import { ReceivePaymentPage } from './pages/payments/PaymentForm'
-import { PaymentPage } from './pages/payments/PaymentPage'
-import { PaymentsPage } from './pages/payments/PaymentsPage'
 import { LoginPage } from './pages/LoginPage'
 
 function NotFound() {
@@ -74,7 +60,6 @@ function RouteError() {
   )
 }
 
-
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
   {
@@ -89,26 +74,7 @@ const router = createBrowserRouter([
         // A crash inside a page shows the error in place; the menu stays usable.
         errorElement: <RouteError />,
         children: [
-          { path: '/', element: <DashboardPage /> },
-          { path: '/contacts', element: <ContactsPage /> },
-          { path: '/contacts/:id', element: <ContactPage /> },
-          { path: '/invoices', element: <InvoicesPage /> },
-          { path: '/invoices/new', element: <NewInvoicePage /> },
-          { path: '/invoices/:id', element: <InvoicePage /> },
-          { path: '/payments', element: <PaymentsPage /> },
-          { path: '/payments/new', element: <ReceivePaymentPage /> },
-          { path: '/payments/:id', element: <PaymentPage /> },
-          { path: '/deposits', element: <DepositsPage /> },
-          { path: '/deposits/new', element: <NewDepositPage /> },
-          { path: '/deposits/:id', element: <DepositPage /> },
-          { path: '/expenses', element: <ExpensesPage /> },
-          { path: '/expenses/new', element: <NewExpensePage /> },
-          { path: '/expenses/:id', element: <ExpensePage /> },
-          { path: '/subscriptions', element: <SubscriptionsPage /> },
-          { path: '/catalog', element: <CatalogPage /> },
-          { path: '/reports', element: <ReportsPage /> },
-          { path: '/settings', element: <SettingsPage /> },
-          { path: '/audit', element: <AuditPage /> },
+          ...MODULES.flatMap((m) => m.routes),
           { path: '/account', element: <AccountPage /> },
           { path: '*', element: <NotFound /> },
         ],

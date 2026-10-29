@@ -31,49 +31,58 @@ import {
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
-  IconBuildingBank,
-  IconCalendarRepeat,
-  IconCash,
-  IconChartBar,
+  IconBriefcase,
   IconChevronDown,
-  IconFileInvoice,
-  IconHistory,
-  IconHome,
+  IconCoin,
   IconLogout,
   IconMoon,
-  IconPackage,
-  IconReceipt,
   IconSettings,
+  IconShieldLock,
   IconSun,
-  IconUsers,
+  IconTools,
   type Icon,
 } from '@tabler/icons-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
 import { api } from '../api/client'
 import { useAuth } from '../auth/context'
+import { MODULES } from '../modules'
+import type { NavItem, NavSection } from '../modules/types'
 
-interface NavItem {
-  to: string
-  label: string
-  icon: Icon
-  ownerOnly?: boolean
-}
-
-const NAV: NavItem[] = [
-  { to: '/', label: 'Dashboard', icon: IconHome },
-  { to: '/contacts', label: 'Contacts', icon: IconUsers },
-  { to: '/invoices', label: 'Invoices', icon: IconFileInvoice },
-  { to: '/payments', label: 'Payments', icon: IconCash },
-  { to: '/deposits', label: 'Deposits', icon: IconBuildingBank },
-  { to: '/expenses', label: 'Expenses', icon: IconReceipt },
-  { to: '/subscriptions', label: 'Subscriptions', icon: IconCalendarRepeat },
-  { to: '/catalog', label: 'Catalog', icon: IconPackage },
-  { to: '/reports', label: 'Reports', icon: IconChartBar },
-  { to: '/settings', label: 'Settings', icon: IconSettings },
-  { to: '/audit', label: 'Audit log', icon: IconHistory, ownerOnly: true },
+/** Menu sections in order. Sections without a label show their entries at the top level. */
+const SECTIONS: { key: NavSection; label?: string; icon?: Icon }[] = [
+  { key: 'home' },
+  { key: 'sales', label: 'Sales', icon: IconBriefcase },
+  { key: 'money', label: 'Money', icon: IconCoin },
+  { key: 'operations', label: 'Operations', icon: IconTools },
+  { key: 'reports' },
+  { key: 'admin', label: 'Admin', icon: IconShieldLock },
 ]
+
+const FOLDED_KEY = 'saumgm.nav.folded'
+
+/** Which sections the user folded, remembered in this browser only. */
+function useFolded() {
+  const [folded, setFolded] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(FOLDED_KEY) ?? '[]') as string[]
+    } catch {
+      return []
+    }
+  })
+  const toggle = (key: string) => {
+    const next = folded.includes(key) ? folded.filter((k) => k !== key) : [...folded, key]
+    setFolded(next)
+    try {
+      localStorage.setItem(FOLDED_KEY, JSON.stringify(next))
+    } catch {
+      // private window or blocked storage: the menu just forgets
+    }
+  }
+  return [folded, toggle] as const
+}
 
 function ColorSchemeToggle() {
   const { setColorScheme } = useMantineColorScheme()
@@ -103,8 +112,24 @@ export function AppLayout() {
     },
   })
 
+  const [folded, toggleFolded] = useFolded()
+
   const isActive = (to: string) =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
+  const items = MODULES.flatMap((m) => m.nav)
+    .filter((item) => !item.ownerOnly || isOwner)
+    .sort((a, b) => a.order - b.order)
+  const link = (item: NavItem) => (
+    <NavLink
+      key={item.to}
+      component={Link}
+      to={item.to}
+      label={item.label}
+      leftSection={<item.icon size={18} stroke={1.6} />}
+      active={isActive(item.to)}
+      onClick={close}
+    />
+  )
 
   return (
     <AppShell
@@ -153,17 +178,28 @@ export function AppLayout() {
 
       <AppShell.Navbar p="xs">
         <ScrollArea>
-          {NAV.filter((item) => !item.ownerOnly || isOwner).map((item) => (
-            <NavLink
-              key={item.to}
-              component={Link}
-              to={item.to}
-              label={item.label}
-              leftSection={<item.icon size={18} stroke={1.6} />}
-              active={isActive(item.to)}
-              onClick={close}
-            />
-          ))}
+          {SECTIONS.map((section) => {
+            const entries = items.filter((item) => item.section === section.key)
+            if (!entries.length) return null
+            if (!section.label || !section.icon) return entries.map(link)
+            const SectionIcon = section.icon
+            // A folded section still opens while one of its pages is shown.
+            const holdsActive = entries.some((item) => isActive(item.to))
+            return (
+              <NavLink
+                key={section.key}
+                component="button"
+                aria-expanded={holdsActive || !folded.includes(section.key)}
+                label={section.label}
+                leftSection={<SectionIcon size={18} stroke={1.6} />}
+                opened={holdsActive || !folded.includes(section.key)}
+                onChange={() => !holdsActive && toggleFolded(section.key)}
+                childrenOffset={14}
+              >
+                {entries.map(link)}
+              </NavLink>
+            )
+          })}
         </ScrollArea>
       </AppShell.Navbar>
 

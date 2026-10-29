@@ -70,7 +70,7 @@ test('write off several invoices from the list', async ({ page }) => {
 test('sales-tax periods can be marked filed', async ({ page }) => {
   const errors = watchErrors(page)
   await login(page)
-  await page.goto('/settings?tab=tax')
+  await page.goto('/admin/settings?tab=tax')
   await page.getByRole('button', { name: 'Periods' }).first().click()
   await page.getByRole('combobox', { name: 'Year', exact: true }).click()
   await page.getByRole('option', { name: '2025' }).click()
