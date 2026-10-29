@@ -136,7 +136,15 @@ version has run for a few days.
 Being built on `main`; see [plan-v2.md](plan-v2.md). This list grows with every merged pull
 request.
 
-**New settings (`.env`):** none yet.
+**New settings (`.env`)**, all optional (without them nothing is sent; messages only go to
+the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
+
+| Setting | Server | Development PC |
+|---|---|---|
+| `EMAIL_URL` | `resend://` | leave out (`console://`), or `resend://` to try real sending |
+| `RESEND_API_KEY` | your Resend API key | only with `resend://` |
+| `EMAIL_FROM` | optional; the sender is set in Admin → Email | optional |
+| `EMAIL_REDIRECT_TO` | leave out | **your own address**: the development database holds real client addresses |
 
 **Data removed by migrations:**
 
@@ -158,12 +166,19 @@ request.
 - The menu is grouped (Sales, Money, Reports, Admin) and the groups fold. Settings, Users
   (formerly a Settings tab), the audit log and a new About page (versions) are under Admin, at
   `/admin/...`; the old `/settings` and `/audit` addresses redirect there.
+- Email (Resend): invoices, credit notes and payment receipts can be sent by email with their
+  PDF, from the invoice or payment page. Admin → Email holds the sender, the message templates
+  and a log of every message sent; each sent email also shows in the record's History. After
+  upgrading, set the sender in Admin → Email and press "Send test".
+- The History tab shows the values of events such as "issue" and "revise" correctly (1.0
+  showed only one character of them, and could fail on a revised invoice).
 - Invoice lines have a SKU, copied from the catalog item when the line is saved (existing lines
   are filled from their item). It shows on the invoice screen, in the editor and on the PDF
   when a line has one. PDFs of invoices issued before the upgrade stay as they were.
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
-**After upgrading, check:** `/api/health` shows `"schema_current":true`.
+**After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →
+"Send test" arrives (servers with `resend://`).
 
 ### 1.0
 

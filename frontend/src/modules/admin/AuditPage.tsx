@@ -35,7 +35,7 @@ const ENTITY_TYPES = [
 ]
 const ACTIONS = [
   'create', 'update', 'delete', 'issue', 'void', 'revise', 'archive', 'login', 'login_failed',
-  'logout', 'password_change', 'export', 'import',
+  'logout', 'password_change', 'export', 'import', 'email',
 ]
 
 function summary(entry: Entry): string {

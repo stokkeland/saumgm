@@ -19,6 +19,7 @@ from saumgm.db import Base
 from saumgm.models.accounts import Account
 from saumgm.models.audit import AuditLog
 from saumgm.models.catalog import CatalogItem, RevenueCategory
+from saumgm.models.email import EmailMessage, EmailTemplate
 from saumgm.models.expenses import Expense, ExpenseAttachment, ExpenseLine
 from saumgm.models.files import StoredFile
 from saumgm.models.invoices import Invoice, InvoiceLine, InvoiceRevision, InvoiceTax
@@ -46,6 +47,8 @@ __all__ = [
     "CatalogItem",
     "Deposit",
     "DepositItem",
+    "EmailMessage",
+    "EmailTemplate",
     "Expense",
     "ExpenseAttachment",
     "ExpenseLine",

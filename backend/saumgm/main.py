@@ -27,6 +27,7 @@ from saumgm.api import (
     catalog,
     contacts,
     dashboard,
+    email,
     expenses,
     files,
     health,
@@ -59,6 +60,7 @@ ROUTERS = (
     files.router,
     reports.router,
     party_documents.router,
+    email.router,
 )
 
 

@@ -64,6 +64,10 @@ class Organization(IdMixin, TimestampMixin, Base):
     # Invoicing defaults
     default_terms_days: Mapped[int] = mapped_column(Integer, default=30)
     invoice_revision_owner_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Email sender (Admin -> Email). The address must be on a domain verified with the provider.
+    email_from_address: Mapped[str | None] = mapped_column(String(255))
+    email_from_name: Mapped[str | None] = mapped_column(String(200))
+    email_reply_to: Mapped[str | None] = mapped_column(String(255))
 
     addresses: Mapped[list["OrganizationAddress"]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"

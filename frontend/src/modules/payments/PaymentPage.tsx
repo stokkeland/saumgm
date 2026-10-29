@@ -46,6 +46,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { api, unwrap, type Schemas } from '../../api/client'
 import { useAuth } from '../../auth/context'
 import { HistoryPanel } from '../../components/HistoryPanel'
+import { EmailButton } from '../../components/EmailDialog'
 import { ArchivedBadge, DateText, Money, PageHeader, PdfButton } from '../../components/ui'
 import { labelOf, PAYMENT_CHANNELS, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
@@ -190,6 +191,7 @@ export function PaymentPage() {
         actions={
           <>
             <PdfButton href={`/api/payments/${payment.id}/receipt.pdf`} label="Receipt" />
+            {canEdit && <EmailButton recordType="payment" recordId={payment.id} label="Email receipt" />}
             {canEdit && (
             <>
               {!locked && (

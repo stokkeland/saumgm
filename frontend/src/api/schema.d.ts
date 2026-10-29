@@ -1758,6 +1758,139 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/email/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Email Settings */
+        get: operations["get_email_settings_api_email_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Email Settings */
+        patch: operations["update_email_settings_api_email_settings_patch"];
+        trace?: never;
+    };
+    "/api/email/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Templates */
+        get: operations["list_templates_api_email_templates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email/templates/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Template */
+        put: operations["save_template_api_email_templates__kind__put"];
+        post?: never;
+        /**
+         * Reset Template
+         * @description Back to the built-in text.
+         */
+        delete: operations["reset_template_api_email_templates__kind__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Test
+         * @description Send a test message (to yourself unless another address is given).
+         */
+        post: operations["send_test_api_email_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email/compose/{record_type}/{record_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compose
+         * @description The email as it would go out: recipients, subject and message from the template.
+         */
+        get: operations["compose_api_email_compose__record_type___record_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email/send/{record_type}/{record_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send
+         * @description Send the record by email, with the recipients and text the user approved.
+         */
+        post: operations["send_api_email_send__record_type___record_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Messages */
+        get: operations["list_messages_api_email_messages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2441,6 +2574,59 @@ export interface components {
          * @enum {string}
          */
         DocumentType: "w9" | "w8" | "tax_exemption" | "insurance" | "contract" | "other";
+        /** DraftOut */
+        DraftOut: {
+            kind: components["schemas"]["EmailKind"];
+            /** To */
+            to: string[];
+            /** Cc */
+            cc: string[];
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+            /** Attachments */
+            attachments: string[];
+            /** Redirect To */
+            redirect_to: string | null;
+        };
+        /**
+         * EmailKind
+         * @description What an email is about; each kind has its own template (Admin -> Email).
+         * @enum {string}
+         */
+        EmailKind: "invoice" | "credit_note" | "receipt" | "test";
+        /** EmailSettingsOut */
+        EmailSettingsOut: {
+            /** From Address */
+            from_address: string | null;
+            /** From Name */
+            from_name: string | null;
+            /** Reply To */
+            reply_to: string | null;
+            /** Sender */
+            sender: string | null;
+            /** Default From */
+            default_from: string | null;
+            /** Backend */
+            backend: string;
+            /** Redirect To */
+            redirect_to: string | null;
+        };
+        /** EmailSettingsPatch */
+        EmailSettingsPatch: {
+            /** From Address */
+            from_address?: string | null;
+            /** From Name */
+            from_name?: string | null;
+            /** Reply To */
+            reply_to?: string | null;
+        };
+        /**
+         * EmailStatus
+         * @enum {string}
+         */
+        EmailStatus: "sent" | "failed";
         /**
          * ExemptionIn
          * @description A tax exemption; jurisdiction_id None means it applies everywhere.
@@ -3132,6 +3318,44 @@ export interface components {
             organization: components["schemas"]["OrganizationBrief"];
             role: components["schemas"]["UserRoleType"];
         };
+        /** MessageOut */
+        MessageOut: {
+            /** Id */
+            id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Sent By */
+            sent_by: string | null;
+            kind: components["schemas"]["EmailKind"];
+            /** Entity Type */
+            entity_type: string | null;
+            /** Entity Id */
+            entity_id: string | null;
+            /** From Address */
+            from_address: string;
+            /** To Addresses */
+            to_addresses: string;
+            /** Cc Addresses */
+            cc_addresses: string | null;
+            /** Redirected To */
+            redirected_to: string | null;
+            /** Subject */
+            subject: string;
+            /** Body Text */
+            body_text: string;
+            /** Attachments */
+            attachments: string[];
+            /** Provider */
+            provider: string;
+            /** Provider Message Id */
+            provider_message_id: string | null;
+            status: components["schemas"]["EmailStatus"];
+            /** Error */
+            error: string | null;
+        };
         /** OrgAddressIn */
         OrgAddressIn: {
             address_type: components["schemas"]["AddressType"];
@@ -3353,6 +3577,17 @@ export interface components {
         Page_InvoiceListItem_: {
             /** Items */
             items: components["schemas"]["InvoiceListItem"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** Page[MessageOut] */
+        Page_MessageOut_: {
+            /** Items */
+            items: components["schemas"]["MessageOut"][];
             /** Total */
             total: number;
             /** Limit */
@@ -3982,6 +4217,17 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["TaxLineOut"][];
         };
+        /** SendIn */
+        SendIn: {
+            /** To */
+            to: string[];
+            /** Cc */
+            cc?: string[];
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+        };
         /** SequenceOut */
         SequenceOut: {
             /** Name */
@@ -4295,6 +4541,32 @@ export interface components {
             is_taxable: boolean;
             /** Id */
             id: number;
+        };
+        /** TemplateIn */
+        TemplateIn: {
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+        };
+        /** TemplateOut */
+        TemplateOut: {
+            kind: components["schemas"]["EmailKind"];
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+            /** Customized */
+            customized: boolean;
+            /** Placeholders */
+            placeholders: {
+                [key: string]: string;
+            };
+        };
+        /** TestIn */
+        TestIn: {
+            /** To */
+            to?: string | null;
         };
         /** UndoWriteOffRequest */
         UndoWriteOffRequest: {
@@ -8782,6 +9054,279 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_email_settings_api_email_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailSettingsOut"];
+                };
+            };
+        };
+    };
+    update_email_settings_api_email_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailSettingsPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_templates_api_email_templates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateOut"][];
+                };
+            };
+        };
+    };
+    save_template_api_email_templates__kind__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: components["schemas"]["EmailKind"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_template_api_email_templates__kind__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: components["schemas"]["EmailKind"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_test_api_email_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compose_api_email_compose__record_type___record_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_type: "invoice" | "payment";
+                record_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_api_email_send__record_type___record_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                record_type: "invoice" | "payment";
+                record_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_messages_api_email_messages_get: {
+        parameters: {
+            query?: {
+                entity_type?: string | null;
+                entity_id?: string | null;
+                status?: components["schemas"]["EmailStatus"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_MessageOut_"];
                 };
             };
             /** @description Validation Error */

@@ -46,6 +46,14 @@ class Settings(BaseSettings):
     session_days: int = 14
     # Send cookies only over HTTPS. Defaults to on in production, off in development.
     cookie_secure: bool | None = None
+    # Email (saumgm/email.py): console:// logs messages instead of sending; resend:// sends them
+    # through Resend with RESEND_API_KEY. The sender is a business setting (Admin -> Email);
+    # EMAIL_FROM is the default until it is set. EMAIL_REDIRECT_TO sends every message to that
+    # address instead of the real recipients (development and test installations).
+    email_url: str = "console://"
+    resend_api_key: str | None = None
+    email_from: str | None = None
+    email_redirect_to: str | None = None
 
     @property
     def secure_cookies(self) -> bool:
