@@ -26,6 +26,8 @@
 # running this (see docs/deploy/ubuntu.md, step 6).
 # Instances: /opt/saumgm-NAME, service saumgm@NAME, port from /etc/saumgm/NAME.env
 # (docs/deploy/multiple-instances.md).
+# The checkout may belong to root or to an admin account (docs/deploy/ubuntu.md, section 3); git,
+# pip and npm run as whoever owns it.
 set -euo pipefail
 
 PULL=1
@@ -71,7 +73,22 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 cd "$APP_DIR"
 
-if [ "$PULL" -eq 1 ] && [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+# Git refuses a repository owned by another user ("dubious ownership"), and files pip or npm
+# create as root would lock the owner out of their own checkout, so those run as the owner.
+CODE_OWNER=$(stat -c %U "$APP_DIR")
+as_owner() {
+  if [ "$CODE_OWNER" = root ]; then "$@"; else sudo -u "$CODE_OWNER" -H -- "$@"; fi
+}
+# .env is meant to belong to root, readable by the service's group.
+STRAY=$(find "$APP_DIR" -path "$APP_DIR/backend/.env" -prune -o ! -user "$CODE_OWNER" -print -quit)
+if [ -n "$STRAY" ]; then
+  echo "$STRAY (maybe more) is not owned by $CODE_OWNER, who owns $APP_DIR. Fix it once with:" >&2
+  echo "  sudo chown -R $CODE_OWNER: $APP_DIR" >&2
+  echo "  sudo chown root:$SERVICE_USER $APP_DIR/backend/.env && sudo chmod 640 $APP_DIR/backend/.env" >&2
+  exit 1
+fi
+
+if [ "$PULL" -eq 1 ] && [ -n "$(as_owner git status --porcelain --untracked-files=no)" ]; then
   echo "Files in $APP_DIR were changed by hand (git status); commit, stash or undo them first" >&2
   exit 1
 fi
@@ -82,13 +99,13 @@ if [ "$BACKUP" -eq 1 ]; then
 fi
 
 if [ "$PULL" -eq 1 ]; then
-  if [ -n "$BRANCH" ] && [ "$BRANCH" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
+  if [ -n "$BRANCH" ] && [ "$BRANCH" != "$(as_owner git rev-parse --abbrev-ref HEAD)" ]; then
     echo "== Switch to $BRANCH"
-    git fetch origin
-    git switch "$BRANCH"
+    as_owner git fetch origin
+    as_owner git switch "$BRANCH"
   fi
-  echo "== Pull ($(git rev-parse --abbrev-ref HEAD))"
-  git pull --ff-only
+  echo "== Pull ($(as_owner git rev-parse --abbrev-ref HEAD))"
+  as_owner git pull --ff-only
   # The pull may have replaced this script while bash is reading it. Continue with the new copy,
   # so the remaining steps are those of the version just pulled. (This block is parsed whole
   # before it runs, so the exec is safe.)
@@ -98,13 +115,13 @@ if [ "$PULL" -eq 1 ]; then
 fi
 
 echo "== Backend"
-backend/.venv/bin/pip install --quiet --upgrade pip
-backend/.venv/bin/pip install --quiet -e backend
+as_owner backend/.venv/bin/pip install --quiet --upgrade pip
+as_owner backend/.venv/bin/pip install --quiet -e backend
 (cd backend && sudo -u "$SERVICE_USER" .venv/bin/alembic upgrade head)
 
 if command -v npm >/dev/null; then
   echo "== Frontend"
-  (cd frontend && npm ci --no-audit --no-fund && npm run build)
+  (cd frontend && as_owner npm ci --no-audit --no-fund && as_owner npm run build)
 else
   echo "== Frontend: Node.js not installed; using the frontend/dist that is already here"
 fi
