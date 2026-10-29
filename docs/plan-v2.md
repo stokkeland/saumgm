@@ -190,6 +190,12 @@ One email service used everywhere, like `storage.py` for files:
 - Sending is synchronous (Resend answers in well under a second). Scheduled mail (the reminder
   digest) runs from a timer on the server, see I.
 
+Built in part C as described, with these details: credit notes have their own template; the
+API is generic (`/api/email/compose|send/{record_type}/{id}`), so reports (D) and articles (H)
+add a record type rather than new endpoints; sent emails appear in the record's History as an
+"email" event, and the full log is under Admin → Email (owner). The demo loader records a few
+sent messages without sending anything.
+
 ### D. Reports: income by payment date, PDF/print, email
 
 **Income by payment date.** The sales-tax report already offers "by invoice date" (accrual) or

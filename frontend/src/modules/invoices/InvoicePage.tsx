@@ -58,6 +58,7 @@ import { api, unwrap, type Schemas } from '../../api/client'
 import { useJurisdictions, useOrganization } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
 import { HistoryPanel } from '../../components/HistoryPanel'
+import { EmailButton } from '../../components/EmailDialog'
 import { ArchivedBadge, DateText, Money, PageHeader, PaymentStatusBadge, PdfButton } from '../../components/ui'
 import { formatDateTime, formatNumber, formatRate } from '../../lib/format'
 import { labelOf, PAYMENT_METHODS } from '../../lib/labels'
@@ -584,6 +585,7 @@ export function InvoicePage() {
           !revising && (
             <>
               <PdfButton href={`/api/invoices/${invoice.id}/pdf`} />
+              {canEdit && invoice.status === 'issued' && <EmailButton recordType="invoice" recordId={invoice.id} />}
               {editable && (
             <>
               {invoice.status === 'issued' && invoice.kind === 'invoice' && Number(invoice.balance_due) > 0 && (

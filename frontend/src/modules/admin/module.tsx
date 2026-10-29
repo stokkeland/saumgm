@@ -15,12 +15,13 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { IconHistory, IconInfoCircle, IconSettings, IconUserShield } from '@tabler/icons-react'
+import { IconHistory, IconInfoCircle, IconMail, IconSettings, IconUserShield } from '@tabler/icons-react'
 import { Navigate } from 'react-router'
 
 import type { AppModule } from '../types'
 import { AboutPage, MovedTo, OwnerOnly, UsersPage } from './AdminPages'
 import { AuditPage } from './AuditPage'
+import { EmailPage } from './EmailPage'
 import { SettingsPage } from './SettingsPage'
 
 export const adminModule: AppModule = {
@@ -29,6 +30,7 @@ export const adminModule: AppModule = {
     { path: '/admin', element: <Navigate to="/admin/settings" replace /> },
     { path: '/admin/settings', element: <SettingsPage /> },
     { path: '/admin/users', element: <OwnerOnly><UsersPage /></OwnerOnly> },
+    { path: '/admin/email', element: <OwnerOnly><EmailPage /></OwnerOnly> },
     { path: '/admin/audit', element: <OwnerOnly><AuditPage /></OwnerOnly> },
     { path: '/admin/about', element: <AboutPage /> },
     { path: '/settings', element: <MovedTo to="/admin/settings" /> },
@@ -38,6 +40,7 @@ export const adminModule: AppModule = {
   nav: [
     { to: '/admin/settings', label: 'Settings', icon: IconSettings, section: 'admin', order: 10 },
     { to: '/admin/users', label: 'Users', icon: IconUserShield, section: 'admin', order: 20, ownerOnly: true },
+    { to: '/admin/email', label: 'Email', icon: IconMail, section: 'admin', order: 30, ownerOnly: true },
     { to: '/admin/audit', label: 'Audit log', icon: IconHistory, section: 'admin', order: 40, ownerOnly: true },
     { to: '/admin/about', label: 'About', icon: IconInfoCircle, section: 'admin', order: 90 },
   ],

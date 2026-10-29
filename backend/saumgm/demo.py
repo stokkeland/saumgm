@@ -42,11 +42,13 @@ from reportlab.pdfgen import canvas
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from saumgm.email import NoSendBackend, use_backend
 from saumgm.enums import (
     AccountType,
     AddressType,
     BillingTiming,
     DocumentType,
+    EmailKind,
     FilingFrequency,
     InvoiceKind,
     InvoiceStatus,
@@ -63,6 +65,7 @@ from saumgm.enums import (
 from saumgm.models import (
     Account,
     CatalogItem,
+    EmailTemplate,
     Expense,
     ExpenseAttachment,
     ExpenseLine,
@@ -88,7 +91,7 @@ from saumgm.models import (
 )
 from saumgm.schemas.invoices import LineIn
 from saumgm.seed import OrganizationSetup, create_organization
-from saumgm.services import archive, payments, reports, subscriptions, tax_periods
+from saumgm.services import archive, emailing, payments, reports, subscriptions, tax_periods
 from saumgm.services import invoices as invoice_service
 from saumgm.services.auth import create_user
 from saumgm.services.numbering import next_number
@@ -1165,6 +1168,42 @@ class DemoLoader:
         )  # fmt: skip
         self.s.flush()
 
+    def emails(self) -> None:
+        """The sender, an own receipt text, and the latest invoices and a receipt "sent" (logged
+        only: the demo never mails anyone, whatever EMAIL_URL says)."""
+        org = self.org
+        org.email_from_address = "billing@mapleridge.example"
+        org.email_from_name = "Maple Ridge Tech"
+        self.s.add(
+            EmailTemplate(
+                organization_id=org.id, kind=EmailKind.RECEIPT,
+                subject="Thank you for your payment",
+                body="Hi {client_name},\n\nWe received your payment of {amount} on "
+                "{payment_date}. Your receipt is attached.\n\nMaple Ridge Tech",
+            )
+        )  # fmt: skip
+        self.s.flush()
+        latest = self.s.scalars(
+            select(Invoice)
+            .where(
+                Invoice.organization_id == org.id,
+                Invoice.status == InvoiceStatus.ISSUED,
+                Invoice.kind == InvoiceKind.INVOICE,
+            )
+            .order_by(Invoice.issue_date.desc(), Invoice.id.desc())
+            .limit(3)
+        ).all()
+        payment = self.s.scalars(
+            select(Payment).where(Payment.organization_id == org.id).order_by(Payment.id.desc())
+        ).first()
+        drafts = [emailing.compose(self.s, org, "invoice", i.id) for i in latest]
+        if payment is not None:
+            drafts.append(emailing.compose(self.s, org, "payment", payment.id))
+        with use_backend(NoSendBackend()):
+            for draft in drafts:
+                if draft.to:
+                    emailing.send(self.s, org, draft, self.owner.id if self.owner else None)
+
     def run(self) -> Summary:
         if self.s.scalars(select(Organization.id)).first() is not None:
             raise DemoError(
@@ -1180,6 +1219,7 @@ class DemoLoader:
         self.deposits()
         self.expenses()
         self.tax_filing()
+        self.emails()
         # The oldest two months are archived, as a business would after closing its books.
         archive.archive_through(self.s, self.org.id, self.start + timedelta(days=60),
                                 batch_id="demo")  # fmt: skip

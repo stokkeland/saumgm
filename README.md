@@ -28,7 +28,7 @@ python -m venv .venv
 # PowerShell refuses to run the script? Once: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 # Without activating, call the tools by path, e.g. .venv\Scripts\uvicorn ...
 pip install -e ".[dev]"
-cp .env.example .env          # then edit DATABASE_URL / TEST_DATABASE_URL
+cp .env.example .env          # then edit DATABASE_URL / TEST_DATABASE_URL (and EMAIL_REDIRECT_TO)
 
 alembic upgrade head          # create/upgrade the database schema
 uvicorn saumgm.main:app --reload --port 8000

@@ -153,6 +153,20 @@ class IdentityProvider(StrEnum):
     SAML = "saml"
 
 
+class EmailKind(StrEnum):
+    """What an email is about; each kind has its own template (Admin -> Email)."""
+
+    INVOICE = "invoice"
+    CREDIT_NOTE = "credit_note"
+    RECEIPT = "receipt"
+    TEST = "test"
+
+
+class EmailStatus(StrEnum):
+    SENT = "sent"
+    FAILED = "failed"
+
+
 class AuditActor(StrEnum):
     USER = "user"
     SYSTEM = "system"

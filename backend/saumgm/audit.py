@@ -26,7 +26,8 @@ from sqlalchemy.orm import InstanceState, Session, UOWTransaction
 
 from saumgm.context import AUDIT_ROWS_KEY, get_context
 
-NOT_AUDITED = {"audit_log", "auth_session"}
+# email_message is a log of its own; sending adds an "email" entry to the record instead.
+NOT_AUDITED = {"audit_log", "auth_session", "email_message"}
 REDACTED = {"password_hash", "totp_secret"}
 NOISE = {"created_at", "updated_at"}
 

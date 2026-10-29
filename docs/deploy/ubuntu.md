@@ -291,6 +291,14 @@ sudo chmod 640 /opt/saumgm/backend/.env
 | `COOKIE_SECURE` | override for the above; set `false` **only** to test over plain HTTP before TLS works, then remove |
 | `SESSION_DAYS` | how long a login lasts (default 14) |
 | `LOG_LEVEL` | `INFO` normally; `DEBUG` when chasing a problem |
+| `EMAIL_URL` | `resend://` to send email through Resend; `console://` (the default) only writes messages to the log |
+| `RESEND_API_KEY` | the API key from Resend (API Keys → Create, permission "Sending access") |
+| `EMAIL_FROM` | sender until one is set in the app (Admin → Email); must be on a domain verified in Resend |
+| `EMAIL_REDIRECT_TO` | test and demo installations only: every message goes to this address instead |
+
+**Email through Resend:** in Resend, add and verify your domain (Domains → Add, then the DNS
+records it lists), create an API key, and put `EMAIL_URL=resend://` and `RESEND_API_KEY=...` in
+`.env`. Restart the service, then set the sender in Admin → Email and press "Send test".
 
 ## 5. Load your data
 
