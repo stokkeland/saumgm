@@ -17,6 +17,7 @@
 
 import {
   ActionIcon,
+  Anchor,
   Button,
   Card,
   Group,
@@ -35,10 +36,10 @@ import { modals } from '@mantine/modals'
 import { IconArchive, IconDots, IconPlus, IconTrash } from '@tabler/icons-react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 
 import { api, unwrap, type Schemas } from '../../api/client'
-import { useAccounts, useOrganization } from '../../api/lookups'
+import { bankAccountOptions, useAccounts, useBankAccounts, useOrganization } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
 import { ContactSelect } from '../../components/ContactSelect'
 import { DataTable } from '../../components/DataTable'
@@ -162,6 +163,10 @@ function ExpenseEditor({ expense, onSaved, onCancel }: { expense?: Expense; onSa
   const [vendor, setVendor] = useState<number | null>(expense?.vendor_party_id ?? null)
   const [forParty, setForParty] = useState<number | null>(expense?.for_party_id ?? null)
   const [reference, setReference] = useState(expense?.reference ?? '')
+  const [paidFrom, setPaidFrom] = useState<string | null>(
+    expense?.paid_from_account_id ? String(expense.paid_from_account_id) : null,
+  )
+  const bankOptions = bankAccountOptions(useBankAccounts().data)
   const [description, setDescription] = useState(expense?.description ?? '')
   const [lines, setLines] = useState<LineForm[]>(
     expense?.lines.map((l, i) => ({
@@ -183,6 +188,7 @@ function ExpenseEditor({ expense, onSaved, onCancel }: { expense?: Expense; onSa
         for_party_id: forParty,
         reference: reference.trim() || null,
         description: description.trim() || null,
+        paid_from_account_id: paidFrom ? Number(paidFrom) : null,
         lines: lines
           .filter((l) => l.account_id && l.amount !== '')
           .map((l) => ({ account_id: Number(l.account_id), amount: String(l.amount), description: l.description.trim() || null })),
@@ -194,6 +200,7 @@ function ExpenseEditor({ expense, onSaved, onCancel }: { expense?: Expense; onSa
     onSuccess: (saved) => {
       queryClient.setQueryData(['expense', saved.id], saved)
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] })
       notifySaved('Expense saved')
       onSaved(saved)
     },
@@ -219,7 +226,16 @@ function ExpenseEditor({ expense, onSaved, onCancel }: { expense?: Expense; onSa
             onChange={setForParty}
           />
           <TextInput label="Reference" placeholder="Vendor invoice / receipt no." value={reference} onChange={(e) => setReference(e.currentTarget.value)} />
-          <Textarea label="Description" autosize style={{ gridColumn: 'span 2' }} value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
+          <Select
+            label="Paid from"
+            placeholder="Not from a bank account here"
+            description="Adds it to that account's register"
+            clearable
+            data={bankOptions}
+            value={paidFrom}
+            onChange={setPaidFrom}
+          />
+          <Textarea label="Description" autosize value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
         </SimpleGrid>
       </Card>
       <Card withBorder>
@@ -402,6 +418,16 @@ export function ExpensePage() {
               <Text size="sm">
                 <Text span c="dimmed">Entered </Text>
                 <DateText value={expense.entered_date} />
+              </Text>
+              <Text size="sm">
+                <Text span c="dimmed">Paid from </Text>
+                {expense.paid_from_account_id ? (
+                  <Anchor component={Link} to={`/banking/${expense.paid_from_account_id}`}>
+                    {expense.paid_from_name}
+                  </Anchor>
+                ) : (
+                  '—'
+                )}
               </Text>
             </SimpleGrid>
           </Card>

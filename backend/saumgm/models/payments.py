@@ -31,6 +31,10 @@ class Deposit(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMi
     __table_args__ = TABLE_ARGS
 
     bank_party_id: Mapped[int | None] = mapped_column(BigInteger, fk("party.id"), index=True)
+    # The account it went into (2.0); its register gets a line for the deposit's total.
+    bank_account_id: Mapped[int | None] = mapped_column(
+        BigInteger, fk("bank_account.id"), index=True
+    )
     # Required for new deposits; one imported historical deposit has no date.
     deposit_date: Mapped[date | None] = mapped_column(Date, index=True)
     notes: Mapped[str | None] = mapped_column(Text)

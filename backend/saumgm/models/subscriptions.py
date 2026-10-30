@@ -113,6 +113,10 @@ class VendorSubscription(IdMixin, OrgScopedMixin, TimestampMixin, Base):
     expense_account_id: Mapped[int | None] = mapped_column(BigInteger, fk("account.id"), index=True)
     # Charged automatically (a card on file) rather than paid by hand; only changes how a
     # reminder is worded.
+    # Where payments usually come from (Record payment suggests it).
+    paid_from_account_id: Mapped[int | None] = mapped_column(
+        BigInteger, fk("bank_account.id"), index=True
+    )
     autopay: Mapped[bool] = mapped_column(Boolean, default=False)
     auto_renew: Mapped[bool] = mapped_column(Boolean, default=True)
     status: Mapped[SubscriptionStatus] = mapped_column(

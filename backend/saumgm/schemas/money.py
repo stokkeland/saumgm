@@ -103,6 +103,7 @@ class DepositItemIn(BaseModel):
 class DepositCreate(BaseModel):
     deposit_date: date
     bank_party_id: int | None = None
+    bank_account_id: int | None = Field(None, description="Adds the deposit to its register")
     notes: str | None = None
     payment_ids: list[int] = []
     items: list[DepositItemIn] = []
@@ -111,6 +112,7 @@ class DepositCreate(BaseModel):
 class DepositPatch(BaseModel):
     deposit_date: date | None = None
     bank_party_id: int | None = None
+    bank_account_id: int | None = None
     notes: str | None = None
     payment_ids: list[int] | None = None
     items: list[DepositItemIn] | None = None
@@ -124,6 +126,7 @@ class DepositOut(BaseModel):
     id: int
     deposit_date: date | None
     bank_party_id: int | None
+    bank_account_id: int | None
     notes: str | None
     total: Amount
     payments: list[PaymentOut]
@@ -147,6 +150,7 @@ class ExpenseCreate(BaseModel):
     for_party_id: int | None = Field(None, description="Defaults to the business itself")
     reference: str | None = Field(None, max_length=100)
     description: str | None = None
+    paid_from_account_id: int | None = Field(None, description="Adds it to that register")
     lines: list[ExpenseLineIn] = Field(min_length=1)
 
 
@@ -157,6 +161,7 @@ class ExpensePatch(BaseModel):
     for_party_id: int | None = None
     reference: str | None = Field(None, max_length=100)
     description: str | None = None
+    paid_from_account_id: int | None = None
     lines: list[ExpenseLineIn] | None = Field(None, min_length=1)
 
 
@@ -182,5 +187,7 @@ class ExpenseOut(BaseModel):
     total: Amount
     lines: list[ExpenseLineOut]
     vendor_subscription_id: int | None
+    paid_from_account_id: int | None
+    paid_from_name: str | None
     archived_at: datetime | None
     legacy_data: dict[str, Any] | None

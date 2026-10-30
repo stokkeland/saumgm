@@ -211,6 +211,13 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
   ```
   (instances: `saumgm-notify@.service` and `saumgm-notify@NAME.timer`, see
   [deploy/multiple-instances.md](deploy/multiple-instances.md#9-backups)).
+- New: **Money → Bank accounts**: checking, savings and card accounts, each with a register
+  that starts at an opening balance on a day you choose, transfers (paying the card) and
+  reconciling with statements. Nothing is filled in by the upgrade: add your accounts, then
+  choose "Deposit to" on new deposits and "Paid from" on expenses and vendor subscriptions.
+  Older deposits can be given an account on their page (if dated after the register starts).
+- The to-do list has a **Banking** section (accounts not reconciled for 35 days; Admin →
+  Reminders changes it).
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →

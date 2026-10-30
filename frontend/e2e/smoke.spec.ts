@@ -29,6 +29,7 @@ const PAGES = [
   ['/expenses', 'expenses'],
   ['/subscriptions', 'subscriptions'],
   ['/vendor-subscriptions', 'vendor-subscriptions'],
+  ['/banking', 'banking'],
   ['/catalog', 'catalog'],
   ['/catalog?tab=packages', 'catalog-packages'],
   ['/reports', 'reports'],

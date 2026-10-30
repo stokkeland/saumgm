@@ -37,7 +37,7 @@ from saumgm.api.common import (
     set_archived,
 )
 from saumgm.api.deps import Auth, DbSession, Editor, Owner, Reader
-from saumgm.models import Deposit, Invoice, Organization, Party, Payment
+from saumgm.models import BankAccount, Deposit, Invoice, Organization, Party, Payment
 from saumgm.schemas.money import (
     AllocationOut,
     DepositCreate,
@@ -49,6 +49,7 @@ from saumgm.schemas.money import (
     PaymentOut,
     PaymentPatch,
 )
+from saumgm.services import banking
 from saumgm.services import payments as service
 
 router = APIRouter(tags=["payments"])
@@ -247,6 +248,7 @@ def deposit_out(db: Session, deposit: Deposit) -> DepositOut:
         id=deposit.id,
         deposit_date=deposit.deposit_date,
         bank_party_id=deposit.bank_party_id,
+        bank_account_id=deposit.bank_account_id,
         notes=deposit.notes,
         total=service.deposit_total(db, deposit),
         payments=[payment_out(db, p) for p in deposit.payments],
@@ -264,9 +266,22 @@ def _items(body: DepositCreate | DepositPatch) -> list[service.ExtraItem] | None
     return [service.ExtraItem(i.amount, i.description) for i in body.items]
 
 
-def _check_bank(db: Session, auth: Auth, bank_party_id: int | None) -> None:
+def _check_bank(
+    db: Session, auth: Auth, bank_party_id: int | None, bank_account_id: int | None = None
+) -> None:
     if bank_party_id is not None:
         get_owned(db, Party, bank_party_id, auth.organization_id)
+    if bank_account_id is not None:
+        get_owned(db, BankAccount, bank_account_id, auth.organization_id)
+
+
+def _sync(db: Session, deposit: Deposit) -> None:
+    """The deposit's line in its account's register."""
+    try:
+        banking.sync_deposit(db, deposit)
+    except banking.BankingError as exc:
+        db.rollback()  # the deposit or expense change stays undone, not only the line
+        raise conflict(str(exc)) from None
 
 
 @router.get("/deposits")
@@ -295,7 +310,7 @@ def list_deposits(
 
 @router.post("/deposits", status_code=status.HTTP_201_CREATED)
 def create_deposit(body: DepositCreate, auth: Editor, db: DbSession) -> DepositOut:
-    _check_bank(db, auth, body.bank_party_id)
+    _check_bank(db, auth, body.bank_party_id, body.bank_account_id)
     try:
         deposit = service.create_deposit(
             db,
@@ -308,6 +323,8 @@ def create_deposit(body: DepositCreate, auth: Editor, db: DbSession) -> DepositO
         )
     except service.PaymentError as exc:
         raise conflict(str(exc)) from None
+    deposit.bank_account_id = body.bank_account_id
+    _sync(db, deposit)
     db.commit()
     db.refresh(deposit)
     return deposit_out(db, deposit)
@@ -322,12 +339,13 @@ def get_deposit(deposit_id: int, auth: Reader, db: DbSession) -> DepositOut:
 def update_deposit(deposit_id: int, body: DepositPatch, auth: Editor, db: DbSession) -> DepositOut:
     deposit = get_owned(db, Deposit, deposit_id, auth.organization_id)
     ensure_current(deposit)
-    _check_bank(db, auth, body.bank_party_id)
+    _check_bank(db, auth, body.bank_party_id, body.bank_account_id)
     changes = body.model_dump(exclude_unset=True, exclude={"payment_ids", "items"})
     try:
         service.update_deposit(db, _org(db, auth), deposit, changes, body.payment_ids, _items(body))
     except service.PaymentError as exc:
         raise conflict(str(exc)) from None
+    _sync(db, deposit)
     db.commit()
     db.refresh(deposit)
     return deposit_out(db, deposit)
@@ -337,6 +355,11 @@ def update_deposit(deposit_id: int, body: DepositPatch, auth: Editor, db: DbSess
 def delete_deposit(deposit_id: int, auth: Editor, db: DbSession) -> None:
     deposit = get_owned(db, Deposit, deposit_id, auth.organization_id)
     ensure_current(deposit)
+    try:
+        banking.before_delete(db, deposit=deposit)
+    except banking.BankingError as exc:
+        db.rollback()  # the deposit or expense change stays undone, not only the line
+        raise conflict(str(exc)) from None
     service.delete_deposit(db, deposit)
     db.commit()
 

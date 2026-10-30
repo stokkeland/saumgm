@@ -44,6 +44,7 @@ from saumgm.enums import (
     UserRoleType,
 )
 from saumgm.models import (
+    BankAccount,
     CatalogItem,
     Invoice,
     Organization,
@@ -54,8 +55,8 @@ from saumgm.models import (
     VendorSubscription,
 )
 from saumgm.schemas.reminders import ReminderItem, ReminderSection, RemindersOut
+from saumgm.services import banking, party_documents
 from saumgm.services import invoices as invoice_service
-from saumgm.services import party_documents
 from saumgm.services import subscriptions as subscription_service
 from saumgm.services.emailing import ADDRESS, Draft
 from saumgm.timeutil import today_in, utcnow
@@ -328,12 +329,56 @@ def documents(session: Session, org: Organization, today: date) -> Section | Non
     )
 
 
-# The to-do list in order. Banking (F) and assets (G) add theirs here.
+def reconcile(session: Session, org: Organization, today: date) -> Section | None:
+    """Open accounts whose last reconciled statement (or start) is older than the lead time."""
+    accounts = session.scalars(
+        select(BankAccount)
+        .where(BankAccount.organization_id == org.id, BankAccount.is_active.is_(True))
+        .order_by(BankAccount.name)
+    ).all()
+    last = banking.last_reconciliations(session, (a.id for a in accounts))
+    cutoff = today - timedelta(days=org.remind_reconcile_days)
+    items = []
+    for account in accounts:
+        rec = last.get(account.id)
+        since = rec.statement_date if rec else account.opening_date
+        if since >= cutoff:
+            continue
+        note = (
+            f"last statement reconciled: {plural((today - since).days, 'day')} ago"
+            if rec
+            else "never reconciled"
+        )
+        items.append(
+            Item(
+                title=account.name,
+                date=rec.statement_date if rec else None,
+                link=f"/banking/{account.id}",
+                note=note,
+                flag="overdue",
+            )
+        )
+    if not items:
+        return None
+    have = "has" if len(items) == 1 else "have"
+    return Section(
+        key="banking",
+        title="Banking",
+        summary=f"{plural(len(items), 'bank account')} {have} not been reconciled within "
+        f"{plural(org.remind_reconcile_days, 'day')}",
+        short=f"{len(items)} to reconcile",
+        link="/banking",
+        items=items,
+    )
+
+
+# The to-do list in order. Assets (G) add theirs here.
 SECTIONS: tuple[Callable[[Session, Organization, date], Section | None], ...] = (
     bill_clients,
     pay_vendors,
     collect,
     documents,
+    reconcile,
 )
 
 

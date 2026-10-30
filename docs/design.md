@@ -186,7 +186,7 @@ Money is stored as `DECIMAL(15,4)` (enough for any currency's minor units and un
 ### 4.5 Payments and deposits (replaces tblInvoicePayment, tblPaymentReceived, tblDeposit*)
 - `payment` — `party_id`, `received_date`, `method` (check, cash, card, bank transfer, PayPal, …), `channel` (mail, in person, electronic), `reference` (check no.), `amount`, `notes`, `deposit_id` (nullable = undeposited funds).
 - `payment_allocation` — `payment_id`, `invoice_id`, `amount`. One payment can cover several invoices; one invoice can have several payments.
-- `deposit` — `bank_party_id`, `deposit_date`, `notes`; `deposit_item` for non-payment items (rare; old data has some).
+- `deposit` — `bank_party_id`, `bank_account_id` (2.0: the account it went into, see §4.14), `deposit_date`, `notes`; `deposit_item` for non-payment items (rare; old data has some).
 - Flow: **Receive payment** (pick client → open invoices listed → allocate oldest first, adjustable) → payment waits in **Undeposited funds** → **Make deposit** (tick payments) → print deposit slip.
 
 ### 4.6 Expenses (replaces tblExpenseJournal / tblExpenseTrx / tblExpenseAccount)
@@ -265,6 +265,16 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - **Digest email** (`EmailKind.DIGEST`): the same list grouped by section, opening with how long it has been since anyone signed in (`app_user.last_login_at`) and one sentence per section. Links need `APP_URL`. It goes to `organization.remind_to`, or else every active owner; Admin → Reminders sets the lead times and recipients, previews it and sends it now. It is logged like every email.
 - **`python -m saumgm notify`** sends it if anything is due (`--always`, `--dry-run`, `--json`, `--if-idle DAYS`, `--organization-id`), from the `saumgm-notify.timer` (daily 07:00; `@` template for instances). Nothing is remembered between runs: each day's digest is the current list.
 
+### 4.14 Banking: accounts, registers, reconciliation
+- `bank_account` — `party_id` (the bank contact), `name` (unique), `kind` (checking, savings, credit card, other: PayPal, cash), `number_last4` (only the last digits), `opening_date` and `opening_balance` (where the register starts: the balance on that day), `is_active` (closed accounts stay), `notes`.
+- `bank_entry` — one register line: `entry_date`, signed `amount` (positive = money in; on a card a charge is negative, so a negative card balance is what is owed), `payee`, `description`, `reference` (check no.), `account_id` (optional category from the chart of accounts), `status` (uncleared, cleared, reconciled), `kind` (manual, deposit, expense, transfer, adjustment) and at most one link: `deposit_id`, `expense_id` (both unique), or `transfer_entry_id` (the other side; each side points at the other). Lines dated before the account's start are refused.
+- **Three things write lines on their own** (services/banking.py): a deposit with `bank_account_id` (its total), an expense with `paid_from_account_id` (minus its total; payee from the vendor; category when it has a single account), and a **transfer** (both sides at once; paying the card is a transfer to its account). Changing the deposit or expense changes its line; clearing the account or deleting it removes the line. The line itself only changes its status; a transfer side changes both sides. Everything else is a **free entry**; a free line going out can be **made an expense** paid from that account (the line stays, linked). Free entries do not count in the reports until they are made expenses.
+- Vendor subscriptions have `paid_from_account_id`; Record payment uses it unless told otherwise, so the expense lands in that register.
+- Balances are computed, never stored: balance (all lines), cleared (cleared and reconciled), reconciled, and a running balance per line in register order (date, then entry order).
+- `bank_reconciliation` — `statement_date`, `statement_balance`, who and when. **Reconciling**: the ticked lines plus everything reconciled before must come to the statement's ending balance (within half a cent); they become reconciled. A reconciled line is locked: it, and the deposit or expense behind it, cannot change amount, date or account, nor be deleted; the start date and opening balance cannot change while reconciliations exist. The owner can undo the latest reconciliation (its lines go back to cleared). A **balance adjustment** entry covers a difference not worth tracing.
+- The to-do list's **Banking** section lists open accounts whose last reconciled statement (or start) is older than `organization.remind_reconcile_days` (default 35).
+- Later: importing the bank's CSV or OFX file.
+
 ### 4.11 Archiving
 - Invoices, payments, deposits and expenses have `archived_at` (NULL = current). Archived records stay in their tables, keep all links, and count in every report; they are only hidden from everyday lists.
 - Lists default to current records, with a "show archived" toggle (and an `include_archived` / `archived_only` filter on the API). Archived records open read-only; unarchiving is allowed for the owner role.
@@ -282,7 +292,8 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - **Catalog** — items by type, inactive toggle, merge duplicates.
 - **Subscriptions** — client subscriptions with lines and packages, the billing run; vendor subscriptions with payments.
 - **Invoices** — list (default: unpaid, not archived), editor (line entry with catalog search, live totals and tax), issue/void/credit note, PDF.
-- **Payments** — receive payment, undeposited funds, deposits + slip.
+- **Payments** — receive payment, undeposited funds, deposits + slip (deposited to a bank account).
+- **Bank accounts** — accounts with balances (cards show what is owed), each with its register, transfers and reconciling (§4.14).
 - **Expenses** — list by period/account/vendor, quick entry with receipts.
 - **Reports** — sales by month/client/revenue category, sales tax (by date range or filing period, accrual or cash), expenses by account/vendor/month, profit & loss (with cost of goods and bad debts), receivables aging. Sales and profit & loss count income by invoice date or by payment date (`organization.income_basis`, switchable per report): by payment date, each payment counts when received, without its tax share, spread over the invoice's lines for the category view; unpaid and written-off amounts never count, and credit notes do not count until refunds are recorded. Each report is built once as a `ReportDocument` (documents.py) and comes out as CSV, as a PDF (letterhead, period, basis, page numbers, generated time) or by email with that PDF; downloads and emails are audited. Invoice PDFs, receipts and deposit slips open from their pages. The invoice list with its filters covers the "invoice listing".
 - **Settings** — business profile and locale, tax setup, terms, numbering, accounts, users.

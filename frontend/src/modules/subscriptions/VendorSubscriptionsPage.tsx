@@ -38,7 +38,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { api, unwrap, type Schemas } from '../../api/client'
-import { useAccounts } from '../../api/lookups'
+import { bankAccountOptions, useAccounts, useBankAccounts } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
 import { ContactSelect } from '../../components/ContactSelect'
 import { DataTable } from '../../components/DataTable'
@@ -67,6 +67,7 @@ function invalidate(queryClient: ReturnType<typeof useQueryClient>) {
 function VendorSubscriptionForm({ sub, onClose, onPay }: { sub?: VendorSub; onClose: () => void; onPay: (s: VendorSub) => void }) {
   const queryClient = useQueryClient()
   const accountOptions = useAccountOptions()
+  const bankOptions = bankAccountOptions(useBankAccounts().data)
   const form = useForm({
     initialValues: {
       party_id: sub?.party_id ?? null,
@@ -77,6 +78,7 @@ function VendorSubscriptionForm({ sub, onClose, onPay }: { sub?: VendorSub; onCl
       next_due_date: sub?.next_due_date ?? '',
       end_date: sub?.end_date ?? '',
       expense_account_id: sub?.expense_account_id ? String(sub.expense_account_id) : null,
+      paid_from_account_id: sub?.paid_from_account_id ? String(sub.paid_from_account_id) : null,
       autopay: sub?.autopay ?? false,
       auto_renew: sub?.auto_renew ?? true,
       status: sub?.status ?? 'active',
@@ -100,6 +102,7 @@ function VendorSubscriptionForm({ sub, onClose, onPay }: { sub?: VendorSub; onCl
         next_due_date: v.next_due_date || null,
         end_date: v.end_date || null,
         expense_account_id: v.expense_account_id ? Number(v.expense_account_id) : null,
+        paid_from_account_id: v.paid_from_account_id ? Number(v.paid_from_account_id) : null,
         autopay: v.autopay,
         auto_renew: v.auto_renew,
         status: v.status as VendorSub['status'],
@@ -139,6 +142,13 @@ function VendorSubscriptionForm({ sub, onClose, onPay }: { sub?: VendorSub; onCl
             <NumberInput label="Every (months)" min={1} max={120} allowDecimal={false} {...form.getInputProps('interval_months')} />
             <TextInput type="date" label="Next due" {...form.getInputProps('next_due_date')} />
             <TextInput type="date" label="End" {...form.getInputProps('end_date')} />
+            <Select
+              label="Paid from"
+              description="The bank or card account it is usually paid from"
+              clearable
+              data={bankOptions}
+              {...form.getInputProps('paid_from_account_id')}
+            />
             <Select label="Status" data={SUBSCRIPTION_STATUSES} {...form.getInputProps('status')} />
             <Stack gap={6} mt="lg">
               <Checkbox label="Paid automatically (autopay)" {...form.getInputProps('autopay', { type: 'checkbox' })} />
@@ -210,9 +220,11 @@ function VendorSubscriptionForm({ sub, onClose, onPay }: { sub?: VendorSub; onCl
 function RecordPayment({ sub, onClose }: { sub: VendorSub; onClose: () => void }) {
   const queryClient = useQueryClient()
   const accountOptions = useAccountOptions()
+  const bankOptions = bankAccountOptions(useBankAccounts().data)
   const form = useForm({
     initialValues: {
       paid_date: todayIso(),
+      paid_from_account_id: sub.paid_from_account_id ? String(sub.paid_from_account_id) : null,
       amount: Number(sub.amount),
       expense_account_id: sub.expense_account_id ? String(sub.expense_account_id) : null,
       reference: '',
@@ -232,6 +244,7 @@ function RecordPayment({ sub, onClose }: { sub: VendorSub; onClose: () => void }
             paid_date: v.paid_date,
             amount: String(v.amount),
             expense_account_id: Number(v.expense_account_id),
+            paid_from_account_id: v.paid_from_account_id ? Number(v.paid_from_account_id) : null,
             reference: v.reference.trim() || null,
           },
         }),
@@ -240,6 +253,8 @@ function RecordPayment({ sub, onClose }: { sub: VendorSub; onClose: () => void }
       invalidate(queryClient)
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['bank-entries'] })
       notifySaved('Payment recorded as an expense')
       onClose()
     },
@@ -264,6 +279,13 @@ function RecordPayment({ sub, onClose }: { sub: VendorSub; onClose: () => void }
             <NumberInput label="Amount" min={0} decimalScale={4} required {...form.getInputProps('amount')} />
           </SimpleGrid>
           <Select label="Expense account" searchable required data={accountOptions} {...form.getInputProps('expense_account_id')} />
+          <Select
+            label="Paid from"
+            placeholder="Not from a bank account here"
+            clearable
+            data={bankOptions}
+            {...form.getInputProps('paid_from_account_id')}
+          />
           <TextInput label="Reference" placeholder="Vendor invoice or receipt no." {...form.getInputProps('reference')} />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>

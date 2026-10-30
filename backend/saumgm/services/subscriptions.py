@@ -228,8 +228,10 @@ def record_payment(
     account_id: int | None = None,
     reference: str | None = None,
     description: str | None = None,
+    paid_from: int | None = None,
 ) -> Expense:
-    """The expense for one period, and the next due date one interval on. Nothing else."""
+    """The expense for one period, and the next due date one interval on. `paid_from` is the
+    bank or card account; the caller adds the register line (banking.sync_expense)."""
     account_id = account_id or sub.expense_account_id
     if account_id is None:
         raise VendorPaymentError("Choose the expense account (the subscription has none)")
@@ -246,6 +248,7 @@ def record_payment(
         reference=reference,
         description=description or label,
         vendor_subscription_id=sub.id,
+        paid_from_account_id=paid_from,
     )
     expense.lines = [ExpenseLine(account_id=account_id, amount=amount, description=label)]
     session.add(expense)

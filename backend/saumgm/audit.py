@@ -39,6 +39,7 @@ PARENTS = {
     "payment_allocation": ("payment", "payment_id"),
     "deposit_item": ("deposit", "deposit_id"),
     "expense_line": ("expense", "expense_id"),
+    "bank_entry": ("bank_account", "bank_account_id"),
     "expense_attachment": ("expense", "expense_id"),
     "subscription_line": ("subscription", "subscription_id"),
     "subscription_use": ("vendor_subscription", "vendor_subscription_id"),

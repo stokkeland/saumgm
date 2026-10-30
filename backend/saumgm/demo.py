@@ -40,13 +40,15 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 from reportlab.lib.pagesizes import LETTER
 from reportlab.pdfgen import canvas
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from saumgm.email import NoSendBackend, use_backend
 from saumgm.enums import (
     AccountType,
     AddressType,
+    BankAccountKind,
+    BankEntryStatus,
     BillingTiming,
     DocumentType,
     EmailKind,
@@ -65,6 +67,8 @@ from saumgm.enums import (
 )
 from saumgm.models import (
     Account,
+    BankAccount,
+    BankEntry,
     CatalogItem,
     CatalogPackage,
     CatalogPackageItem,
@@ -97,7 +101,15 @@ from saumgm.models import (
 )
 from saumgm.schemas.invoices import LineIn
 from saumgm.seed import OrganizationSetup, create_organization
-from saumgm.services import archive, emailing, payments, reports, subscriptions, tax_periods
+from saumgm.services import (
+    archive,
+    banking,
+    emailing,
+    payments,
+    reports,
+    subscriptions,
+    tax_periods,
+)
 from saumgm.services import invoices as invoice_service
 from saumgm.services.auth import create_user
 from saumgm.services.numbering import next_number
@@ -836,11 +848,11 @@ class DemoLoader:
 
         # Paid every month in `expenses`, which links each payment to these.
         vendor_sub("FIBER", "VALLEYFIBER", "Business fiber", "89.99", 1, "6100",
-                   next_due_date=next_on(5), autopay=True,
+                   next_due_date=next_on(5), autopay=True, paid_from_account_id=self.card.id,
                    notes="Charged to the business card")  # fmt: skip
         vendor_sub("SERVER", "CLOUDPEAK", "Reseller server", "120.00", 1, "4010",
                    service_identifier="host-01.cloudpeak.example", next_due_date=next_on(10),
-                   autopay=True)  # fmt: skip
+                   autopay=True, paid_from_account_id=self.card.id)  # fmt: skip
         vendor_sub("OLDPLAN", "CLOUDPEAK", "Shared hosting plan", "8.00", 1, "4010",
                    status=SubscriptionStatus.CANCELLED, auto_renew=False,
                    end_date=self.start + timedelta(days=30),
@@ -1133,10 +1145,12 @@ class DemoLoader:
             items = []
             if i == 3:
                 items = [payments.ExtraItem(D("12.50"), "Refund from NameKeeper Domains")]
-            payments.create_deposit(
+            deposit = payments.create_deposit(
                 self.s, self.org, deposit_date=friday, bank_party_id=self.parties["BANK"].id,
                 notes=None, payment_ids=[p.id for p in group], items=items,
             )  # fmt: skip
+            deposit.bank_account_id = self.checking.id
+            banking.sync_deposit(self.s, deposit)
         self.s.flush()
 
     # -- expenses ---------------------------------------------------------------------------------
@@ -1151,6 +1165,7 @@ class DemoLoader:
         for_party: str | None = None,
         receipt: bool = False,
         subscription: str | None = None,
+        paid_from: BankAccount | None = None,
     ) -> None:
         expense = Expense(
             organization_id=self.org.id, expense_date=day, entered_date=day + timedelta(days=1),
@@ -1158,6 +1173,7 @@ class DemoLoader:
             for_party_id=(self.parties[for_party] if for_party else self.parties["SELF"]).id,
             reference=reference, description=description,
             vendor_subscription_id=self.vendor_subs[subscription].id if subscription else None,
+            paid_from_account_id=paid_from.id if paid_from else None,
         )  # fmt: skip
         expense.lines = [
             ExpenseLine(account_id=self.accounts[code].id, amount=D(amount), description=text,
@@ -1172,6 +1188,9 @@ class DemoLoader:
             stored = store_file(self.s, self.org.id, pdf, f"receipt-{day}.pdf", "application/pdf")
             expense.attachments = [ExpenseAttachment(file_id=stored.id)]
         self.s.add(expense)
+        if paid_from is not None:
+            self.s.flush()
+            banking.sync_expense(self.s, expense)
 
     def expenses(self) -> None:
         rng = self.rng
@@ -1190,6 +1209,7 @@ class DemoLoader:
                     reference=f"VF-{on(5):%Y%m}",
                     description="Business fiber, monthly",
                     subscription="FIBER",
+                    paid_from=self.card,
                 )
             if on(10) <= self.today:
                 self.expense(
@@ -1199,17 +1219,20 @@ class DemoLoader:
                     reference=f"CP-{40000 + n}",
                     description="Hosting platform",
                     subscription="SERVER",
+                    paid_from=self.card,
                 )
                 self.expense(
                     on(10),
                     None,
                     [("6300", "29.99", "Office 365"), ("6300", "12.00", "Password manager")],
                     description="Software subscriptions",
+                    paid_from=self.card,
                 )
             if on(28) <= self.today:
                 self.expense(
-                    on(28), "BANK", [("6500", "12.00", None)], description="Monthly account fee"
-                )
+                    on(28), "BANK", [("6500", "12.00", None)], description="Monthly account fee",
+                    paid_from=self.checking,
+                )  # fmt: skip
             if month.month in (1, 4, 7, 10) and on(15) <= self.today:
                 self.expense(
                     on(15),
@@ -1217,6 +1240,7 @@ class DemoLoader:
                     [("6200", f"{rng.randint(40, 160)}.{rng.randint(0, 99):02d}", None)],
                     reference=f"PT-{rng.randint(10000, 99999)}",
                     description="Paper, toner, labels",
+                    paid_from=self.card,
                 )
             if rng.random() < 0.6 and on(20) <= self.today:
                 self.expense(
@@ -1229,6 +1253,7 @@ class DemoLoader:
                     reference=f"AC-{rng.randint(2000, 9999)}",
                     receipt=True,
                     description="Hardware restock",
+                    paid_from=self.checking,
                 )
             if rng.random() < 0.35 and on(22) <= self.today:
                 self.expense(
@@ -1236,6 +1261,7 @@ class DemoLoader:
                     "NAMEKEEPER",
                     [("4020", f"{12.5 * rng.randint(1, 4):.2f}", None)],
                     description="Domain renewals",
+                    paid_from=self.card,
                 )
             n += 1
             month = (month + timedelta(days=32)).replace(day=1)
@@ -1243,6 +1269,80 @@ class DemoLoader:
         self.expense(self.today - timedelta(days=18), None,
                      [("6400", "42.10", "Mileage, 62 miles")], for_party="PINECREST",
                      description="Server room visit")  # fmt: skip
+        self.s.flush()
+
+    # -- banking ----------------------------------------------------------------------------------
+
+    def bank_accounts(self) -> None:
+        opened = date(self.start.year, self.start.month, 1) - timedelta(days=1)
+        common = {"organization_id": self.org.id, "party_id": self.parties["BANK"].id,
+                  "opening_date": opened}  # fmt: skip
+        self.checking = BankAccount(name="Operating checking", kind=BankAccountKind.CHECKING,
+                                    number_last4="4821", opening_balance=D("8250.00"),
+                                    **common)  # fmt: skip
+        self.card = BankAccount(name="Business card", kind=BankAccountKind.CREDIT_CARD,
+                                number_last4="1006", opening_balance=D("0"),
+                                notes="Monthly bills are charged here; paid from checking on "
+                                "the 25th", **common)  # fmt: skip
+        self.s.add_all([self.checking, self.card])
+        self.s.flush()
+
+    def _owed_before(self, day: date) -> Decimal:
+        total = self.s.scalar(
+            select(func.coalesce(func.sum(BankEntry.amount), 0)).where(
+                BankEntry.bank_account_id == self.card.id, BankEntry.entry_date < day
+            )
+        )
+        return -(self.card.opening_balance + Decimal(total or 0))
+
+    def card_payments_and_statements(self) -> None:
+        """The card is paid in full from checking on the 25th; statements are reconciled at
+        each month end, checking one statement behind (so the to-do list asks for it)."""
+        month = date(self.start.year, self.start.month, 1)
+        while month <= self.today:
+            day = month.replace(day=25)
+            owed = self._owed_before(day)
+            if day <= self.today and owed > 0:
+                banking.transfer(self.s, self.org, self.checking, self.card, entry_date=day,
+                                 amount=owed, description="Card payment",
+                                 reference=None)  # fmt: skip
+            month = (month + timedelta(days=32)).replace(day=1)
+        self.s.flush()
+
+        def month_ends(through: date) -> list[date]:
+            ends, first = [], date(self.start.year, self.start.month, 1)
+            while (
+                end := (first + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            ) <= through:
+                ends.append(end)
+                first = end + timedelta(days=1)
+            return ends
+
+        last_month_end = date(self.today.year, self.today.month, 1) - timedelta(days=1)
+        one_before = last_month_end.replace(day=1) - timedelta(days=1)
+        for account, through in ((self.card, last_month_end), (self.checking, one_before)):
+            for month_end in month_ends(through):
+                lines = self.s.scalars(
+                    select(BankEntry).where(
+                        BankEntry.bank_account_id == account.id,
+                        BankEntry.entry_date <= month_end,
+                        BankEntry.status != BankEntryStatus.RECONCILED,
+                    )
+                ).all()
+                statement = banking.balances(self.s, [account])[account.id].reconciled + sum(
+                    (e.amount for e in lines), Decimal(0)
+                )
+                banking.reconcile(self.s, account, statement_date=month_end,
+                                  statement_balance=statement, entry_ids=[e.id for e in lines],
+                                  user_id=None)  # fmt: skip
+        # What the bank has seen since: everything but the last few days.
+        for entry in self.s.scalars(
+            select(BankEntry).where(
+                BankEntry.status == BankEntryStatus.UNCLEARED,
+                BankEntry.entry_date <= self.today - timedelta(days=4),
+            )
+        ):
+            entry.status = BankEntryStatus.CLEARED
         self.s.flush()
 
     # -- tax filing and archive -------------------------------------------------------------------
@@ -1310,12 +1410,14 @@ class DemoLoader:
         self.organization()
         self.tax_setup()
         self.contacts()
+        self.bank_accounts()
         self.catalog()
         self.exemptions_and_documents()
         self.subs()
         self.pay(self.invoices())
         self.deposits()
         self.expenses()
+        self.card_payments_and_statements()
         self.tax_filing()
         self.emails()
         # The oldest two months are archived, as a business would after closing its books.
@@ -1328,6 +1430,7 @@ class DemoLoader:
             "invoices": len(self.s.scalars(select(Invoice.id)).all()),
             "payments": len(self.s.scalars(select(Payment.id)).all()),
             "expenses": len(self.s.scalars(select(Expense.id)).all()),
+            "bank lines": len(self.s.scalars(select(BankEntry.id)).all()),
         }
         return Summary(self.org, counts)
 

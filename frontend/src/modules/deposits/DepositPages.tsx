@@ -24,6 +24,7 @@ import {
   Group,
   Loader,
   NumberInput,
+  Select,
   SimpleGrid,
   Stack,
   Table,
@@ -38,6 +39,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import { api, unwrap, type Schemas } from '../../api/client'
+import { bankAccountOptions, useBankAccounts } from '../../api/lookups'
 import { useAuth } from '../../auth/context'
 import { ContactSelect } from '../../components/ContactSelect'
 import { DataTable } from '../../components/DataTable'
@@ -118,6 +120,8 @@ export function NewDepositPage() {
   const queryClient = useQueryClient()
   const [date, setDate] = useState(todayIso())
   const [bank, setBank] = useState<number | null>(null)
+  const [account, setAccount] = useState<string | null>(null)
+  const bankOptions = bankAccountOptions(useBankAccounts().data)
   const [notes, setNotes] = useState('')
   const [selected, setSelected] = useState<number[]>([])
   const [items, setItems] = useState<ExtraItem[]>([])
@@ -139,7 +143,8 @@ export function NewDepositPage() {
         await api.POST('/api/deposits', {
           body: {
             deposit_date: date,
-            bank_party_id: bank,
+            bank_party_id: account ? null : bank,
+            bank_account_id: account ? Number(account) : null,
             notes: notes.trim() || null,
             payment_ids: selected,
             items: items
@@ -151,6 +156,7 @@ export function NewDepositPage() {
     onSuccess: (deposit) => {
       queryClient.invalidateQueries({ queryKey: ['deposits'] })
       queryClient.invalidateQueries({ queryKey: ['payments'] })
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] })
       notifySaved('Deposit recorded')
       navigate(`/deposits/${deposit.id}`, { replace: true })
     },
@@ -165,7 +171,18 @@ export function NewDepositPage() {
         <Card withBorder>
           <SimpleGrid cols={{ base: 1, sm: 3 }}>
             <TextInput type="date" label="Deposit date" required value={date} onChange={(e) => setDate(e.currentTarget.value)} />
-            <ContactSelect label="Bank" role="financial" value={bank} onChange={setBank} />
+            {bankOptions.length > 0 ? (
+              <Select
+                label="Deposit to"
+                description="Adds the deposit to that account's register"
+                clearable
+                data={bankOptions}
+                value={account}
+                onChange={setAccount}
+              />
+            ) : (
+              <ContactSelect label="Bank" role="financial" value={bank} onChange={setBank} />
+            )}
             <Textarea label="Notes" autosize value={notes} onChange={(e) => setNotes(e.currentTarget.value)} />
           </SimpleGrid>
         </Card>
@@ -300,6 +317,22 @@ export function DepositPage() {
     },
     onError: notifyError,
   })
+  const bankOptions = bankAccountOptions(useBankAccounts().data)
+  const setAccount = useMutation({
+    mutationFn: async (accountId: number | null) =>
+      unwrap(
+        await api.PATCH('/api/deposits/{deposit_id}', {
+          params: { path: { deposit_id: depositId } },
+          body: { bank_account_id: accountId },
+        }),
+      ),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(['deposit', depositId], saved)
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] })
+      notifySaved(saved.bank_account_id ? 'Added to the register' : 'Removed from the register')
+    },
+    onError: notifyError,
+  })
 
   if (error) return <Text c="red">{error.message}</Text>
   if (!deposit) return <Loader />
@@ -337,6 +370,23 @@ export function DepositPage() {
           </>
         }
       />
+      <Group mb="md" align="flex-end">
+        <Select
+          w={320}
+          label="Deposited to"
+          placeholder="No account (not in a register)"
+          clearable
+          disabled={!canEdit || !!deposit.archived_at || setAccount.isPending}
+          data={bankOptions}
+          value={deposit.bank_account_id ? String(deposit.bank_account_id) : null}
+          onChange={(v) => setAccount.mutate(v ? Number(v) : null)}
+        />
+        {deposit.bank_account_id && (
+          <Anchor component={Link} to={`/banking/${deposit.bank_account_id}`} size="sm" mb={8}>
+            Open the register
+          </Anchor>
+        )}
+      </Group>
       <Card withBorder mb="md">
         <Table>
           <Table.Tbody>
