@@ -19,10 +19,13 @@ python -m saumgm create-organization --name "My Company"
 python -m saumgm create-user --email me@example.com --name "Me" --role owner
 python -m saumgm set-password --email me@example.com
 python -m saumgm load-demo          # a demo business, into an empty database
+python -m saumgm notify             # email the reminders digest if anything is due
+                                    # (--dry-run, --json, --always, --if-idle DAYS)
 """
 
 import argparse
 import getpass
+import json
 import sys
 
 from sqlalchemy import select
@@ -32,10 +35,12 @@ from saumgm.config import get_settings
 from saumgm.context import RequestContext, set_context
 from saumgm.db import make_engine
 from saumgm.demo import DEMO_PASSWORD, DEMO_USERS, DemoError, load_demo
-from saumgm.enums import UserRoleType
+from saumgm.email import EmailError
+from saumgm.enums import EmailStatus, UserRoleType
 from saumgm.models import Organization, User
 from saumgm.seed import OrganizationSetup, create_organization
 from saumgm.services import auth as auth_service
+from saumgm.services import emailing, reminders
 
 
 def read_password() -> str:
@@ -106,6 +111,52 @@ def cmd_load_demo(db: Session, args: argparse.Namespace) -> None:
         print(f"  {email}  ({role.value})")
 
 
+def cmd_notify(db: Session, args: argparse.Namespace) -> None:
+    stmt = select(Organization).order_by(Organization.id)
+    if args.organization_id:
+        stmt = stmt.where(Organization.id == args.organization_id)
+    orgs = db.scalars(stmt).all()
+    if not orgs:
+        raise SystemExit("No organization.")
+    if args.json:
+        data = [reminders.to_out(reminders.build(db, org)).model_dump(mode="json") for org in orgs]
+        print(json.dumps(data, indent=2))
+        return
+    failed = False
+    for org in orgs:
+        todo = reminders.build(db, org)
+        name = org.display_name
+        if (
+            args.if_idle is not None
+            and todo.idle_days is not None
+            and todo.idle_days < args.if_idle
+        ):
+            print(f"{name}: someone signed in {todo.idle_days} days ago; nothing sent.")
+            continue
+        if not todo.sections and not args.always:
+            print(f"{name}: nothing due; nothing sent.")
+            continue
+        draft = reminders.digest_draft(db, org, todo)
+        if args.dry_run:
+            print(f"To: {', '.join(draft.to) or '(nobody: no owner and no recipients set)'}")
+            print(f"Subject: {draft.subject}\n\n{draft.body}\n")
+            continue
+        try:
+            message = emailing.send(db, org, draft, None)
+        except EmailError as exc:
+            print(f"{name}: not sent: {exc}", file=sys.stderr)
+            failed = True
+            continue
+        db.commit()  # the log, whatever the provider said
+        if message.status == EmailStatus.FAILED:
+            print(f"{name}: sending failed: {message.error}", file=sys.stderr)
+            failed = True
+        else:
+            print(f"{name}: sent {reminders.plural(todo.count, 'item')} to {message.to_addresses}.")
+    if failed:
+        raise SystemExit(1)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m saumgm")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -132,6 +183,16 @@ def main(argv: list[str] | None = None) -> None:
 
     demo = sub.add_parser("load-demo", help="fill an empty database with a demo business")
     demo.set_defaults(func=cmd_load_demo)
+
+    notify = sub.add_parser("notify", help="email the reminders digest if anything is due")
+    notify.add_argument("--dry-run", action="store_true", help="print the digest, send nothing")
+    notify.add_argument("--json", action="store_true", help="print the to-do list as JSON")
+    notify.add_argument("--always", action="store_true", help="send even if nothing is due")
+    notify.add_argument(
+        "--if-idle", type=int, metavar="DAYS", help="only if nobody signed in for DAYS days"
+    )
+    notify.add_argument("--organization-id", type=int, help="only this business")
+    notify.set_defaults(func=cmd_notify)
 
     args = parser.parse_args(argv)
     engine = make_engine(get_settings().database_url)

@@ -145,6 +145,7 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
 | `RESEND_API_KEY` | your Resend API key | only with `resend://` |
 | `EMAIL_FROM` | optional; the sender is set in Admin → Email | optional |
 | `EMAIL_REDIRECT_TO` | leave out | **your own address**: the development database holds real client addresses |
+| `APP_URL` | the address you open the app at, `https://...` (links in the reminders digest) | `http://localhost:5173` |
 
 **Data removed by migrations:**
 
@@ -198,12 +199,26 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
   `unit_cost` are gone from it (see `/api/vendor-subscriptions`), as is the
   `vendor_renewal_through` filter. The dashboard's renewals have `summary` instead of
   `item_name`.
+- New: **To do** (`/todo`, and a To do card on the dashboard instead of the expiring-documents
+  card): clients to bill, vendors to pay, overdue invoices, expiring documents. **Admin →
+  Reminders** sets how many days ahead (14 for billing, 10 for vendor payments, the new
+  `organization.remind_*` columns) and who gets the digest (empty: the owners).
+- New: the **reminders digest** email and `python -m saumgm notify`, run daily by a new timer.
+  The timer is not installed by `update.sh`; install it once:
+  ```sh
+  sudo cp /opt/saumgm/deploy/systemd/saumgm-notify.service /opt/saumgm/deploy/systemd/saumgm-notify.timer /etc/systemd/system/
+  sudo systemctl daemon-reload && sudo systemctl enable --now saumgm-notify.timer
+  ```
+  (instances: `saumgm-notify@.service` and `saumgm-notify@NAME.timer`, see
+  [deploy/multiple-instances.md](deploy/multiple-instances.md#9-backups)).
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →
 "Send test" arrives (servers with `resend://`); Sales → Subscriptions and Money → Vendor
 subscriptions show what you had (a vendor subscription made by the upgrade says so in its notes;
-give it an expense account before recording a payment if its item had no cost account).
+give it an expense account before recording a payment if its item had no cost account);
+`sudo -u saumgm .venv/bin/python -m saumgm notify --dry-run` (from `/opt/saumgm/backend`)
+prints the digest, and Admin → Reminders → "Send now" delivers one.
 
 ### 1.0
 

@@ -87,7 +87,7 @@ def _message_out(db: DbSession, message: EmailMessage) -> MessageOut:
     )
 
 
-def _sent(db: DbSession, message: EmailMessage) -> MessageOut:
+def sent_response(db: DbSession, message: EmailMessage) -> MessageOut:
     """Keep the log either way; a refusal by the provider is then reported as an error."""
     db.commit()
     if message.status == EmailStatus.FAILED:
@@ -120,7 +120,7 @@ def send_draft(
         message = emailing.send(db, org, draft, user_id)
     except EmailError as exc:
         raise _bad_request(exc) from None
-    return _sent(db, message)
+    return sent_response(db, message)
 
 
 # -- settings and templates (owner) ---------------------------------------------------------------
@@ -209,7 +209,7 @@ def send_test(body: TestIn, auth: Owner, db: DbSession) -> MessageOut:
         message = emailing.send(db, org, draft, auth.user.id)
     except EmailError as exc:
         raise _bad_request(exc) from None
-    return _sent(db, message)
+    return sent_response(db, message)
 
 
 # -- a record by email ----------------------------------------------------------------------------

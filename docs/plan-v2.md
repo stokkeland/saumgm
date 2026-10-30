@@ -331,6 +331,11 @@ sudo -u saumgm .venv/bin/python -m saumgm notify --if-idle 20  # only if nobody 
 can call `GET /api/reminders` with a token instead of a browser login. Not needed for the timer
 on the server; a small step once someone needs it.
 
+Built in part I as described, with these details: the Bill clients section also lists draft
+invoices waiting to be issued; the dashboard's list of expiring documents became its To do card;
+links in the digest need a new setting, `APP_URL`; the timer is not installed by `update.sh`
+(installed once by hand, like the backup timer). Read-only API tokens are still for later.
+
 ### F. Banking: accounts and registers
 
 The goal: know the balance of each bank and credit-card account, and see every movement in and

@@ -37,7 +37,7 @@ import { useForm } from '@mantine/form'
 import { IconCalendarDollar, IconPlus, IconTrash } from '@tabler/icons-react'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
 import { api, unwrap, type Schemas } from '../../api/client'
 import { useAuth } from '../../auth/context'
@@ -362,10 +362,10 @@ function SubscriptionForm({ sub, onClose }: { sub?: Sub; onClose: () => void }) 
   )
 }
 
-function BillingRun({ onClose }: { onClose: () => void }) {
+function BillingRun({ through: initial, onClose }: { through?: string; onClose: () => void }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [through, setThrough] = useState(endOfMonth())
+  const [through, setThrough] = useState(initial || endOfMonth())
   const [combine, setCombine] = useState(false)
   const run = useMutation({
     mutationFn: async (dryRun: boolean) =>
@@ -451,7 +451,9 @@ function BillingRun({ onClose }: { onClose: () => void }) {
 export function SubscriptionsPage() {
   const { canEdit } = useAuth()
   const [editing, setEditing] = useState<Sub | 'new' | null>(null)
-  const [billing, setBilling] = useState(false)
+  // ?bill=DATE (from the to-do list) opens the billing run for subscriptions due through DATE.
+  const [params, setParams] = useSearchParams()
+  const [billing, setBilling] = useState(params.has('bill'))
   const [f, setF] = useUrlState({ q: '', status: 'active', due: '', offset: '0' })
   const { data, isFetching } = useQuery({
     queryKey: ['subscriptions', f],
@@ -526,7 +528,19 @@ export function SubscriptionsPage() {
         ]}
       />
       {editing && <SubscriptionForm sub={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />}
-      {billing && <BillingRun onClose={() => setBilling(false)} />}
+      {billing && (
+        <BillingRun
+          through={params.get('bill') ?? undefined}
+          onClose={() => {
+            setBilling(false)
+            setParams((current) => {
+              const next = new URLSearchParams(current)
+              next.delete('bill')
+              return next
+            }, { replace: true })
+          }}
+        />
+      )}
     </>
   )
 }

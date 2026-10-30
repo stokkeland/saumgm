@@ -21,6 +21,7 @@ import { login, screenshot, watchErrors } from './support'
 
 const PAGES = [
   ['/', 'dashboard'],
+  ['/todo', 'todo-page'],
   ['/contacts', 'contacts'],
   ['/invoices', 'invoices'],
   ['/payments', 'payments'],
@@ -33,6 +34,7 @@ const PAGES = [
   ['/reports', 'reports'],
   ['/admin/settings', 'settings'],
   ['/admin/users', 'users'],
+  ['/admin/reminders', 'reminders'],
   ['/admin/audit', 'audit'],
   ['/admin/about', 'about'],
   ['/account', 'account'],

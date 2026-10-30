@@ -163,6 +163,7 @@ class EmailKind(StrEnum):
     RECEIPT = "receipt"
     REPORT = "report"
     TEST = "test"
+    DIGEST = "digest"  # the reminders digest (`python -m saumgm notify`)
 
 
 class EmailStatus(StrEnum):

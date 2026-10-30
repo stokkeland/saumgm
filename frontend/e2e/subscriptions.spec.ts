@@ -15,21 +15,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
-import { login, screenshot, watchErrors } from './support'
-
-/** A vendor of our own, so the test does not depend on the imported vendors. */
-async function e2eVendor(page: Page) {
-  const found = await page.request.get('/api/contacts?q=E2E%20Hosting%20Vendor&role=vendor')
-  if ((await found.json()).total > 0) return
-  const csrf = (await page.context().cookies()).find((c) => c.name === 'saumgm_csrf')!.value
-  const created = await page.request.post('/api/contacts', {
-    headers: { 'X-CSRF-Token': csrf },
-    data: { short_code: 'E2EHOSTV', name: 'E2E Hosting Vendor', roles: ['vendor'] },
-  })
-  expect(created.status()).toBe(201)
-}
+import { e2eVendor, login, screenshot, watchErrors } from './support'
 
 test('a vendor subscription is paid, and a client subscription uses it', async ({ page }) => {
   const errors = watchErrors(page)

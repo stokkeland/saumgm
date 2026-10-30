@@ -50,3 +50,30 @@ export async function screenshot(page: Page, name: string) {
   await page.waitForLoadState('networkidle')
   await page.screenshot({ path: `${SCREENS}/${name}.png`, fullPage: true })
 }
+
+/** A local date (like the business's own time zone; not UTC, which may already be tomorrow). */
+export function isoInDays(days: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+/** The CSRF header for calling the API directly from a signed-in page. */
+export async function csrfHeader(page: Page): Promise<Record<string, string>> {
+  const csrf = (await page.context().cookies()).find((c) => c.name === 'saumgm_csrf')!.value
+  return { 'X-CSRF-Token': csrf }
+}
+
+/** A vendor of our own, so tests do not depend on the imported vendors. Returns its id. */
+export async function e2eVendor(page: Page): Promise<number> {
+  const found = await page.request.get('/api/contacts?q=E2E%20Hosting%20Vendor&role=vendor')
+  const page1 = await found.json()
+  if (page1.total > 0) return page1.items[0].id
+  const created = await page.request.post('/api/contacts', {
+    headers: await csrfHeader(page),
+    data: { short_code: 'E2EHOSTV', name: 'E2E Hosting Vendor', roles: ['vendor'] },
+  })
+  expect(created.status()).toBe(201)
+  return (await created.json()).id
+}

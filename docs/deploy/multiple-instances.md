@@ -29,6 +29,7 @@ derive everything else from the name:
 | Backups | `/var/backups/saumgm` | `/var/backups/saumgm-NAME` |
 | systemd service | `saumgm` | `saumgm@NAME` |
 | Backup timer | `saumgm-backup.timer` | `saumgm-backup@NAME.timer` |
+| Reminders digest timer | `saumgm-notify.timer` | `saumgm-notify@NAME.timer` |
 | Apache site | `saumgm.conf` | `saumgm-NAME.conf` (from `saumgm-instance.conf`) |
 | Logs | `journalctl -u saumgm` | `journalctl -u saumgm@NAME` |
 
@@ -85,6 +86,7 @@ DATABASE_URL=mysql+pymysql://saumgm_acme:CHANGE-ME@127.0.0.1:3306/saumgm_acme?ch
 STORAGE_URL=file:///var/lib/saumgm-acme/storage
 ENVIRONMENT=production
 LOG_LEVEL=INFO
+APP_URL=https://acme.example.com
 CORS_ORIGINS=
 EOF
 sudo chown root:saumgm-acme /opt/saumgm-acme/backend/.env
@@ -165,6 +167,15 @@ Backups use root's socket login by default. For a remote database, put its crede
 `/etc/saumgm/acme-backup.cnf` (mode 600, same format as ubuntu.md step 9). The timer spreads the
 instances' start times over 45 minutes so their dumps don't all run at once.
 
+The daily reminders digest ([ubuntu.md, section 7](ubuntu.md#the-daily-reminders-digest)):
+
+```sh
+sudo cp /opt/saumgm-acme/deploy/systemd/saumgm-notify@.service \
+        /opt/saumgm-acme/deploy/systemd/saumgm-notify@.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now saumgm-notify@acme.timer
+```
+
 ## Updating
 
 ```sh
@@ -215,7 +226,7 @@ script keeps working when the schema changes because it goes through the app's o
 Take a last backup and keep it, then:
 
 ```sh
-sudo systemctl disable --now saumgm@acme saumgm-backup@acme.timer
+sudo systemctl disable --now saumgm@acme saumgm-backup@acme.timer saumgm-notify@acme.timer
 sudo a2dissite saumgm-acme && sudo systemctl reload apache2
 sudo certbot delete --cert-name acme.example.com
 sudo mariadb -e "DROP DATABASE saumgm_acme; DROP USER 'saumgm_acme'@'localhost';"

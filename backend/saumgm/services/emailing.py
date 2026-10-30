@@ -131,6 +131,8 @@ class Draft:
     subject: str
     body: str
     attachments: list[Attachment] = field(default_factory=list)
+    # Made from `body` when not given; the digest brings its own, with links.
+    html: str | None = None
 
 
 def fill(text: str, values: dict[str, str]) -> str:
@@ -319,12 +321,15 @@ def send(session: Session, org: Organization, draft: Draft, user_id: int | None)
         raise EmailError("Set the sender address first (Admin -> Email)")
 
     text = draft.body
+    page = draft.html or text_to_html(text)
     redirect = get_settings().email_redirect_to
     deliver_to, deliver_cc = to, cc
     if redirect:
         # Development and test installations: the real recipients never get anything.
         meant_for = ", ".join(to) + (f"; cc: {', '.join(cc)}" if cc else "")
-        text = f"[Sent to {redirect} by EMAIL_REDIRECT_TO. Meant for: {meant_for}]\n\n{text}"
+        note = f"[Sent to {redirect} by EMAIL_REDIRECT_TO. Meant for: {meant_for}]"
+        text = f"{note}\n\n{text}"
+        page = text_to_html(note) + page
         deliver_to, deliver_cc = [redirect], []
 
     backend = get_backend()
@@ -335,7 +340,7 @@ def send(session: Session, org: Organization, draft: Draft, user_id: int | None)
         reply_to=org.email_reply_to,
         subject=draft.subject.strip(),
         text=text,
-        html=text_to_html(text),
+        html=page,
         attachments=draft.attachments,
     )
     log = EmailMessage(

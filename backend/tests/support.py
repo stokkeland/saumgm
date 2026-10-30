@@ -19,6 +19,8 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from httpx import Response
 
+from saumgm.email import EmailError, Message
+
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 PASSWORD = "correct horse battery"
@@ -36,3 +38,19 @@ def login(client: TestClient, email: str, password: str = PASSWORD) -> Response:
     if response.status_code == 200:
         client.headers["X-CSRF-Token"] = client.cookies["saumgm_csrf"]
     return response
+
+
+class Outbox:
+    """Records messages instead of sending them; can be told to fail (the `outbox` fixture)."""
+
+    name = "test"
+
+    def __init__(self) -> None:
+        self.messages: list[Message] = []
+        self.fail_with: str | None = None
+
+    def send(self, message: Message) -> str | None:
+        if self.fail_with:
+            raise EmailError(self.fail_with)
+        self.messages.append(message)
+        return f"msg-{len(self.messages)}"

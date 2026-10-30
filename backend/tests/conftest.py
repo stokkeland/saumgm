@@ -25,13 +25,14 @@ from sqlalchemy.orm import Session
 
 from saumgm.config import get_settings
 from saumgm.db import get_session, make_engine
+from saumgm.email import set_backend
 from saumgm.enums import UserRoleType
 from saumgm.main import create_app
 from saumgm.models import Organization, User
 from saumgm.seed import OrganizationSetup, create_organization
 from saumgm.services.auth import create_user
 from saumgm.storage import LocalStorage, set_storage
-from tests.support import PASSWORD, alembic_config, login
+from tests.support import PASSWORD, Outbox, alembic_config, login
 
 
 @pytest.fixture(autouse=True)
@@ -119,3 +120,16 @@ def owner(db_session: Session, org: Organization) -> User:
 def owner_client(client: TestClient, owner: User) -> TestClient:
     login(client, owner.email)
     return client
+
+
+@pytest.fixture
+def outbox(monkeypatch: pytest.MonkeyPatch) -> Iterator[Outbox]:
+    """Email goes here instead of being sent."""
+    box = Outbox()
+    set_backend(box)
+    # Independent of the developer's .env.
+    monkeypatch.setattr(get_settings(), "email_from", None)
+    monkeypatch.setattr(get_settings(), "email_redirect_to", None)
+    monkeypatch.setattr(get_settings(), "app_url", None)
+    yield box
+    set_backend(None)
