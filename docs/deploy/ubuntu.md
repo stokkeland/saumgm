@@ -16,7 +16,7 @@ Browser ──HTTPS──> Apache :443 ─┬─ /            → /opt/saumgm/fr
 
 | Path | What | Owner |
 |---|---|---|
-| `/opt/saumgm` | the code (git checkout), with `backend/.venv` and `frontend/dist` | root |
+| `/opt/saumgm` | the code (git checkout), with `backend/.venv` and `frontend/dist` | your admin account (or root, see section 3) |
 | `/opt/saumgm/backend/.env` | configuration and the database password | root:saumgm, mode 640 |
 | `/var/lib/saumgm/storage` | stored files | saumgm |
 | `/var/backups/saumgm` | nightly backups | root (saumgm group) |
@@ -24,8 +24,26 @@ Browser ──HTTPS──> Apache :443 ─┬─ /            → /opt/saumgm/fr
 The API runs as the unprivileged system user `saumgm`, which can only write to
 `/var/lib/saumgm`.
 
+## Which account runs what
+
+This guide assumes `/opt/saumgm` belongs to your own admin account
+(the one you log in with), so the code is yours to update with git. Then:
+
+| Command | Run as | How |
+|---|---|---|
+| `git`, `pip` (in `backend/.venv`), `npm` in `/opt/saumgm` | you, the owner of the folder | **without** `sudo` |
+| `alembic`, `python -m saumgm ...` (database and app commands) | the service user | `sudo -u saumgm ...` from `/opt/saumgm/backend` |
+| `deploy/update.sh`, `deploy/backup.sh`, `deploy/install-prereqs.sh` | root | `sudo ...` (`update.sh` itself runs git, pip and npm as the folder's owner) |
+| `apt`, `systemctl`, `mariadb`, Apache, certbot, editing `.env` | root | `sudo ...` |
+
+Never run `sudo git`, `sudo pip` or `sudo npm` in a folder you own: the files they create belong
+to root, and git then refuses the repository ("dubious ownership"). `update.sh` notices this and
+prints the `chown` that fixes it. If root owns `/opt/saumgm` instead (section 3), git, pip and
+npm need `sudo` and the rest is the same.
+
 Contents:
 
+- [Which account runs what](#which-account-runs-what)
 - [The whole install, start to finish](#the-whole-install-start-to-finish)
 1. [Packages](#1-packages)
 2. [Database](#2-database)
@@ -45,9 +63,10 @@ Contents:
 ## The whole install, start to finish
 
 The commands below cover the common case in order: one installation, MariaDB on the same server,
-frontend built on the server, and a new empty business. Run them as an admin user with `sudo`
-rights. The numbered sections that follow explain each step and the alternatives (database on
-another host, building on your PC, loading your existing data).
+frontend built on the server, and a new empty business. Run them as your admin user (with `sudo`
+rights); the code belongs to that user, so lines without `sudo` must stay without it. The
+numbered sections that follow explain each step and the alternatives (database on another host,
+building on your PC, loading your existing data).
 
 ```sh
 # --- 0. Log in and bring the server up to date
@@ -55,10 +74,10 @@ ssh admin@server
 sudo apt update && sudo apt upgrade -y
 sudo timedatectl set-timezone America/New_York       # your time zone; logs and backups use it
 
-# --- 1. Get the code into /opt/saumgm (git is needed first; step 3 has the SSH variant)
+# --- 1. Get the code into /opt/saumgm, owned by you (git is needed first; section 3 has more)
 sudo apt install -y git
-cd /opt
-sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm
+sudo install -d -o "$USER" -g "$USER" /opt/saumgm
+git clone --branch release/v2.0 https://github.com/stokkeland/saumgm.git /opt/saumgm
 cd /opt/saumgm
 git log -1 --oneline                                 # shows which version you have
 
@@ -74,11 +93,11 @@ CREATE USER 'saumgm'@'localhost' IDENTIFIED BY 'CHANGE-ME';
 GRANT ALL PRIVILEGES ON saumgm.* TO 'saumgm'@'localhost';
 SQL
 
-# --- 4. Python environment (section 3)
+# --- 4. Python environment (section 3), as you: no sudo
 cd /opt/saumgm
-sudo python3 -m venv backend/.venv
-sudo backend/.venv/bin/pip install --upgrade pip
-sudo backend/.venv/bin/pip install -e backend
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install --upgrade pip
+backend/.venv/bin/pip install -e backend
 
 # --- 5. Configuration (section 4): put the database password into DATABASE_URL
 sudo tee /opt/saumgm/backend/.env >/dev/null <<'EOF'
@@ -97,9 +116,9 @@ sudo -u saumgm .venv/bin/alembic upgrade head
 sudo -u saumgm .venv/bin/python -m saumgm create-organization --name "My Company"
 sudo -u saumgm .venv/bin/python -m saumgm create-user --email you@example.com --name "Your Name" --role owner
 
-# --- 7. Frontend (section 6)
+# --- 7. Frontend (section 6), as you: no sudo
 cd /opt/saumgm/frontend
-sudo npm ci --no-audit --no-fund && sudo npm run build
+npm ci --no-audit --no-fund && npm run build
 
 # --- 8. API service (section 7)
 sudo cp /opt/saumgm/deploy/systemd/saumgm.service /etc/systemd/system/
@@ -127,9 +146,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now saumgm-notify.timer
 ```
 
-Then open `https://saumgm.example.com`, sign in with the user from step 6 and fill in Settings
-(business details, addresses, logo, sales-tax registrations). Later updates are one command:
-`sudo /opt/saumgm/deploy/update.sh` (section 10).
+Then open `https://saumgm.example.com`, sign in with the user from step 6 and fill in Admin →
+Settings (business details, addresses, logo, sales-tax registrations). To send email (invoices,
+the reminders digest), add the Resend settings to `.env` (section 4) and set the sender in
+Admin → Email. Later updates are one command: `sudo /opt/saumgm/deploy/update.sh` (section 10).
 
 ## 1. Packages
 
@@ -156,7 +176,8 @@ the options):
 
 ```sh
 sudo apt update && sudo apt install -y git
-cd /opt && sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm
+sudo install -d -o "$USER" -g "$USER" /opt/saumgm
+git clone --branch release/v2.0 https://github.com/stokkeland/saumgm.git /opt/saumgm
 cd /opt/saumgm
 ```
 
@@ -206,46 +227,33 @@ SQL
 
 ## 3. Code and Python environment
 
-Put the repository in `/opt/saumgm`. The service user only reads it, so it can belong to root
-(the commands below) or to your own admin account (see "Owned by your admin account" after the
-list). Choose one:
+Put the repository in `/opt/saumgm`. The service user only reads it, so it can belong to your
+own admin account (recommended: git then works without `sudo`, with your own SSH key if you use
+one) or to root.
 
-- **git over HTTPS (recommended; updates become `git pull`).** The repository
-  <https://github.com/stokkeland/saumgm> is public, so no key or login is needed:
+**Which version.** Clone a release branch: `release/v2.0` follows 2.0 with its fixes, and
+`update.sh` pulls whichever branch is checked out. A tag (`v2.0.0`) is one exact version that
+never moves, and `main` is the next version while it is being built; use neither for a server
+you rely on. To install an older version (say 1.0, to try the upgrade), clone its branch
+(`--branch release/v1.0`) and follow `docs/deploy/ubuntu.md` in that checkout, since each
+version's guide matches its own code; then upgrade as in [../upgrading.md](../upgrading.md).
+
+**Owned by your admin account** (recommended). Create the folder for yourself, then clone into
+it without `sudo`:
+
+- **git over HTTPS.** The repository <https://github.com/stokkeland/saumgm> is public, so no key
+  or login is needed:
   ```sh
   sudo apt install -y git                  # if not installed yet
-  cd /opt
-  sudo git clone --branch main https://github.com/stokkeland/saumgm.git saumgm
+  sudo install -d -o "$USER" -g "$USER" /opt/saumgm
+  git clone --branch release/v2.0 https://github.com/stokkeland/saumgm.git /opt/saumgm
   cd /opt/saumgm && git log -1 --oneline   # the version you now have
   ```
-- **git over SSH** (`git@github.com:stokkeland/saumgm.git`). The clone runs as root through
-  `sudo`, so root needs an SSH key that GitHub knows. A read-only deploy key is the safest:
+- **git over SSH**, with your own key that GitHub knows:
   ```sh
-  sudo ssh-keygen -t ed25519 -f /root/.ssh/saumgm_deploy -N ""
-  sudo cat /root/.ssh/saumgm_deploy.pub    # GitHub → repo → Settings → Deploy keys → Add (read-only)
-  printf 'Host github.com\n  IdentityFile /root/.ssh/saumgm_deploy\n' | sudo tee -a /root/.ssh/config
-  sudo ssh -T git@github.com               # answer "yes" once; it greets you and exits
-  cd /opt
-  sudo git clone --branch main git@github.com:stokkeland/saumgm.git saumgm
+  sudo install -d -o "$USER" -g "$USER" /opt/saumgm
+  git clone --branch release/v2.0 git@github.com:stokkeland/saumgm.git /opt/saumgm
   ```
-
-  Deploy from `main`, or from a release branch or tag (`--branch release/v1.0`) to stay on a
-  fixed version. `update.sh` pulls whichever branch is checked out.
-- **Copy from your PC** (Git Bash). Copy without `.venv`, `node_modules`, `.env` or `tmp`:
-  ```sh
-  rsync -av --exclude .git --exclude .venv --exclude node_modules --exclude tmp \
-      --exclude storage --exclude '.env' ./ admin@server:/tmp/saumgm/
-  # then on the server:  sudo mv /tmp/saumgm /opt/saumgm && sudo chown -R root:root /opt/saumgm
-  ```
-
-**Owned by your admin account** instead of root: then git works without `sudo`, with your own
-SSH key, and nothing else changes. Create the folder for yourself and run the clone and the
-`venv`/`pip` commands below without `sudo`:
-
-```sh
-sudo install -d -o "$USER" -g "$USER" /opt/saumgm
-git clone --branch release/v1.0 https://github.com/stokkeland/saumgm.git /opt/saumgm
-```
 
 Everything in `/opt/saumgm` must then belong to you, except `backend/.env` (root:saumgm, step
 4), and stay readable by others (the default umask 022 does that). `update.sh` runs git, pip
@@ -257,14 +265,35 @@ sudo chown -R "$USER": /opt/saumgm
 sudo chown root:saumgm /opt/saumgm/backend/.env && sudo chmod 640 /opt/saumgm/backend/.env
 ```
 
-Create the Python environment and install the backend:
+**Owned by root** instead: clone with `sudo git clone --branch release/v2.0 ... /opt/saumgm`,
+and put `sudo` in front of every git, `venv`, pip and npm command in this guide. Over SSH, root
+then needs its own key; a read-only deploy key is the safest:
+
+```sh
+sudo ssh-keygen -t ed25519 -f /root/.ssh/saumgm_deploy -N ""
+sudo cat /root/.ssh/saumgm_deploy.pub    # GitHub → repo → Settings → Deploy keys → Add (read-only)
+printf 'Host github.com\n  IdentityFile /root/.ssh/saumgm_deploy\n' | sudo tee -a /root/.ssh/config
+sudo ssh -T git@github.com               # answer "yes" once; it greets you and exits
+```
+
+**Copy from your PC** (Git Bash) instead of git. Copy without `.venv`, `node_modules`, `.env`
+or `tmp`:
+
+```sh
+rsync -av --exclude .git --exclude .venv --exclude node_modules --exclude tmp \
+    --exclude storage --exclude '.env' ./ admin@server:/tmp/saumgm/
+# then on the server:  sudo mv /tmp/saumgm /opt/saumgm && sudo chown -R "$USER": /opt/saumgm
+```
+
+Create the Python environment and install the backend, as the folder's owner (no `sudo` when
+that is you):
 
 ```sh
 cd /opt/saumgm
-sudo python3 -m venv backend/.venv
-sudo backend/.venv/bin/pip install --upgrade pip
-sudo backend/.venv/bin/pip install -e backend
-sudo backend/.venv/bin/python -c "import saumgm, reportlab, argon2; print('ok')"
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install --upgrade pip
+backend/.venv/bin/pip install -e backend
+backend/.venv/bin/python -c "import saumgm, reportlab, argon2; print('ok')"
 ```
 
 (The `legacy` extra, which provides the Access importer, is not needed on the server. Imports
@@ -368,16 +397,16 @@ sudo -u saumgm .venv/bin/python -m saumgm load-demo
 The frontend is static files in `frontend/dist`. Build it on either machine; the result is the
 same.
 
-- **On the server** (Node.js from `install-prereqs.sh --with-node`):
+- **On the server** (Node.js from `install-prereqs.sh --with-node`), as the folder's owner:
   ```sh
-  cd /opt/saumgm/frontend && sudo npm ci --no-audit --no-fund && sudo npm run build
+  cd /opt/saumgm/frontend && npm ci --no-audit --no-fund && npm run build
   ```
 - **On the PC**, then copy:
   ```sh
   cd frontend && npm ci && npm run build
   rsync -av --delete dist/ admin@server:/tmp/saumgm-dist/
-  # on the server:
-  sudo rsync -a --delete /tmp/saumgm-dist/ /opt/saumgm/frontend/dist/
+  # on the server, as the folder's owner:
+  rsync -a --delete /tmp/saumgm-dist/ /opt/saumgm/frontend/dist/
   ```
 
 ## 7. API service
@@ -505,10 +534,11 @@ The script:
 6. Builds the frontend, if Node.js is installed.
 7. Restarts the API and waits for the health check, which must report the newest schema.
 
-Run it with `sudo` either way: it runs git, pip and npm as the owner of `/opt/saumgm` (root or
-your admin account, see section 3) and the rest as root. When you work in the folder by hand,
-do the same: git, pip and npm as the folder's owner (with `sudo` only if that is root),
-`alembic` and `python -m saumgm` as `sudo -u saumgm`, and `systemctl` with `sudo`.
+Run it with `sudo` either way: it runs git, pip and npm as the owner of `/opt/saumgm` (your
+admin account or root, see section 3) and the rest as root. When you work in the folder by
+hand, do the same ([which account runs what](#which-account-runs-what)):
+git, pip and npm as the folder's owner (with `sudo` only if that is root), `alembic` and
+`python -m saumgm` as `sudo -u saumgm`, and `systemctl` with `sudo`.
 
 If you copy code instead of using git, run it with `--no-pull` (and copy a fresh `frontend/dist`
 if the server has no Node.js).

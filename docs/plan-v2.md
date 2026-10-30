@@ -55,7 +55,8 @@ new, and `deploy/update.sh` already runs it after a backup. Two additions:
   `.env` settings (email in 2.0), data the upgrade removes (legacy tables, see A), and anything
   to check afterwards. Every migration that deletes data says so in that file.
 
-Upgrading a **server** from 1.0 to 2.0 then becomes:
+Upgrading a **server** from 1.0 to 2.0 then becomes (the full steps, with which account runs
+each, are in docs/upgrading.md, "From 1.0 to 2.0, step by step"):
 
 ```sh
 sudo /opt/saumgm/deploy/backup.sh                         # update.sh also does this
@@ -97,6 +98,11 @@ email) and keeps each step reviewable.
 | 8 | G. Assets | new module | M |
 | 9 | H. Knowledge base | new module, uses C | M |
 | 10 | Release 2.0: `release/v2.0`, tag `v2.0.0`, upgrade the server | | S |
+
+Step 10 as done: the versions became `2.0.0` on `main`, then `release/v2.0` was created from
+it and tagged `v2.0.0`; `main` moves on to `2.1.0.dev0`. The install guide (deploy/ubuntu.md)
+clones `release/v2.0` into a folder owned by the admin account, and docs/upgrading.md has the
+1.0 to 2.0 steps.
 
 The order of 7–9 can change freely. Each module adds its own items to the reminders (I) as it
 arrives: banking (accounts not reconciled), assets (warranties ending).
