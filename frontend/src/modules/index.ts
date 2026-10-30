@@ -24,12 +24,14 @@ import { depositsModule } from './deposits/module'
 import { expensesModule } from './expenses/module'
 import { invoicesModule } from './invoices/module'
 import { paymentsModule } from './payments/module'
+import { remindersModule } from './reminders/module'
 import { reportsModule } from './reports/module'
 import { subscriptionsModule } from './subscriptions/module'
 
 /** Every module of the app. A new module is a folder with a module.tsx, plus one line here. */
 export const MODULES: AppModule[] = [
   dashboardModule,
+  remindersModule,
   contactsModule,
   invoicesModule,
   paymentsModule,

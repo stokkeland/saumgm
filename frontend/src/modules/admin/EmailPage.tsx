@@ -57,6 +57,7 @@ const KIND_LABELS: Record<string, string> = {
   receipt: 'Payment receipt',
   report: 'Report',
   test: 'Test message',
+  digest: 'Reminders digest',
 }
 
 const RECORD_LINKS: Record<string, string> = { invoice: '/invoices', payment: '/payments' }

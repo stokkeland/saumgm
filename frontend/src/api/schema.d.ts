@@ -1961,6 +1961,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reminders
+         * @description What needs doing, by section: bill clients, pay vendors, collect, documents.
+         */
+        get: operations["reminders_api_reminders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reminders/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Reminder Settings */
+        get: operations["get_reminder_settings_api_reminders_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Reminder Settings */
+        patch: operations["update_reminder_settings_api_reminders_settings_patch"];
+        trace?: never;
+    };
+    "/api/reminders/digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Digest
+         * @description The digest as `python -m saumgm notify` would send it now.
+         */
+        get: operations["preview_digest_api_reminders_digest_get"];
+        put?: never;
+        /**
+         * Send Digest
+         * @description Send the digest now, to its usual recipients, even if nothing is due.
+         */
+        post: operations["send_digest_api_reminders_digest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2708,7 +2770,7 @@ export interface components {
          * @description What an email is about; each kind has its own template (Admin -> Email).
          * @enum {string}
          */
-        EmailKind: "invoice" | "credit_note" | "receipt" | "report" | "test";
+        EmailKind: "invoice" | "credit_note" | "receipt" | "report" | "test" | "digest";
         /** EmailSettingsOut */
         EmailSettingsOut: {
             /** From Address */
@@ -4273,6 +4335,87 @@ export interface components {
             effective_from?: string | null;
             /** Effective To */
             effective_to?: string | null;
+        };
+        /** ReminderItem */
+        ReminderItem: {
+            /** Title */
+            title: string;
+            /** Date */
+            date: string | null;
+            /** Link */
+            link: string;
+            /** Amount */
+            amount: string | null;
+            /** Note */
+            note: string | null;
+            /**
+             * Flag
+             * @description overdue, autopay, expired or expiring
+             */
+            flag: string | null;
+        };
+        /** ReminderSection */
+        ReminderSection: {
+            /**
+             * Key
+             * @description bill, pay, collect, documents
+             */
+            key: string;
+            /** Title */
+            title: string;
+            /** Summary */
+            summary: string;
+            /** Link */
+            link: string;
+            /** Action Label */
+            action_label: string | null;
+            /** Action Link */
+            action_link: string | null;
+            /** Items */
+            items: components["schemas"]["ReminderItem"][];
+        };
+        /** ReminderSettingsOut */
+        ReminderSettingsOut: {
+            /** Bill Days */
+            bill_days: number;
+            /** Pay Days */
+            pay_days: number;
+            /** Recipients */
+            recipients: string[];
+            /** Owners */
+            owners: string[];
+            /** App Url */
+            app_url: string | null;
+        };
+        /** ReminderSettingsPatch */
+        ReminderSettingsPatch: {
+            /** Bill Days */
+            bill_days?: number | null;
+            /** Pay Days */
+            pay_days?: number | null;
+            /** Recipients */
+            recipients?: string[] | null;
+        };
+        /** RemindersOut */
+        RemindersOut: {
+            /**
+             * Today
+             * Format: date
+             */
+            today: string;
+            /** Last Sign In */
+            last_sign_in: string | null;
+            /**
+             * Idle Days
+             * @description Whole days since anyone signed in
+             */
+            idle_days: number | null;
+            /** Summary */
+            summary: string;
+            /** Count */
+            count: number;
+            /** Sections */
+            sections: components["schemas"]["ReminderSection"][];
         };
         /** Renewal */
         Renewal: {
@@ -10119,6 +10262,119 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reminders_api_reminders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemindersOut"];
+                };
+            };
+        };
+    };
+    get_reminder_settings_api_reminders_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderSettingsOut"];
+                };
+            };
+        };
+    };
+    update_reminder_settings_api_reminders_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReminderSettingsPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_digest_api_reminders_digest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+        };
+    };
+    send_digest_api_reminders_digest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
                 };
             };
         };

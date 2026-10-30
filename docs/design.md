@@ -257,7 +257,13 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - Status is computed, never stored: no expiry / valid / expiring (inside the reminder window) / expired. Archived = replaced by a newer document; kept on file but no longer checked. Adding a W-9, W-8, insurance or exemption certificate offers to archive the current one of that type.
 - The tax exemption (§4.7) stays the rule the tax engine uses; the certificate document is its evidence. Deleting an exemption keeps the certificate, unlinked.
 - Files can contain taxpayer ids (a sole proprietor's W-9 has an SSN): viewers see the list but cannot open files (also not through `/api/files/{id}`), every download is written to the audit log, and responses are sent `Cache-Control: no-store`. Deleting a document is owner-only and meant for mistakes.
-- `GET /api/documents/attention` lists current documents that have expired or are inside their reminder window; the dashboard shows them. **Reminders later**: a scheduled job can use the same query and `remind_days_before` to email the business (and, with email invoicing, the contact); a `reminded_at` column will record what was sent.
+- `GET /api/documents/attention` lists current documents that have expired or are inside their reminder window; they are the Documents section of the to-do list (§4.13).
+
+### 4.13 Reminders: the to-do list and the digest
+- `services/reminders.py` builds the to-do list from sections, one provider each in `SECTIONS` (a new module adds its own, as it adds its router): **Bill clients** (client subscriptions due for billing within `organization.remind_bill_days`, default 14, plus draft invoices waiting to be issued; links to the billing run), **Pay vendors** (vendor subscriptions due within `remind_pay_days`, default 10; autopay ones say "will be charged, check the account"), **Collect** (overdue invoices), **Documents** (expired or inside each document's reminder window). Billing clients and paying vendors stay separate sections. Banking (F) and assets (G) add theirs.
+- Each item has a title, date, amount, note, a flag (overdue, autopay, expired, expiring) and a link into the app. Shown on the To do page (`/todo`), shortened on the dashboard; `GET /api/reminders`.
+- **Digest email** (`EmailKind.DIGEST`): the same list grouped by section, opening with how long it has been since anyone signed in (`app_user.last_login_at`) and one sentence per section. Links need `APP_URL`. It goes to `organization.remind_to`, or else every active owner; Admin → Reminders sets the lead times and recipients, previews it and sends it now. It is logged like every email.
+- **`python -m saumgm notify`** sends it if anything is due (`--always`, `--dry-run`, `--json`, `--if-idle DAYS`, `--organization-id`), from the `saumgm-notify.timer` (daily 07:00; `@` template for instances). Nothing is remembered between runs: each day's digest is the current list.
 
 ### 4.11 Archiving
 - Invoices, payments, deposits and expenses have `archived_at` (NULL = current). Archived records stay in their tables, keep all links, and count in every report; they are only hidden from everyday lists.
@@ -270,7 +276,8 @@ Defaults chosen while building: a line with no tax category, or a category witho
 
 ## 5. Screens (v1)
 
-- **Dashboard** — open receivables, overdue, YTD sales vs expenses, upcoming subscription renewals, tax due this period.
+- **Dashboard** — open receivables, overdue, YTD sales vs expenses, upcoming subscription renewals, the to-do list (shortened), tax due this period.
+- **To do** — what needs doing, by section (§4.13); Admin → Reminders for lead times and the digest.
 - **Contacts** — searchable list with role filters; contact page with addresses, people, subscriptions, invoices, payments, expenses, balance.
 - **Catalog** — items by type, inactive toggle, merge duplicates.
 - **Subscriptions** — client subscriptions with lines and packages, the billing run; vendor subscriptions with payments.

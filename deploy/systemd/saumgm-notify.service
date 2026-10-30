@@ -1,0 +1,32 @@
+# SauMGM - Sauen Management System: billing, sales tax and bookkeeping for small businesses
+# Copyright (C) 2026 J. Thomas Stokkeland - https://www.saumgm.com/
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details. You should have received a copy of the
+# GNU General Public License along with this program (the LICENSE file); if not, see
+# <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Emails the reminders digest (python -m saumgm notify) if anything is due; started daily by
+# saumgm-notify.timer. Add --if-idle DAYS to ExecStart to send only when nobody has signed in.
+[Unit]
+Description=SauMGM reminders digest
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=saumgm
+Group=saumgm
+WorkingDirectory=/opt/saumgm/backend
+ExecStart=/opt/saumgm/backend/.venv/bin/python -m saumgm notify
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true

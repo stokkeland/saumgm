@@ -18,42 +18,15 @@ import io
 import json
 import urllib.error
 import urllib.request
-from collections.abc import Iterator
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 
 from saumgm.config import get_settings
-from saumgm.email import Attachment, EmailError, Message, ResendBackend, set_backend
+from saumgm.email import Attachment, EmailError, Message, ResendBackend
 from tests.api_helpers import contact, issued_invoice, ok, ok_list
-
-
-class Outbox:
-    """Records messages instead of sending them; can be told to fail."""
-
-    name = "test"
-
-    def __init__(self) -> None:
-        self.messages: list[Message] = []
-        self.fail_with: str | None = None
-
-    def send(self, message: Message) -> str | None:
-        if self.fail_with:
-            raise EmailError(self.fail_with)
-        self.messages.append(message)
-        return f"msg-{len(self.messages)}"
-
-
-@pytest.fixture
-def outbox(monkeypatch: pytest.MonkeyPatch) -> Iterator[Outbox]:
-    box = Outbox()
-    set_backend(box)
-    # Independent of the developer's .env.
-    monkeypatch.setattr(get_settings(), "email_from", None)
-    monkeypatch.setattr(get_settings(), "email_redirect_to", None)
-    yield box
-    set_backend(None)
+from tests.support import Outbox
 
 
 def client_with_email(client: TestClient) -> dict[str, Any]:

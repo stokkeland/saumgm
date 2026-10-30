@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     resend_api_key: str | None = None
     email_from: str | None = None
     email_redirect_to: str | None = None
+    # The address users open the app at (https://saumgm.example.com), for links in emails such
+    # as the reminders digest. Without it the digest has no links.
+    app_url: str | None = None
 
     @property
     def secure_cookies(self) -> bool:

@@ -17,15 +17,7 @@
 
 import { expect, test } from '@playwright/test'
 
-import { login, screenshot, watchErrors } from './support'
-
-/** A local date (like the business's own time zone; not UTC, which may already be tomorrow). */
-function isoInDays(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() + days)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
+import { isoInDays, login, screenshot, watchErrors } from './support'
 
 test('record a W-9 and an expiring certificate on a contact', async ({ page }) => {
   const errors = watchErrors(page)
@@ -64,18 +56,20 @@ test('record a W-9 and an expiring certificate on a contact', async ({ page }) =
   await expect(row.getByText('No file (paper copy)')).toBeVisible()
   await screenshot(page, 'contact-documents')
 
-  // the dashboard lists it
-  await page.getByRole('link', { name: 'Dashboard' }).click()
-  await expect(page.getByText('Documents expired or expiring soon')).toBeVisible()
-  await expect(page.getByRole('cell', { name: new RegExp(`COI ${tag}`) })).toBeVisible()
+  // the to-do list has it under Documents
+  await page.getByRole('link', { name: 'To do' }).click()
+  const item = page.getByRole('row', { name: new RegExp(`COI ${tag}`) })
+  await expect(item).toBeVisible()
+  await expect(item.getByText('expires soon')).toBeVisible()
 
-  // from the dashboard to the contact's documents; archiving it (replaced) takes it off the list
-  await page.getByRole('row', { name: new RegExp(`COI ${tag}`) }).getByRole('link', { name: 'Seneca Advantage' }).click()
+  // from there to the contact's documents; archiving it (replaced) takes it off the list
+  await item.getByRole('link').click()
   await expect(page).toHaveURL(/tab=documents/)
   await page.getByRole('button', { name: `Actions for COI ${tag}` }).click()
   await page.getByRole('menuitem', { name: 'Archive (replaced)' }).click()
   await expect(page.getByRole('row', { name: new RegExp(`COI ${tag}`) })).toBeHidden()
-  await page.getByRole('link', { name: 'Dashboard' }).click()
-  await expect(page.getByRole('cell', { name: new RegExp(`COI ${tag}`) })).toBeHidden()
+  await page.getByRole('link', { name: 'To do' }).click()
+  await expect(page.getByRole('heading', { name: 'To do' })).toBeVisible()
+  await expect(page.getByRole('row', { name: new RegExp(`COI ${tag}`) })).toBeHidden()
   expect(errors).toEqual([])
 })

@@ -34,6 +34,7 @@ from saumgm.api import (
     invoices,
     party_documents,
     payments,
+    reminders,
     reports,
     subscriptions,
     tax,
@@ -63,6 +64,7 @@ ROUTERS = (
     reports.router,
     party_documents.router,
     email.router,
+    reminders.router,
 )
 
 

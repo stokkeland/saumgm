@@ -72,6 +72,11 @@ class Organization(IdMixin, TimestampMixin, Base):
     email_from_address: Mapped[str | None] = mapped_column(String(255))
     email_from_name: Mapped[str | None] = mapped_column(String(200))
     email_reply_to: Mapped[str | None] = mapped_column(String(255))
+    # Reminders (Admin -> Reminders): how many days ahead the to-do list and the digest show
+    # subscriptions to bill and vendor payments due; who gets the digest (empty: the owners).
+    remind_bill_days: Mapped[int] = mapped_column(Integer, default=14, server_default="14")
+    remind_pay_days: Mapped[int] = mapped_column(Integer, default=10, server_default="10")
+    remind_to: Mapped[str | None] = mapped_column(String(1000))
 
     addresses: Mapped[list["OrganizationAddress"]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"

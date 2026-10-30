@@ -120,6 +120,11 @@ sudo chmod +x /opt/saumgm/deploy/*.sh
 sudo cp /opt/saumgm/deploy/systemd/saumgm-backup.service /opt/saumgm/deploy/systemd/saumgm-backup.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now saumgm-backup.timer
+
+# --- 11. Daily reminders digest (section 7)
+sudo cp /opt/saumgm/deploy/systemd/saumgm-notify.service /opt/saumgm/deploy/systemd/saumgm-notify.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now saumgm-notify.timer
 ```
 
 Then open `https://saumgm.example.com`, sign in with the user from step 6 and fill in Settings
@@ -276,6 +281,8 @@ DATABASE_URL=mysql+pymysql://saumgm:CHANGE-ME@127.0.0.1:3306/saumgm?charset=utf8
 STORAGE_URL=file:///var/lib/saumgm/storage
 ENVIRONMENT=production
 LOG_LEVEL=INFO
+# Where users open the app, for links in emails (the reminders digest).
+APP_URL=https://saumgm.example.com
 # Same-origin setup (Apache serves both the app and /api): no CORS needed.
 CORS_ORIGINS=
 EOF
@@ -295,6 +302,7 @@ sudo chmod 640 /opt/saumgm/backend/.env
 | `RESEND_API_KEY` | the API key from Resend (API Keys → Create, permission "Sending access") |
 | `EMAIL_FROM` | sender until one is set in the app (Admin → Email); must be on a domain verified in Resend |
 | `EMAIL_REDIRECT_TO` | test and demo installations only: every message goes to this address instead |
+| `APP_URL` | the address users open the app at (`https://saumgm.example.com`), for the links in the reminders digest; without it the digest has none |
 
 **Email through Resend:** in Resend, add and verify your domain (Domains → Add, then the DNS
 records it lists), create an API key, and put `EMAIL_URL=resend://` and `RESEND_API_KEY=...` in
@@ -385,6 +393,29 @@ curl -s http://127.0.0.1:8000/api/health        # {"status":"ok","database":"ok"
 The unit runs two uvicorn workers on `127.0.0.1:8000` as user `saumgm`, restarts the API if it
 crashes, and takes the client's real IP from Apache for the audit log. For more traffic, raise
 `--workers` (about one per CPU core).
+
+### The daily reminders digest
+
+`python -m saumgm notify` emails the to-do list (clients to bill, vendors to pay, overdue
+invoices, expiring documents) to the owners, or to the addresses in Admin → Reminders. It sends
+nothing when nothing is due. A timer runs it every morning at 07:00:
+
+```sh
+sudo cp /opt/saumgm/deploy/systemd/saumgm-notify.service /opt/saumgm/deploy/systemd/saumgm-notify.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now saumgm-notify.timer
+systemctl list-timers saumgm-notify.timer --no-pager      # when it runs next
+
+cd /opt/saumgm/backend
+sudo -u saumgm .venv/bin/python -m saumgm notify --dry-run   # print today's digest, send nothing
+sudo systemctl start saumgm-notify.service && journalctl -u saumgm-notify -n 5 --no-pager
+```
+
+It needs email to work (section 4, "Email through Resend") and `APP_URL` for its links. Other
+options: `--always` (send even if nothing is due), `--if-idle 20` (only if nobody has signed in
+for 20 days; add it to `ExecStart` in the unit), `--json` (the list as JSON, for your own
+scripts). Each digest sent is listed in Admin → Email → Sent messages. A cron line works instead
+of the timer: `0 7 * * * cd /opt/saumgm/backend && sudo -u saumgm .venv/bin/python -m saumgm notify`.
 
 ## 8. Apache and HTTPS
 
