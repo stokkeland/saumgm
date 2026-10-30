@@ -24,7 +24,8 @@ from sqlalchemy.orm import Session
 from saumgm.context import RequestContext, set_context
 from saumgm.demo import DEMO_PASSWORD, DemoError, load_demo
 from saumgm.enums import PartyRoleType
-from saumgm.models import Base, Invoice, Party, PartyRole
+from saumgm.models import BankAccount, Base, Invoice, Party, PartyRole
+from saumgm.services import banking
 from saumgm.services import invoices as invoice_service
 from tests.api_helpers import ok, ok_list
 
@@ -91,3 +92,17 @@ def test_demo_users_can_sign_in_and_see_it(demo: Session, client: TestClient) ->
 def test_demo_needs_an_empty_database(demo: Session) -> None:
     with pytest.raises(DemoError):
         load_demo(demo, today=TODAY)
+
+
+def test_demo_banking(demo: Session) -> None:
+    accounts = {a.name: a for a in demo.scalars(select(BankAccount))}
+    sums = banking.balances(demo, list(accounts.values()))
+    card, checking = accounts["Business card"], accounts["Operating checking"]
+    # The card is paid in full on the 25th: what is owed now is what was charged since.
+    assert Decimal(0) > sums[card.id].balance > Decimal(-1000)
+    assert sums[checking.id].balance > Decimal(0)
+    last = banking.last_reconciliations(demo, [card.id, checking.id])
+    assert (last[card.id].statement_date, last[checking.id].statement_date) == (
+        date(2026, 9, 30),
+        date(2026, 8, 31),
+    )

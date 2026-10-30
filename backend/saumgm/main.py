@@ -24,6 +24,7 @@ from saumgm import __version__
 from saumgm.api import (
     audit,
     auth,
+    banking,
     catalog,
     contacts,
     dashboard,
@@ -55,6 +56,7 @@ ROUTERS = (
     invoices.router,
     payments.router,
     expenses.router,
+    banking.router,
     subscriptions.router,
     vendor_subscriptions.router,
     tax.router,

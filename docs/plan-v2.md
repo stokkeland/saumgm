@@ -396,6 +396,13 @@ account paid what). To match history:
 Entries dated before the start date are refused, so the opening balance always means "the
 balance on that day".
 
+Built in part F as described, reconciling included, with these details: a reconciled line is
+locked (and so is the deposit or expense behind it) until the owner undoes the latest
+reconciliation; the start date and opening balance cannot change while reconciliations exist; a
+free line going out can be made an expense; free entries count in reports only once they are
+expenses; the to-do list's Banking section uses a new lead time (35 days). Imported deposits
+and expenses get no account; a deposit's page can add one later.
+
 ### G. Assets (CMDB, first step)
 
 An inventory of equipment and licenses, built so that a fuller CMDB (relationships, configuration)

@@ -174,3 +174,26 @@ class EmailStatus(StrEnum):
 class AuditActor(StrEnum):
     USER = "user"
     SYSTEM = "system"
+
+
+class BankAccountKind(StrEnum):
+    CHECKING = "checking"
+    SAVINGS = "savings"
+    CREDIT_CARD = "credit_card"  # the balance is what is owed (negative = owed)
+    OTHER = "other"  # PayPal, a payment processor, cash
+
+
+class BankEntryStatus(StrEnum):
+    UNCLEARED = "uncleared"  # recorded here, not yet seen on the bank's side
+    CLEARED = "cleared"  # seen at the bank
+    RECONCILED = "reconciled"  # matched to a statement; locked
+
+
+class BankEntryKind(StrEnum):
+    """Where a register line comes from. Linked lines follow their deposit, expense or transfer."""
+
+    MANUAL = "manual"  # a free entry: fees, interest, owner draws, odd items
+    DEPOSIT = "deposit"
+    EXPENSE = "expense"
+    TRANSFER = "transfer"
+    ADJUSTMENT = "adjustment"  # brings the register in line with a statement

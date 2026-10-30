@@ -69,3 +69,19 @@ export function jurisdictionOptions(
 ) {
   return (rows ?? []).map((j) => ({ value: String(j.id), label: `${j.code} — ${j.name}` }))
 }
+
+/** Open bank and card accounts, for "paid from" and "deposit to" choices. */
+export function useBankAccounts() {
+  return useQuery({
+    queryKey: ['bank-accounts', 'open'],
+    queryFn: async () => unwrap(await api.GET('/api/bank-accounts')),
+    staleTime: 30_000,
+  })
+}
+
+export function bankAccountOptions(rows: { id: number; name: string; number_last4: string | null }[] | undefined) {
+  return (rows ?? []).map((a) => ({
+    value: String(a.id),
+    label: a.number_last4 ? `${a.name} (…${a.number_last4})` : a.name,
+  }))
+}

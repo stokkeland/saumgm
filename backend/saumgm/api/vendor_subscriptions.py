@@ -35,6 +35,7 @@ from saumgm.api.deps import Auth, DbSession, Editor, Reader
 from saumgm.enums import SubscriptionStatus
 from saumgm.models import (
     Account,
+    BankAccount,
     Expense,
     Organization,
     Party,
@@ -51,6 +52,7 @@ from saumgm.schemas.subscriptions import (
     VendorSubscriptionOut,
     VendorSubscriptionPatch,
 )
+from saumgm.services import banking
 from saumgm.services import subscriptions as service
 
 router = APIRouter(prefix="/vendor-subscriptions", tags=["vendor subscriptions"])
@@ -61,6 +63,7 @@ def vendor_subscription_out(db: Session, sub: VendorSubscription) -> VendorSubsc
     org = db.get(Organization, sub.organization_id)
     assert org is not None
     account = db.get(Account, sub.expense_account_id) if sub.expense_account_id else None
+    paid_from = db.get(BankAccount, sub.paid_from_account_id) if sub.paid_from_account_id else None
     last_paid, payments = db.execute(
         select(func.max(Expense.expense_date), func.count()).where(
             Expense.vendor_subscription_id == sub.id
@@ -88,6 +91,8 @@ def vendor_subscription_out(db: Session, sub: VendorSubscription) -> VendorSubsc
         expense_account_id=sub.expense_account_id,
         expense_account_code=account.code if account else None,
         expense_account_name=account.name if account else None,
+        paid_from_account_id=sub.paid_from_account_id,
+        paid_from_name=paid_from.name if paid_from else None,
         autopay=sub.autopay,
         auto_renew=sub.auto_renew,
         status=sub.status,
@@ -115,6 +120,8 @@ def _check_refs(
         get_owned(db, Party, body.party_id, auth.organization_id)
     if body.expense_account_id is not None:
         get_owned(db, Account, body.expense_account_id, auth.organization_id)
+    if body.paid_from_account_id is not None:
+        get_owned(db, BankAccount, body.paid_from_account_id, auth.organization_id)
 
 
 @router.get("")
@@ -210,12 +217,21 @@ def record_payment(
     sub = get_owned(db, VendorSubscription, subscription_id, auth.organization_id)
     if body.expense_account_id is not None:
         get_owned(db, Account, body.expense_account_id, auth.organization_id)
+    paid_from = (
+        body.paid_from_account_id
+        if "paid_from_account_id" in body.model_fields_set
+        else sub.paid_from_account_id
+    )
+    if paid_from is not None:
+        get_owned(db, BankAccount, paid_from, auth.organization_id)
     try:
         expense = service.record_payment(
             db, org, sub, body.paid_date, amount=body.amount, account_id=body.expense_account_id,
-            reference=body.reference, description=body.description,
+            reference=body.reference, description=body.description, paid_from=paid_from,
         )  # fmt: skip
-    except service.VendorPaymentError as exc:
+        banking.sync_expense(db, expense)
+    except (service.VendorPaymentError, banking.BankingError) as exc:
+        db.rollback()  # the next due date stays where it was
         raise conflict(str(exc)) from exc
     db.commit()
     return VendorPaymentOut(expense_id=expense.id, subscription=vendor_subscription_out(db, sub))

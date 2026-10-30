@@ -41,6 +41,11 @@ class Expense(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMi
         BigInteger, fk("vendor_subscription.id"), index=True
     )
 
+    # Paid from this bank or card account; its register gets a line for the total.
+    paid_from_account_id: Mapped[int | None] = mapped_column(
+        BigInteger, fk("bank_account.id"), index=True
+    )
+
     lines: Mapped[list["ExpenseLine"]] = relationship(
         back_populates="expense", cascade="all, delete-orphan", order_by="ExpenseLine.sort_order"
     )

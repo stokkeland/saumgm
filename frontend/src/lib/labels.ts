@@ -97,3 +97,30 @@ export const DOCUMENT_TYPES = [
   { value: 'contract', label: 'Contract / agreement' },
   { value: 'other', label: 'Other' },
 ]
+
+export const BANK_ACCOUNT_KINDS = [
+  { value: 'checking', label: 'Checking' },
+  { value: 'savings', label: 'Savings' },
+  { value: 'credit_card', label: 'Credit card' },
+  { value: 'other', label: 'PayPal / other' },
+]
+
+export const BANK_ENTRY_STATUSES = [
+  { value: 'uncleared', label: 'Uncleared' },
+  { value: 'cleared', label: 'Cleared' },
+  { value: 'reconciled', label: 'Reconciled' },
+]
+
+export const BANK_ENTRY_STATUS_COLORS: Record<string, string> = {
+  uncleared: 'gray',
+  cleared: 'blue',
+  reconciled: 'green',
+}
+
+export const BANK_ENTRY_KINDS = [
+  { value: 'manual', label: 'Entry' },
+  { value: 'deposit', label: 'Deposit' },
+  { value: 'expense', label: 'Expense' },
+  { value: 'transfer', label: 'Transfer' },
+  { value: 'adjustment', label: 'Balance adjustment' },
+]

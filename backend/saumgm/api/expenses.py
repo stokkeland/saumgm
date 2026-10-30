@@ -38,7 +38,7 @@ from saumgm.api.common import (
     set_archived,
 )
 from saumgm.api.deps import Auth, DbSession, Editor, Owner, Reader
-from saumgm.models import Account, Expense, ExpenseLine, Organization, Party
+from saumgm.models import Account, BankAccount, Expense, ExpenseLine, Organization, Party
 from saumgm.schemas.money import (
     ExpenseCreate,
     ExpenseLineIn,
@@ -46,6 +46,7 @@ from saumgm.schemas.money import (
     ExpenseOut,
     ExpensePatch,
 )
+from saumgm.services import banking
 from saumgm.services.money import ZERO
 from saumgm.timeutil import today_in
 
@@ -58,6 +59,7 @@ class Lookups:
 
     parties: dict[int, str]
     accounts: dict[int, Account]
+    banks: dict[int, str]
 
     @classmethod
     def load(cls, db: Session, expenses: Sequence[Expense]) -> "Lookups":
@@ -68,7 +70,13 @@ class Lookups:
             for pid, name in db.execute(select(Party.id, Party.name).where(Party.id.in_(party_ids)))
         }
         accounts = {a.id: a for a in db.scalars(select(Account).where(Account.id.in_(account_ids)))}
-        return cls(parties, accounts)
+        bank_ids = {e.paid_from_account_id for e in expenses if e.paid_from_account_id}
+        banks = dict(
+            db.execute(
+                select(BankAccount.id, BankAccount.name).where(BankAccount.id.in_(bank_ids))
+            ).all()
+        )
+        return cls(parties, accounts, banks)
 
 
 def expense_out(db: Session, expense: Expense, lookups: Lookups | None = None) -> ExpenseOut:
@@ -101,6 +109,10 @@ def expense_out(db: Session, expense: Expense, lookups: Lookups | None = None) -
             for line in expense.lines
         ],
         vendor_subscription_id=expense.vendor_subscription_id,
+        paid_from_account_id=expense.paid_from_account_id,
+        paid_from_name=lookups.banks.get(expense.paid_from_account_id)
+        if expense.paid_from_account_id
+        else None,
         archived_at=expense.archived_at,
         legacy_data=expense.legacy_data,
     )
@@ -127,6 +139,20 @@ def _check_parties(db: Session, auth: Auth, *party_ids: int | None) -> None:
     for party_id in party_ids:
         if party_id is not None:
             get_owned(db, Party, party_id, auth.organization_id)
+
+
+def _check_paid_from(db: Session, auth: Auth, account_id: int | None) -> None:
+    if account_id is not None:
+        get_owned(db, BankAccount, account_id, auth.organization_id)
+
+
+def _sync(db: Session, expense: Expense) -> None:
+    """The expense's line in the register of the account it was paid from."""
+    try:
+        banking.sync_expense(db, expense)
+    except banking.BankingError as exc:
+        db.rollback()  # the deposit or expense change stays undone, not only the line
+        raise conflict(str(exc)) from None
 
 
 @router.get("")
@@ -174,6 +200,7 @@ def create_expense(body: ExpenseCreate, auth: Editor, db: DbSession) -> ExpenseO
     org = db.get(Organization, auth.organization_id)
     assert org is not None
     _check_parties(db, auth, body.vendor_party_id, body.for_party_id)
+    _check_paid_from(db, auth, body.paid_from_account_id)
     expense = Expense(
         organization_id=auth.organization_id,
         expense_date=body.expense_date,
@@ -182,10 +209,12 @@ def create_expense(body: ExpenseCreate, auth: Editor, db: DbSession) -> ExpenseO
         for_party_id=body.for_party_id if body.for_party_id is not None else org.self_party_id,
         reference=body.reference,
         description=body.description,
+        paid_from_account_id=body.paid_from_account_id,
     )
     expense.lines = _lines(db, auth, body.lines)
     db.add(expense)
     db.flush()
+    _sync(db, expense)
     db.commit()
     return expense_out(db, expense)
 
@@ -200,10 +229,12 @@ def update_expense(expense_id: int, body: ExpensePatch, auth: Editor, db: DbSess
     expense = get_owned(db, Expense, expense_id, auth.organization_id)
     ensure_current(expense)
     _check_parties(db, auth, body.vendor_party_id, body.for_party_id)
+    _check_paid_from(db, auth, body.paid_from_account_id)
     apply_changes(expense, body, exclude={"lines"})
     if body.lines is not None:
         expense.lines = _lines(db, auth, body.lines)
     db.flush()
+    _sync(db, expense)
     db.commit()
     return expense_out(db, expense)
 
@@ -212,6 +243,11 @@ def update_expense(expense_id: int, body: ExpensePatch, auth: Editor, db: DbSess
 def delete_expense(expense_id: int, auth: Editor, db: DbSession) -> None:
     expense = get_owned(db, Expense, expense_id, auth.organization_id)
     ensure_current(expense)
+    try:
+        banking.before_delete(db, expense=expense)
+    except banking.BankingError as exc:
+        db.rollback()  # the deposit or expense change stays undone, not only the line
+        raise conflict(str(exc)) from None
     db.delete(expense)
     db.commit()
 

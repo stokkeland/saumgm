@@ -104,7 +104,7 @@ export function ToDoPage() {
     <>
       <PageHeader
         title="To do"
-        subtitle="Clients to bill, vendors to pay, invoices to collect, documents to renew"
+        subtitle="Clients to bill, vendors to pay, invoices to collect, documents to renew, accounts to reconcile"
         actions={
           isOwner && (
             <Button component={Link} to="/admin/reminders" variant="light" leftSection={<IconSettings size={16} />}>

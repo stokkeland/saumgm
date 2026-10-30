@@ -930,6 +930,172 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bank-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Bank Accounts */
+        get: operations["list_bank_accounts_api_bank_accounts_get"];
+        put?: never;
+        /** Create Bank Account */
+        post: operations["create_bank_account_api_bank_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Bank Account */
+        get: operations["get_bank_account_api_bank_accounts__account_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Bank Account
+         * @description Only an account nothing refers to yet; otherwise mark it inactive (closed).
+         */
+        delete: operations["delete_bank_account_api_bank_accounts__account_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Bank Account */
+        patch: operations["update_bank_account_api_bank_accounts__account_id__patch"];
+        trace?: never;
+    };
+    "/api/bank-accounts/{account_id}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Entries
+         * @description Newest first, each line with the balance after it.
+         */
+        get: operations["list_entries_api_bank_accounts__account_id__entries_get"];
+        put?: never;
+        /**
+         * Create Entry
+         * @description A free entry (fee, interest, owner draw...) or a balance adjustment.
+         */
+        post: operations["create_entry_api_bank_accounts__account_id__entries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-entries/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Entry
+         * @description A free entry, or both sides of a transfer.
+         */
+        delete: operations["delete_entry_api_bank_entries__entry_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Entry */
+        patch: operations["update_entry_api_bank_entries__entry_id__patch"];
+        trace?: never;
+    };
+    "/api/bank-entries/{entry_id}/expense": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Entry To Expense
+         * @description Make an expense (paid from this account) of a free line; the line stays, linked.
+         */
+        post: operations["entry_to_expense_api_bank_entries__entry_id__expense_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-transfers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Transfer
+         * @description Money between two accounts, both sides at once. Paying a credit card is a transfer.
+         */
+        post: operations["create_transfer_api_bank_transfers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-accounts/{account_id}/reconciliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Reconciliations */
+        get: operations["list_reconciliations_api_bank_accounts__account_id__reconciliations_get"];
+        put?: never;
+        /**
+         * Reconcile
+         * @description Match the register with a statement: the ticked lines become reconciled.
+         */
+        post: operations["reconcile_api_bank_accounts__account_id__reconciliations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-reconciliations/{rec_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Undo Reconciliation
+         * @description Undo the latest reconciliation of an account; its lines go back to cleared.
+         */
+        delete: operations["undo_reconciliation_api_bank_reconciliations__rec_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subscriptions": {
         parameters: {
             query?: never;
@@ -2266,6 +2432,202 @@ export interface components {
             /** Ip Address */
             ip_address: string | null;
         };
+        /** BankAccountCreate */
+        BankAccountCreate: {
+            /**
+             * Party Id
+             * @description The bank (a contact)
+             */
+            party_id?: number | null;
+            /** Name */
+            name: string;
+            kind: components["schemas"]["BankAccountKind"];
+            /** Number Last4 */
+            number_last4?: string | null;
+            /**
+             * Opening Date
+             * Format: date
+             * @description The register starts here; no lines before it
+             */
+            opening_date: string;
+            /**
+             * Opening Balance
+             * @description Negative on a card: owed
+             * @default 0
+             */
+            opening_balance: number | string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * BankAccountKind
+         * @enum {string}
+         */
+        BankAccountKind: "checking" | "savings" | "credit_card" | "other";
+        /** BankAccountOut */
+        BankAccountOut: {
+            /** Id */
+            id: number;
+            /** Party Id */
+            party_id: number | null;
+            /** Bank Name */
+            bank_name: string | null;
+            /** Name */
+            name: string;
+            kind: components["schemas"]["BankAccountKind"];
+            /** Number Last4 */
+            number_last4: string | null;
+            /**
+             * Opening Date
+             * Format: date
+             */
+            opening_date: string;
+            /** Opening Balance */
+            opening_balance: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Notes */
+            notes: string | null;
+            /** Balance */
+            balance: string;
+            /** Cleared Balance */
+            cleared_balance: string;
+            /** Reconciled Balance */
+            reconciled_balance: string;
+            /** Uncleared Count */
+            uncleared_count: number;
+            /** Last Reconciled Date */
+            last_reconciled_date: string | null;
+            /** Last Statement Balance */
+            last_statement_balance: string | null;
+        };
+        /** BankAccountPatch */
+        BankAccountPatch: {
+            /** Party Id */
+            party_id?: number | null;
+            /** Name */
+            name?: string | null;
+            kind?: components["schemas"]["BankAccountKind"] | null;
+            /** Number Last4 */
+            number_last4?: string | null;
+            /** Opening Date */
+            opening_date?: string | null;
+            /** Opening Balance */
+            opening_balance?: number | string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** BankEntryCreate */
+        BankEntryCreate: {
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /**
+             * Amount
+             * @description Positive: money in; negative: money out (or a charge)
+             */
+            amount: number | string;
+            /** Payee */
+            payee?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Reference */
+            reference?: string | null;
+            /**
+             * Account Id
+             * @description Category: an account from the chart
+             */
+            account_id?: number | null;
+            /**
+             * Status
+             * @default uncleared
+             * @enum {string}
+             */
+            status: "uncleared" | "cleared";
+            /**
+             * Kind
+             * @default manual
+             * @enum {string}
+             */
+            kind: "manual" | "adjustment";
+        };
+        /**
+         * BankEntryKind
+         * @description Where a register line comes from. Linked lines follow their deposit, expense or transfer.
+         * @enum {string}
+         */
+        BankEntryKind: "manual" | "deposit" | "expense" | "transfer" | "adjustment";
+        /** BankEntryOut */
+        BankEntryOut: {
+            /** Id */
+            id: number;
+            /** Bank Account Id */
+            bank_account_id: number;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Amount */
+            amount: string;
+            /** Payee */
+            payee: string | null;
+            /** Description */
+            description: string | null;
+            /** Reference */
+            reference: string | null;
+            /** Account Id */
+            account_id: number | null;
+            /** Account Name */
+            account_name: string | null;
+            status: components["schemas"]["BankEntryStatus"];
+            kind: components["schemas"]["BankEntryKind"];
+            /** Deposit Id */
+            deposit_id: number | null;
+            /** Expense Id */
+            expense_id: number | null;
+            /** Transfer Entry Id */
+            transfer_entry_id: number | null;
+            /** Transfer Account Id */
+            transfer_account_id: number | null;
+            /** Transfer Account Name */
+            transfer_account_name: string | null;
+            /** Reconciliation Id */
+            reconciliation_id: number | null;
+            /** Running Balance */
+            running_balance: string;
+        };
+        /** BankEntryPatch */
+        BankEntryPatch: {
+            /** Entry Date */
+            entry_date?: string | null;
+            /** Amount */
+            amount?: number | string | null;
+            /** Payee */
+            payee?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Reference */
+            reference?: string | null;
+            /** Account Id */
+            account_id?: number | null;
+            /** Status */
+            status?: ("uncleared" | "cleared") | null;
+        };
+        /**
+         * BankEntryStatus
+         * @enum {string}
+         */
+        BankEntryStatus: "uncleared" | "cleared" | "reconciled";
         /** BillingRunInvoice */
         BillingRunInvoice: {
             /** Amount Paid */
@@ -2603,6 +2965,11 @@ export interface components {
             deposit_date: string;
             /** Bank Party Id */
             bank_party_id?: number | null;
+            /**
+             * Bank Account Id
+             * @description Adds the deposit to its register
+             */
+            bank_account_id?: number | null;
             /** Notes */
             notes?: string | null;
             /**
@@ -2640,6 +3007,8 @@ export interface components {
             deposit_date: string | null;
             /** Bank Party Id */
             bank_party_id: number | null;
+            /** Bank Account Id */
+            bank_account_id: number | null;
             /** Notes */
             notes: string | null;
             /** Total */
@@ -2657,6 +3026,8 @@ export interface components {
             deposit_date?: string | null;
             /** Bank Party Id */
             bank_party_id?: number | null;
+            /** Bank Account Id */
+            bank_account_id?: number | null;
             /** Notes */
             notes?: string | null;
             /** Payment Ids */
@@ -2874,6 +3245,11 @@ export interface components {
             reference?: string | null;
             /** Description */
             description?: string | null;
+            /**
+             * Paid From Account Id
+             * @description Adds it to that register
+             */
+            paid_from_account_id?: number | null;
             /** Lines */
             lines: components["schemas"]["ExpenseLineIn"][];
         };
@@ -2930,6 +3306,10 @@ export interface components {
             lines: components["schemas"]["ExpenseLineOut"][];
             /** Vendor Subscription Id */
             vendor_subscription_id: number | null;
+            /** Paid From Account Id */
+            paid_from_account_id: number | null;
+            /** Paid From Name */
+            paid_from_name: string | null;
             /** Archived At */
             archived_at: string | null;
             /** Legacy Data */
@@ -2951,6 +3331,8 @@ export interface components {
             reference?: string | null;
             /** Description */
             description?: string | null;
+            /** Paid From Account Id */
+            paid_from_account_id?: number | null;
             /** Lines */
             lines?: components["schemas"]["ExpenseLineIn"][] | null;
         };
@@ -3799,6 +4181,17 @@ export interface components {
             /** Offset */
             offset: number;
         };
+        /** Page[BankEntryOut] */
+        Page_BankEntryOut_: {
+            /** Items */
+            items: components["schemas"]["BankEntryOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
         /** Page[CatalogItemOut] */
         Page_CatalogItemOut_: {
             /** Items */
@@ -4280,6 +4673,47 @@ export interface components {
             /** Net Profit */
             net_profit: string;
         };
+        /** ReconcileIn */
+        ReconcileIn: {
+            /**
+             * Statement Date
+             * Format: date
+             */
+            statement_date: string;
+            /**
+             * Statement Balance
+             * @description The ending balance on the statement
+             */
+            statement_balance: number | string;
+            /**
+             * Entry Ids
+             * @description The lines that appear on the statement
+             */
+            entry_ids: number[];
+        };
+        /** ReconciliationOut */
+        ReconciliationOut: {
+            /** Id */
+            id: number;
+            /** Bank Account Id */
+            bank_account_id: number;
+            /**
+             * Statement Date
+             * Format: date
+             */
+            statement_date: string;
+            /** Statement Balance */
+            statement_balance: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string | null;
+            /** Entries */
+            entries: number;
+        };
         /** RegistrationIn */
         RegistrationIn: {
             /** Jurisdiction Id */
@@ -4358,7 +4792,7 @@ export interface components {
         ReminderSection: {
             /**
              * Key
-             * @description bill, pay, collect, documents
+             * @description bill, pay, collect, documents, banking
              */
             key: string;
             /** Title */
@@ -4380,6 +4814,8 @@ export interface components {
             bill_days: number;
             /** Pay Days */
             pay_days: number;
+            /** Reconcile Days */
+            reconcile_days: number;
             /** Recipients */
             recipients: string[];
             /** Owners */
@@ -4393,6 +4829,8 @@ export interface components {
             bill_days?: number | null;
             /** Pay Days */
             pay_days?: number | null;
+            /** Reconcile Days */
+            reconcile_days?: number | null;
             /** Recipients */
             recipients?: string[] | null;
         };
@@ -4956,6 +5394,39 @@ export interface components {
             /** To */
             to?: string | null;
         };
+        /** ToExpenseIn */
+        ToExpenseIn: {
+            /**
+             * Account Id
+             * @description Empty: the line's category
+             */
+            account_id?: number | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+        };
+        /** TransferIn */
+        TransferIn: {
+            /** From Account Id */
+            from_account_id: number;
+            /** To Account Id */
+            to_account_id: number;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Amount */
+            amount: number | string;
+            /** Description */
+            description?: string | null;
+            /** Reference */
+            reference?: string | null;
+        };
+        /** TransferOut */
+        TransferOut: {
+            out: components["schemas"]["BankEntryOut"];
+            into: components["schemas"]["BankEntryOut"];
+        };
         /** UndoWriteOffRequest */
         UndoWriteOffRequest: {
             /** Reason */
@@ -5057,6 +5528,11 @@ export interface components {
              * @description Empty: the subscription's account
              */
             expense_account_id?: number | null;
+            /**
+             * Paid From Account Id
+             * @description Left out: the subscription's usual account; null: none
+             */
+            paid_from_account_id?: number | null;
             /** Reference */
             reference?: string | null;
             /** Description */
@@ -5078,6 +5554,11 @@ export interface components {
             end_date?: string | null;
             /** Expense Account Id */
             expense_account_id?: number | null;
+            /**
+             * Paid From Account Id
+             * @description Usual bank or card account
+             */
+            paid_from_account_id?: number | null;
             /**
              * Autopay
              * @default false
@@ -5112,6 +5593,11 @@ export interface components {
             /** Expense Account Id */
             expense_account_id?: number | null;
             /**
+             * Paid From Account Id
+             * @description Usual bank or card account
+             */
+            paid_from_account_id?: number | null;
+            /**
              * Autopay
              * @default false
              */
@@ -5143,6 +5629,8 @@ export interface components {
             expense_account_code: string | null;
             /** Expense Account Name */
             expense_account_name: string | null;
+            /** Paid From Name */
+            paid_from_name: string | null;
             /** Last Paid Date */
             last_paid_date: string | null;
             /** Payments */
@@ -5168,6 +5656,8 @@ export interface components {
             end_date?: string | null;
             /** Expense Account Id */
             expense_account_id?: number | null;
+            /** Paid From Account Id */
+            paid_from_account_id?: number | null;
             /** Autopay */
             autopay?: boolean | null;
             /** Auto Renew */
@@ -7743,6 +8233,467 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ExpenseOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_bank_accounts_api_bank_accounts_get: {
+        parameters: {
+            query?: {
+                /** @description Empty: open and closed accounts */
+                active?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_bank_account_api_bank_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankAccountCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_bank_account_api_bank_accounts__account_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_bank_account_api_bank_accounts__account_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_bank_account_api_bank_accounts__account_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankAccountPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_entries_api_bank_accounts__account_id__entries_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                status?: components["schemas"]["BankEntryStatus"] | null;
+                /** @description Payee, description or reference */
+                q?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_BankEntryOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_entry_api_bank_accounts__account_id__entries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankEntryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankEntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_entry_api_bank_entries__entry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_entry_api_bank_entries__entry_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankEntryPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankEntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    entry_to_expense_api_bank_entries__entry_id__expense_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ToExpenseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankEntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_transfer_api_bank_transfers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransferOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reconciliations_api_bank_accounts__account_id__reconciliations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_api_bank_accounts__account_id__reconciliations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    undo_reconciliation_api_bank_reconciliations__rec_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rec_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

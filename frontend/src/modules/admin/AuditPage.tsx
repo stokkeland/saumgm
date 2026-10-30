@@ -31,7 +31,7 @@ const LIMIT = 100
 
 const ENTITY_TYPES = [
   'party', 'invoice', 'invoice_line', 'payment', 'deposit', 'expense', 'catalog_item',
-  'subscription', 'vendor_subscription', 'catalog_package', 'account', 'organization', 'app_user', 'tax_rate', 'login',
+  'subscription', 'vendor_subscription', 'bank_account', 'bank_reconciliation', 'catalog_package', 'account', 'organization', 'app_user', 'tax_rate', 'login',
 ]
 const ACTIONS = [
   'create', 'update', 'delete', 'issue', 'void', 'revise', 'archive', 'login', 'login_failed',

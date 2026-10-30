@@ -18,6 +18,7 @@
 from saumgm.db import Base
 from saumgm.models.accounts import Account
 from saumgm.models.audit import AuditLog
+from saumgm.models.banking import BankAccount, BankEntry, BankReconciliation
 from saumgm.models.catalog import CatalogItem, CatalogPackage, CatalogPackageItem, RevenueCategory
 from saumgm.models.email import EmailMessage, EmailTemplate
 from saumgm.models.expenses import Expense, ExpenseAttachment, ExpenseLine
@@ -48,6 +49,9 @@ __all__ = [
     "Account",
     "AuditLog",
     "AuthSession",
+    "BankAccount",
+    "BankEntry",
+    "BankReconciliation",
     "Base",
     "CatalogItem",
     "CatalogPackage",

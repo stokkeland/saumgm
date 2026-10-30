@@ -152,6 +152,7 @@ class VendorSubscriptionFields(BaseModel):
     next_due_date: date | None = None
     end_date: date | None = None
     expense_account_id: int | None = None
+    paid_from_account_id: int | None = Field(None, description="Usual bank or card account")
     autopay: bool = False
     auto_renew: bool = True
     status: SubscriptionStatus = SubscriptionStatus.ACTIVE
@@ -174,6 +175,7 @@ class VendorSubscriptionPatch(BaseModel):
     next_due_date: date | None = None
     end_date: date | None = None
     expense_account_id: int | None = None
+    paid_from_account_id: int | None = None
     autopay: bool | None = None
     auto_renew: bool | None = None
     status: SubscriptionStatus | None = None
@@ -201,6 +203,7 @@ class VendorSubscriptionOut(VendorSubscriptionFields):
     monthly_amount: Amount
     expense_account_code: str | None
     expense_account_name: str | None
+    paid_from_name: str | None
     last_paid_date: date | None
     payments: int
     used_by: list[UsedBy]
@@ -212,6 +215,9 @@ class VendorPaymentIn(BaseModel):
     paid_date: date
     amount: Amount | None = _amount(default=None, gt=0, description="Empty: the usual amount")
     expense_account_id: int | None = Field(None, description="Empty: the subscription's account")
+    paid_from_account_id: int | None = Field(
+        None, description="Left out: the subscription's usual account; null: none"
+    )
     reference: str | None = Field(None, max_length=100)
     description: str | None = None
 
