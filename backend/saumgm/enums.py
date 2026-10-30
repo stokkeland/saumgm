@@ -164,6 +164,7 @@ class EmailKind(StrEnum):
     REPORT = "report"
     TEST = "test"
     DIGEST = "digest"  # the reminders digest (`python -m saumgm notify`)
+    ARTICLE = "article"  # a knowledge base article
 
 
 class EmailStatus(StrEnum):
@@ -214,3 +215,15 @@ class AssetFieldType(StrEnum):
     NUMBER = "number"
     DATE = "date"
     BOOL = "bool"
+
+
+class ArticleStatus(StrEnum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+
+
+class ArticleVisibility(StrEnum):
+    """Internal articles are only for the business; shareable ones can be emailed to clients."""
+
+    INTERNAL = "internal"
+    SHAREABLE = "shareable"

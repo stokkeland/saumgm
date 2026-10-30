@@ -13,7 +13,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""PDF documents: invoices and credit notes, payment receipts, deposit slips, reports.
+"""PDF documents: invoices and credit notes, payment receipts, deposit slips, reports, articles.
 
 Everything business-specific comes from the organization's settings (logo, name, addresses valid on
 the document date, "payable to", footer, locale and currency), so the layout works for anyone.
@@ -38,6 +38,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import (
     Flowable,
+    HRFlowable,
     Image,
     KeepTogether,
     Paragraph,
@@ -49,10 +50,12 @@ from reportlab.platypus import (
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from saumgm import markup
 from saumgm.enums import AddressType, InvoiceKind, InvoiceStatus
 from saumgm.models import (
     Deposit,
     Invoice,
+    KbArticle,
     Organization,
     OrganizationAddress,
     Party,
@@ -642,3 +645,31 @@ def report_pdf(
         story += [Spacer(1, 12), text(report.note, SMALL)]
     footer = f"{org.display_name} · {report.title} · generated {f.timestamp(generated)}"
     return build(story, footer)
+
+
+# -- knowledge base article -----------------------------------------------------------------------
+
+ARTICLE_TITLE = ParagraphStyle(
+    "article-title", parent=NAME, fontSize=18, leading=22, textColor=ACCENT, spaceAfter=2
+)
+
+
+def article_pdf(session: Session, org: Organization, article: KbArticle) -> bytes:
+    """The article as a document for a client: the business's logo or name, then the text with
+    the article's own images. Links inside the app are plain text on paper."""
+    from saumgm.services.knowledge import image_loader  # services import this module
+
+    f = Formatter(org)
+    width = LETTER[0] - 1.3 * inch
+    story: list[Flowable] = []
+    image = logo(session, org, 2.2 * inch, 0.6 * inch)
+    story.append(image if image else text(org.display_name, BOLD))
+    story += [
+        Spacer(1, 12),
+        text(article.title, ARTICLE_TITLE),
+        text(f"Updated {f.date(article.updated_at.date())}", SMALL),
+        HRFlowable(width="100%", thickness=0.75, color=ACCENT, spaceBefore=6, spaceAfter=8),
+    ]
+    styles = markup.Styles(BODY, ACCENT)
+    story += markup.to_flowables(article.body, styles, width, image_loader(session, article))
+    return build(story, f"{org.display_name} · {article.title}")

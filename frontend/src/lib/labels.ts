@@ -147,3 +147,13 @@ export const ASSET_FIELD_TYPES = [
   { value: 'date', label: 'Date' },
   { value: 'bool', label: 'Yes / no' },
 ]
+
+export const ARTICLE_STATUSES = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'published', label: 'Published' },
+]
+
+export const ARTICLE_VISIBILITIES = [
+  { value: 'internal', label: 'Internal' },
+  { value: 'shareable', label: 'Shareable' },
+]

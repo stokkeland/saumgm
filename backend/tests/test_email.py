@@ -145,7 +145,13 @@ def test_bad_addresses_are_refused(owner_client: TestClient, outbox: Outbox) -> 
 
 def test_templates(owner_client: TestClient, outbox: Outbox) -> None:
     templates = ok_list(owner_client.get("/api/email/templates"))
-    assert [t["kind"] for t in templates] == ["invoice", "credit_note", "receipt", "report"]
+    assert [t["kind"] for t in templates] == [
+        "invoice",
+        "credit_note",
+        "receipt",
+        "report",
+        "article",
+    ]
     assert not any(t["customized"] for t in templates)
     assert "due_date" in templates[0]["placeholders"]
 
@@ -224,7 +230,10 @@ def test_resend_request(monkeypatch: pytest.MonkeyPatch) -> None:
         text="Hello",
         html="<p>Hello</p>",
     )
-    message.attachments = [Attachment("x.pdf", b"%PDF-1", "application/pdf")]
+    message.attachments = [
+        Attachment("x.pdf", b"%PDF-1", "application/pdf"),
+        Attachment("a.png", b"PNG", "image/png", inline_id="kb-1"),  # shown in the message
+    ]
     assert ResendBackend("key-1").send(message) == "re_123"
     [request] = sent
     assert request.get_header("Authorization") == "Bearer key-1"
@@ -232,7 +241,8 @@ def test_resend_request(monkeypatch: pytest.MonkeyPatch) -> None:
     assert payload["from"] == "My Biz <office@mybiz.example>" and payload["cc"] == ["b@example.com"]
     assert payload["reply_to"] == "reply@mybiz.example"
     assert payload["attachments"] == [
-        {"filename": "x.pdf", "content": base64.b64encode(b"%PDF-1").decode()}
+        {"filename": "x.pdf", "content": base64.b64encode(b"%PDF-1").decode()},
+        {"filename": "a.png", "content": base64.b64encode(b"PNG").decode(), "content_id": "kb-1"},
     ]
 
     def refused(request: urllib.request.Request, timeout: float) -> Answer:

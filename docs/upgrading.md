@@ -222,6 +222,10 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
   page has an Assets tab) and **Admin → Asset categories**. The upgrade gives every business the
   default categories (Laptop, Server, Network, Software license...). The to-do list has an
   **Assets** section for warranties and support contracts ending (30 days; Admin → Reminders).
+- New: **Operations → Knowledge base**: articles in Markdown with a live preview, a
+  category tree, search, every saved version, images and files, PDF, and "Email to…" for
+  published, shareable articles (a contact's page has an Articles tab). Starts empty. The email
+  text can be changed in Admin → Email (the new "Knowledge base article" template).
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →

@@ -33,7 +33,7 @@ Everything else in the repository is original work under the project's license.
 
 | Package | Version | License | Project |
 |---|---|---|---|
-| alembic | 1.20.0 | MIT | <https://alembic.sqlalchemy.org> |
+| alembic | 1.20.1 | MIT | <https://alembic.sqlalchemy.org> |
 | annotated-doc | 0.0.5 | MIT | <https://github.com/fastapi/annotated-doc> |
 | annotated-types | 0.8.0 | MIT | <https://github.com/annotated-types/annotated-types> |
 | anyio | 4.15.1 | MIT | <https://github.com/agronholm/anyio> |
@@ -43,15 +43,17 @@ Everything else in the repository is original work under the project's license.
 | cffi | 2.1.1 | MIT-0 | <https://github.com/python-cffi/cffi> |
 | charset-normalizer | 3.5.2 | MIT | <https://pypi.org/project/charset-normalizer/> |
 | click | 8.5.0 | BSD-3-Clause | <https://github.com/pallets/click/> |
-| fastapi | 0.156.4 | MIT | <https://github.com/fastapi/fastapi> |
+| fastapi | 0.162.0 | MIT | <https://github.com/fastapi/fastapi> |
 | h11 | 0.16.0 | MIT License | <https://github.com/python-hyper/h11> |
 | httptools | 0.9.0 | MIT | <https://github.com/MagicStack/httptools> |
 | idna | 3.20 | BSD-3-Clause | <https://github.com/kjd/idna> |
 | Mako | 1.4.3 | MIT | <https://www.makotemplates.org/> |
+| markdown-it-py | 4.2.0 | MIT License | <https://github.com/executablebooks/markdown-it-py> |
 | MarkupSafe | 3.0.4 | BSD-3-Clause | <https://github.com/pallets/markupsafe/> |
+| mdurl | 0.1.2 | MIT License | <https://github.com/executablebooks/mdurl> |
 | opentelemetry-api | 1.45.1 | Apache-2.0 | <https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api> |
 | pillow | 13.0.0 | MIT-CMU | <https://python-pillow.org> |
-| pycparser | 3.11 | BSD-3-Clause | <https://github.com/eliben/pycparser> |
+| pycparser | 3.12 | BSD-3-Clause | <https://github.com/eliben/pycparser> |
 | pydantic | 2.14.1 | MIT | <https://github.com/pydantic/pydantic> |
 | pydantic-settings | 2.16.1 | MIT | <https://github.com/pydantic/pydantic-settings> |
 | pydantic_core | 2.50.1 | MIT | <https://github.com/pydantic> |
@@ -59,9 +61,9 @@ Everything else in the repository is original work under the project's license.
 | python-dotenv | 1.2.4 | BSD-3-Clause | <https://github.com/theskumar/python-dotenv> |
 | python-multipart | 0.0.32 | Apache-2.0 | <https://github.com/Kludex/python-multipart> |
 | PyYAML | 6.0.3 | MIT License | <https://github.com/yaml/pyyaml> |
-| reportlab | 5.0.1 | BSD License | <https://www.reportlab.com/> |
-| SQLAlchemy | 2.1.5 | MIT | <https://www.sqlalchemy.org> |
-| starlette | 1.9.0 | BSD-3-Clause | <https://github.com/Kludex/starlette> |
+| reportlab | 5.1.0 | BSD License | <https://www.reportlab.com/> |
+| SQLAlchemy | 2.1.6 | MIT | <https://www.sqlalchemy.org> |
+| starlette | 1.10.0 | BSD-3-Clause | <https://github.com/Kludex/starlette> |
 | typing-inspection | 0.4.4 | MIT | <https://github.com/pydantic/typing-inspection> |
 | typing_extensions | 4.16.0 | PSF-2.0 | <https://github.com/python/typing_extensions> |
 | tzdata | 2026.5 | Apache-2.0 | <https://github.com/python/tzdata> |
@@ -92,37 +94,137 @@ Everything else in the repository is original work under the project's license.
 | @tabler/icons-react | 3.49.0 | MIT | <https://github.com/tabler/tabler-icons> |
 | @tanstack/query-core | 5.104.5 | MIT | <https://github.com/TanStack/query> |
 | @tanstack/react-query | 5.104.5 | MIT | <https://github.com/TanStack/query> |
+| @types/debug | 4.1.13 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/estree | 1.0.10 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/estree-jsx | 1.0.5 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/hast | 3.0.5 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/mdast | 4.0.4 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/ms | 2.1.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/unist | 3.0.3 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @types/unist | 2.0.11 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| @ungap/structured-clone | 1.4.0 | ISC | <https://github.com/ungap/structured-clone> |
+| bail | 2.0.2 | MIT | <https://github.com/wooorm/bail> |
+| ccount | 2.0.1 | MIT | <https://github.com/wooorm/ccount> |
+| character-entities | 2.0.2 | MIT | <https://github.com/wooorm/character-entities> |
+| character-entities-html4 | 2.1.0 | MIT | <https://github.com/wooorm/character-entities-html4> |
+| character-entities-legacy | 3.0.0 | MIT | <https://github.com/wooorm/character-entities-legacy> |
+| character-reference-invalid | 2.0.1 | MIT | <https://github.com/wooorm/character-reference-invalid> |
 | clsx | 2.1.1 | MIT | <https://github.com/lukeed/clsx> |
+| comma-separated-tokens | 2.0.3 | MIT | <https://github.com/wooorm/comma-separated-tokens> |
 | cookie-es | 3.1.1 | MIT | <https://github.com/unjs/cookie-es> |
 | csstype | 3.2.3 | MIT | <https://github.com/frenic/csstype> |
 | dayjs | 1.11.23 | MIT | <https://github.com/iamkun/dayjs> |
+| debug | 4.4.3 | MIT | <https://github.com/debug-js/debug> |
+| decode-named-character-reference | 1.3.0 | MIT | <https://github.com/wooorm/decode-named-character-reference> |
+| dequal | 2.0.3 | MIT | <https://github.com/lukeed/dequal> |
 | detect-node-es | 1.1.0 | MIT | <https://github.com/thekashey/detect-node> |
+| devlop | 1.1.0 | MIT | <https://github.com/wooorm/devlop> |
 | dom-helpers | 5.2.1 | MIT | <https://github.com/react-bootstrap/dom-helpers> |
+| escape-string-regexp | 5.0.0 | MIT | <https://github.com/sindresorhus/escape-string-regexp> |
+| estree-util-is-identifier-name | 3.0.0 | MIT | <https://github.com/syntax-tree/estree-util-is-identifier-name> |
+| extend | 3.0.2 | MIT | <https://github.com/justmoon/node-extend> |
 | fast-deep-equal | 3.1.3 | MIT | <https://github.com/epoberezkin/fast-deep-equal> |
 | get-nonce | 1.0.1 | MIT | <git@github.com:theKashey/get-nonce> |
+| hast-util-to-jsx-runtime | 2.3.7 | MIT | <https://github.com/syntax-tree/hast-util-to-jsx-runtime> |
+| hast-util-whitespace | 3.0.0 | MIT | <https://github.com/syntax-tree/hast-util-whitespace> |
+| html-url-attributes | 3.0.1 | MIT | <https://github.com/rehypejs/rehype-minify/tree/main/packages/html-url-attributes> |
+| inline-style-parser | 0.2.9 | MIT | <https://github.com/remarkablemark/inline-style-parser> |
+| is-alphabetical | 2.0.1 | MIT | <https://github.com/wooorm/is-alphabetical> |
+| is-alphanumerical | 2.0.1 | MIT | <https://github.com/wooorm/is-alphanumerical> |
+| is-decimal | 2.0.1 | MIT | <https://github.com/wooorm/is-decimal> |
+| is-hexadecimal | 2.0.1 | MIT | <https://github.com/wooorm/is-hexadecimal> |
+| is-plain-obj | 4.1.0 | MIT | <https://github.com/sindresorhus/is-plain-obj> |
 | js-tokens | 4.0.0 | MIT | <https://github.com/lydell/js-tokens> |
 | klona | 2.0.6 | MIT | <https://github.com/lukeed/klona> |
+| longest-streak | 3.1.0 | MIT | <https://github.com/wooorm/longest-streak> |
 | loose-envify | 1.4.0 | MIT | <https://github.com/zertosh/loose-envify> |
+| markdown-table | 3.0.4 | MIT | <https://github.com/wooorm/markdown-table> |
+| mdast-util-find-and-replace | 3.0.4 | MIT | <https://github.com/syntax-tree/mdast-util-find-and-replace> |
+| mdast-util-from-markdown | 2.1.0 | MIT | <https://github.com/syntax-tree/mdast-util-from-markdown> |
+| mdast-util-gfm | 3.1.0 | MIT | <https://github.com/syntax-tree/mdast-util-gfm> |
+| mdast-util-gfm-autolink-literal | 2.0.1 | MIT | <https://github.com/syntax-tree/mdast-util-gfm-autolink-literal> |
+| mdast-util-gfm-footnote | 2.1.0 | MIT | <https://github.com/syntax-tree/mdast-util-gfm-footnote> |
+| mdast-util-gfm-strikethrough | 2.0.1 | MIT | <https://github.com/syntax-tree/mdast-util-gfm-strikethrough> |
+| mdast-util-gfm-table | 2.0.0 | MIT | <https://github.com/syntax-tree/mdast-util-gfm-table> |
+| mdast-util-gfm-task-list-item | 2.0.0 | MIT | <https://github.com/syntax-tree/mdast-util-gfm-task-list-item> |
+| mdast-util-mdx-expression | 2.0.1 | MIT | <https://github.com/syntax-tree/mdast-util-mdx-expression> |
+| mdast-util-mdx-jsx | 3.2.0 | MIT | <https://github.com/syntax-tree/mdast-util-mdx-jsx> |
+| mdast-util-mdxjs-esm | 2.0.1 | MIT | <https://github.com/syntax-tree/mdast-util-mdxjs-esm> |
+| mdast-util-phrasing | 4.1.0 | MIT | <https://github.com/syntax-tree/mdast-util-phrasing> |
+| mdast-util-to-hast | 13.2.1 | MIT | <https://github.com/syntax-tree/mdast-util-to-hast> |
+| mdast-util-to-markdown | 2.2.1 | MIT | <https://github.com/syntax-tree/mdast-util-to-markdown> |
+| mdast-util-to-string | 4.0.0 | MIT | <https://github.com/syntax-tree/mdast-util-to-string> |
+| micromark | 4.0.3 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark> |
+| micromark-core-commonmark | 2.0.4 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-core-commonmark> |
+| micromark-extension-gfm | 3.0.0 | MIT | <https://github.com/micromark/micromark-extension-gfm> |
+| micromark-extension-gfm-autolink-literal | 2.1.0 | MIT | <https://github.com/micromark/micromark-extension-gfm-autolink-literal> |
+| micromark-extension-gfm-footnote | 2.1.0 | MIT | <https://github.com/micromark/micromark-extension-gfm-footnote> |
+| micromark-extension-gfm-strikethrough | 2.1.0 | MIT | <https://github.com/micromark/micromark-extension-gfm-strikethrough> |
+| micromark-extension-gfm-table | 2.1.2 | MIT | <https://github.com/micromark/micromark-extension-gfm-table> |
+| micromark-extension-gfm-tagfilter | 2.0.0 | MIT | <https://github.com/micromark/micromark-extension-gfm-tagfilter> |
+| micromark-extension-gfm-task-list-item | 2.1.0 | MIT | <https://github.com/micromark/micromark-extension-gfm-task-list-item> |
+| micromark-factory-destination | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-factory-destination> |
+| micromark-factory-label | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-factory-label> |
+| micromark-factory-space | 2.1.0 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-factory-space> |
+| micromark-factory-title | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-factory-title> |
+| micromark-factory-whitespace | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-factory-whitespace> |
+| micromark-util-character | 2.1.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-character> |
+| micromark-util-chunked | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-chunked> |
+| micromark-util-classify-character | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-classify-character> |
+| micromark-util-combine-extensions | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-combine-extensions> |
+| micromark-util-decode-numeric-character-reference | 2.0.2 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-decode-numeric-character-reference> |
+| micromark-util-decode-string | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-decode-string> |
+| micromark-util-edit-map | 1.0.0 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-edit-map> |
+| micromark-util-encode | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-encode> |
+| micromark-util-html-tag-name | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-html-tag-name> |
+| micromark-util-normalize-identifier | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-normalize-identifier> |
+| micromark-util-resolve-all | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-resolve-all> |
+| micromark-util-sanitize-uri | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-sanitize-uri> |
+| micromark-util-subtokenize | 2.1.0 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-subtokenize> |
+| micromark-util-symbol | 2.0.1 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-symbol> |
+| micromark-util-types | 2.0.3 | MIT | <https://github.com/micromark/micromark/tree/main/packages/micromark-util-types> |
+| ms | 2.1.3 | MIT | <https://github.com/vercel/ms> |
 | object-assign | 4.1.1 | MIT | <https://github.com/sindresorhus/object-assign> |
 | openapi-fetch | 0.17.0 | MIT | <https://github.com/openapi-ts/openapi-typescript> |
 | openapi-typescript-helpers | 0.1.0 | MIT | <https://github.com/openapi-ts/openapi-typescript> |
+| parse-entities | 4.0.2 | MIT | <https://github.com/wooorm/parse-entities> |
 | prop-types | 15.8.1 | MIT | <https://github.com/facebook/prop-types> |
+| property-information | 7.2.0 | MIT | <https://github.com/wooorm/property-information> |
 | react | 19.3.1 | MIT | <https://github.com/react/react> |
 | react-dom | 19.3.1 | MIT | <https://github.com/react/react> |
 | react-is | 16.13.1 | MIT | <https://github.com/facebook/react> |
+| react-markdown | 10.1.0 | MIT | <https://github.com/remarkjs/react-markdown> |
 | react-number-format | 5.4.5 | MIT | <https://github.com/s-yadav/react-number-format> |
 | react-remove-scroll | 2.7.2 | MIT | <https://github.com/theKashey/react-remove-scroll> |
 | react-remove-scroll-bar | 2.3.8 | MIT | <https://github.com/theKashey/react-remove-scroll-bar> |
 | react-router | 8.5.0 | MIT | <https://github.com/remix-run/react-router> |
 | react-style-singleton | 2.2.3 | MIT | <https://github.com/theKashey/react-style-singleton> |
 | react-transition-group | 4.4.5 | BSD-3-Clause | <https://github.com/reactjs/react-transition-group> |
+| remark-gfm | 4.0.1 | MIT | <https://github.com/remarkjs/remark-gfm> |
+| remark-parse | 11.0.0 | MIT | <https://github.com/remarkjs/remark/tree/main/packages/remark-parse> |
+| remark-rehype | 11.1.2 | MIT | <https://github.com/remarkjs/remark-rehype> |
+| remark-stringify | 11.0.0 | MIT | <https://github.com/remarkjs/remark/tree/main/packages/remark-stringify> |
 | scheduler | 0.28.0 | MIT | <https://github.com/react/react> |
+| space-separated-tokens | 2.0.2 | MIT | <https://github.com/wooorm/space-separated-tokens> |
+| stringify-entities | 4.0.4 | MIT | <https://github.com/wooorm/stringify-entities> |
+| style-to-object | 2.0.2 | MIT | <https://github.com/remarkablemark/style-to-object> |
 | tabbable | 6.5.0 | MIT | <https://github.com/focus-trap/tabbable> |
 | tagged-tag | 1.0.0 | MIT | <https://github.com/sindresorhus/tagged-tag> |
+| trim-lines | 3.0.1 | MIT | <https://github.com/wooorm/trim-lines> |
+| trough | 2.2.0 | MIT | <https://github.com/wooorm/trough> |
 | tslib | 2.8.1 | 0BSD | <https://github.com/Microsoft/tslib> |
 | type-fest | 5.10.0 | (MIT OR CC0-1.0) | <https://github.com/sindresorhus/type-fest> |
+| unified | 11.0.5 | MIT | <https://github.com/unifiedjs/unified> |
+| unist-util-is | 6.0.1 | MIT | <https://github.com/syntax-tree/unist-util-is> |
+| unist-util-position | 5.0.0 | MIT | <https://github.com/syntax-tree/unist-util-position> |
+| unist-util-stringify-position | 4.0.0 | MIT | <https://github.com/syntax-tree/unist-util-stringify-position> |
+| unist-util-visit | 5.2.0 | MIT | <https://github.com/syntax-tree/unist-util-visit> |
+| unist-util-visit-parents | 6.1.0 | MIT | <https://github.com/syntax-tree/unist-util-visit-parents> |
 | use-callback-ref | 1.3.3 | MIT | <https://github.com/theKashey/use-callback-ref/> |
 | use-sidecar | 1.1.3 | MIT | <https://github.com/theKashey/use-sidecar> |
+| vfile | 6.0.3 | MIT | <https://github.com/vfile/vfile> |
+| vfile-message | 4.0.3 | MIT | <https://github.com/vfile/vfile-message> |
+| zwitch | 2.0.4 | MIT | <https://github.com/wooorm/zwitch> |
 
 ## Development and build tools (not part of the running application)
 
@@ -131,7 +233,7 @@ Everything else in the repository is original work under the project's license.
 | Package | Version | License | Project |
 |---|---|---|---|
 | ast_serialize | 0.13.1 | MIT | <https://github.com/mypyc/ast_serialize> |
-| certifi | 2026.10.19 | Mozilla Public License 2.0 (MPL 2.0) | <https://github.com/certifi/python-certifi> |
+| certifi | 2026.10.23 | Mozilla Public License 2.0 (MPL 2.0) | <https://github.com/certifi/python-certifi> |
 | colorama | 0.4.6 | BSD License | <https://github.com/tartley/colorama> |
 | httpcore | 1.0.9 | BSD-3-Clause | <https://www.encode.io/httpcore/> |
 | httpx | 0.28.1 | BSD License | <https://github.com/encode/httpx> |
@@ -145,7 +247,7 @@ Everything else in the repository is original work under the project's license.
 | Pygments | 2.21.0 | BSD-2-Clause | <https://pygments.org> |
 | pypdf | 6.21.2 | BSD-3-Clause | <https://github.com/py-pdf/pypdf> |
 | pytest | 9.1.1 | MIT | <https://docs.pytest.org/en/latest/> |
-| ruff | 0.17.1 | MIT | <https://github.com/astral-sh/ruff> |
+| ruff | 0.17.2 | MIT | <https://github.com/astral-sh/ruff> |
 
 ### JavaScript
 

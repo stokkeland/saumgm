@@ -1214,6 +1214,227 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/kb/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Categories
+         * @description Every category, parents before their children, with the number of articles in each.
+         */
+        get: operations["list_categories_api_kb_categories_get"];
+        put?: never;
+        /** Create Category */
+        post: operations["create_category_api_kb_categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Category */
+        delete: operations["delete_category_api_kb_categories__category_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Category
+         * @description `parent_id: null` moves the category to the top.
+         */
+        patch: operations["update_category_api_kb_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/api/kb/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Articles
+         * @description Without `q`, the most recently changed first; with it, ranked, with the matching part.
+         */
+        get: operations["list_articles_api_kb_articles_get"];
+        put?: never;
+        /** Create Article */
+        post: operations["create_article_api_kb_articles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tags */
+        get: operations["list_tags_api_kb_tags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Article */
+        get: operations["get_article_api_kb_articles__article_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Article
+         * @description The article with all its versions and files.
+         */
+        delete: operations["delete_article_api_kb_articles__article_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Article
+         * @description A change to the title, tags or text is kept as a new version. Pass `base_version` (the
+         *     version the change was made on) so that a newer save by someone else is not overwritten.
+         */
+        patch: operations["update_article_api_kb_articles__article_id__patch"];
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Versions
+         * @description Every saved version, the newest first.
+         */
+        get: operations["list_versions_api_kb_articles__article_id__versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}/versions/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Version */
+        get: operations["get_version_api_kb_articles__article_id__versions__version__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Attachment
+         * @description An image or file (at most 20 MB); the text shows it with ![name](url) or links it with
+         *     [name](url), using the attachment's `url`.
+         */
+        post: operations["add_attachment_api_kb_articles__article_id__attachments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}/attachments/{attachment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Attachment */
+        delete: operations["remove_attachment_api_kb_articles__article_id__attachments__attachment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Article Document */
+        get: operations["article_document_api_kb_articles__article_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kb/articles/{article_id}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compose Article Email
+         * @description A published, shareable article by email: your message, then the article (its images
+         *     inline), to the contact it is about. `pdf` attaches a PDF copy. Internal articles cannot
+         *     be sent.
+         */
+        get: operations["compose_article_email_api_kb_articles__article_id__email_get"];
+        put?: never;
+        /** Send Article Email */
+        post: operations["send_article_email_api_kb_articles__article_id__email_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subscriptions": {
         parameters: {
             query?: never;
@@ -2510,6 +2731,160 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** ArticleIn */
+        ArticleIn: {
+            /** Title */
+            title: string;
+            /** Category Id */
+            category_id?: number | null;
+            /**
+             * Tags
+             * @default []
+             */
+            tags: string[];
+            /**
+             * Body
+             * @default
+             */
+            body: string;
+            /** @default draft */
+            status: components["schemas"]["ArticleStatus"];
+            /** @default internal */
+            visibility: components["schemas"]["ArticleVisibility"];
+            /** Party Id */
+            party_id?: number | null;
+        };
+        /** ArticleOut */
+        ArticleOut: {
+            /** Id */
+            id: number;
+            /** Title */
+            title: string;
+            /** Category Id */
+            category_id: number | null;
+            /** Category Path */
+            category_path: string | null;
+            /** Tags */
+            tags: string[];
+            status: components["schemas"]["ArticleStatus"];
+            visibility: components["schemas"]["ArticleVisibility"];
+            /** Party Id */
+            party_id: number | null;
+            /** Party Name */
+            party_name: string | null;
+            /** Version */
+            version: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By */
+            updated_by: string | null;
+            /** Snippet */
+            snippet?: string | null;
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string | null;
+            /** Attachments */
+            attachments: components["schemas"]["KbAttachmentOut"][];
+        };
+        /** ArticlePatch */
+        ArticlePatch: {
+            /** Title */
+            title?: string | null;
+            /** Category Id */
+            category_id?: number | null;
+            /** Tags */
+            tags?: string[] | null;
+            /** Body */
+            body?: string | null;
+            status?: components["schemas"]["ArticleStatus"] | null;
+            visibility?: components["schemas"]["ArticleVisibility"] | null;
+            /** Party Id */
+            party_id?: number | null;
+            /** Base Version */
+            base_version?: number | null;
+        };
+        /**
+         * ArticleStatus
+         * @enum {string}
+         */
+        ArticleStatus: "draft" | "published";
+        /** ArticleSummary */
+        ArticleSummary: {
+            /** Id */
+            id: number;
+            /** Title */
+            title: string;
+            /** Category Id */
+            category_id: number | null;
+            /** Category Path */
+            category_path: string | null;
+            /** Tags */
+            tags: string[];
+            status: components["schemas"]["ArticleStatus"];
+            visibility: components["schemas"]["ArticleVisibility"];
+            /** Party Id */
+            party_id: number | null;
+            /** Party Name */
+            party_name: string | null;
+            /** Version */
+            version: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By */
+            updated_by: string | null;
+            /** Snippet */
+            snippet?: string | null;
+        };
+        /** ArticleVersionOut */
+        ArticleVersionOut: {
+            /** Version */
+            version: number;
+            /** Title */
+            title: string;
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Saved By */
+            saved_by: string | null;
+            /** Tags */
+            tags: string[];
+            /** Body */
+            body: string;
+        };
+        /** ArticleVersionSummary */
+        ArticleVersionSummary: {
+            /** Version */
+            version: number;
+            /** Title */
+            title: string;
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Saved By */
+            saved_by: string | null;
+        };
+        /**
+         * ArticleVisibility
+         * @description Internal articles are only for the business; shareable ones can be emailed to clients.
+         * @enum {string}
+         */
+        ArticleVisibility: "internal" | "shareable";
         /** AssetAttachmentOut */
         AssetAttachmentOut: {
             /** Id */
@@ -3081,6 +3456,11 @@ export interface components {
             /** File */
             file: string;
         };
+        /** Body_add_attachment_api_kb_articles__article_id__attachments_post */
+        Body_add_attachment_api_kb_articles__article_id__attachments_post: {
+            /** File */
+            file: string;
+        };
         /** Body_add_document_api_contacts__party_id__documents_post */
         Body_add_document_api_contacts__party_id__documents_post: {
             document_type: components["schemas"]["DocumentType"];
@@ -3522,7 +3902,7 @@ export interface components {
          * @description What an email is about; each kind has its own template (Admin -> Email).
          * @enum {string}
          */
-        EmailKind: "invoice" | "credit_note" | "receipt" | "report" | "test" | "digest";
+        EmailKind: "invoice" | "credit_note" | "receipt" | "report" | "test" | "digest" | "article";
         /** EmailSettingsOut */
         EmailSettingsOut: {
             /** From Address */
@@ -4183,6 +4563,62 @@ export interface components {
             /** Is Active */
             is_active?: boolean | null;
         };
+        /** KbAttachmentOut */
+        KbAttachmentOut: {
+            /** Id */
+            id: number;
+            /** File Id */
+            file_id: number;
+            /** Name */
+            name: string;
+            /** Content Type */
+            content_type: string;
+            /** Size */
+            size: number;
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+            /** Url */
+            url: string;
+        };
+        /** KbCategoryIn */
+        KbCategoryIn: {
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id?: number | null;
+            /**
+             * Sort Order
+             * @default 0
+             */
+            sort_order: number;
+        };
+        /** KbCategoryOut */
+        KbCategoryOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id: number | null;
+            /** Sort Order */
+            sort_order: number;
+            /** Path */
+            path: string;
+            /** Articles */
+            articles: number;
+        };
+        /** KbCategoryPatch */
+        KbCategoryPatch: {
+            /** Name */
+            name?: string | null;
+            /** Parent Id */
+            parent_id?: number | null;
+            /** Sort Order */
+            sort_order?: number | null;
+        };
         /**
          * LineIn
          * @description An invoice line. With a catalog item, missing fields come from the item.
@@ -4550,6 +4986,17 @@ export interface components {
             is_active?: boolean | null;
             /** Items */
             items?: components["schemas"]["PackageItemIn"][] | null;
+        };
+        /** Page[ArticleSummary] */
+        Page_ArticleSummary_: {
+            /** Items */
+            items: components["schemas"]["ArticleSummary"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
         };
         /** Page[AssetOut] */
         Page_AssetOut_: {
@@ -5604,6 +6051,13 @@ export interface components {
          * @enum {string}
          */
         SubscriptionStatus: "active" | "paused" | "cancelled";
+        /** TagCount */
+        TagCount: {
+            /** Tag */
+            tag: string;
+            /** Articles */
+            articles: number;
+        };
         /**
          * TaxBasis
          * @description How tax and income are reported (separate settings for each).
@@ -9437,6 +9891,540 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_categories_api_kb_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbCategoryOut"][];
+                };
+            };
+        };
+    };
+    create_category_api_kb_categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KbCategoryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_category_api_kb_categories__category_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_category_api_kb_categories__category_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KbCategoryPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_articles_api_kb_articles_get: {
+        parameters: {
+            query?: {
+                /** @description Words in the title, tags or text; best first */
+                q?: string | null;
+                /** @description This category and those below it */
+                category_id?: number | null;
+                tag?: string | null;
+                status?: components["schemas"]["ArticleStatus"] | null;
+                visibility?: components["schemas"]["ArticleVisibility"] | null;
+                party_id?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ArticleSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_article_api_kb_articles_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tags_api_kb_tags_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagCount"][];
+                };
+            };
+        };
+    };
+    get_article_api_kb_articles__article_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_article_api_kb_articles__article_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_article_api_kb_articles__article_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArticlePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_versions_api_kb_articles__article_id__versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleVersionSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_version_api_kb_articles__article_id__versions__version__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_attachment_api_kb_articles__article_id__attachments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_add_attachment_api_kb_articles__article_id__attachments_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_attachment_api_kb_articles__article_id__attachments__attachment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+                attachment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    article_document_api_kb_articles__article_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compose_article_email_api_kb_articles__article_id__email_get: {
+        parameters: {
+            query?: {
+                pdf?: boolean;
+            };
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_article_email_api_kb_articles__article_id__email_post: {
+        parameters: {
+            query?: {
+                pdf?: boolean;
+            };
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageOut"];
+                };
             };
             /** @description Validation Error */
             422: {

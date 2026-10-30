@@ -47,6 +47,8 @@ from saumgm.email import NoSendBackend, use_backend
 from saumgm.enums import (
     AccountType,
     AddressType,
+    ArticleStatus,
+    ArticleVisibility,
     AssetStatus,
     BankAccountKind,
     BankEntryStatus,
@@ -81,6 +83,9 @@ from saumgm.models import (
     ExpenseAttachment,
     ExpenseLine,
     Invoice,
+    KbArticle,
+    KbAttachment,
+    KbCategory,
     Organization,
     OrganizationAddress,
     Party,
@@ -109,6 +114,7 @@ from saumgm.services import (
     archive,
     banking,
     emailing,
+    knowledge,
     payments,
     reports,
     subscriptions,
@@ -175,6 +181,25 @@ def _logo() -> bytes:
         font = small = ImageFont.load_default()
     draw.text((200, 40), "Maple Ridge Tech", fill=(31, 111, 92), font=font)
     draw.text((204, 140), "Web hosting · IT support · Networking", fill=(90, 90, 90), font=small)
+    out = io.BytesIO()
+    image.save(out, format="PNG")
+    return out.getvalue()
+
+
+def _diagram() -> bytes:
+    """A network diagram for the demo's knowledge base."""
+    image = Image.new("RGB", (720, 260), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.load_default(size=22)
+    except TypeError:  # Pillow < 10.1
+        font = ImageFont.load_default()
+    boxes = [("Internet", 20), ("Router 10.0.0.1", 260), ("NAS 10.0.0.20", 500)]
+    for label, x in boxes:
+        draw.rounded_rectangle((x, 90, x + 200, 170), radius=14, outline=(31, 111, 92), width=4)
+        draw.text((x + 16, 118), label, fill=(31, 111, 92), font=font)
+    for x in (220, 460):
+        draw.line((x, 130, x + 40, 130), fill=(90, 90, 90), width=4)
     out = io.BytesIO()
     image.save(out, format="PNG")
     return out.getvalue()
@@ -1428,6 +1453,69 @@ class DemoLoader:
             next_number(self.s, self.org.id, "asset")
         self.s.flush()
 
+    # -- knowledge base ---------------------------------------------------------------------------
+
+    def articles(self) -> None:
+        """A small category tree and articles: internal notes, a how-to that can be sent to
+        clients, and one about a client's network."""
+
+        def folder(name: str, parent: KbCategory | None = None, order: int = 0) -> KbCategory:
+            c = KbCategory(organization_id=self.org.id, name=name, sort_order=order,
+                           parent_id=parent.id if parent else None)  # fmt: skip
+            self.s.add(c)
+            self.s.flush()
+            return c
+
+        clients = folder("Clients", order=10)
+        pinecrest = folder(self.parties["PINECREST"].name, clients)
+        howto = folder("How-to", order=20)
+        servers = folder("Servers and network", order=30)
+        policies = folder("Policies", order=40)
+        user = self.owner.id if self.owner else None
+        rows: list[dict[str, Any]] = [
+            dict(title="Set up company email on your phone", category=howto,
+                 tags="email,phone,outlook", status=ArticleStatus.PUBLISHED,
+                 visibility=ArticleVisibility.SHAREABLE,
+                 body="Works for iPhone and Android with the Outlook app.\n\n"
+                 "## Steps\n\n1. Install **Microsoft Outlook** from the App Store or Google "
+                 "Play.\n2. Open it and tap **Add account**.\n3. Enter your work email address "
+                 "and password.\n4. Approve the sign-in in the Authenticator app.\n\n"
+                 "## If it does not work\n\n- Check that the phone has the latest updates.\n"
+                 "- Remove the account and add it again.\n- Call us at the number on your "
+                 "invoice; we can see the sign-in attempts.\n"),
+            dict(title="Office network", category=servers, tags="network,vpn,backup",
+                 status=ArticleStatus.PUBLISHED, visibility=ArticleVisibility.INTERNAL,
+                 body="| Device | Address | Notes |\n|---|---|---|\n"
+                 "| Router (A-0004) | 10.0.0.1 | UniFi; admin in the password manager |\n"
+                 "| NAS (A-0001) | 10.0.0.20 | Nightly backups at 2:00 |\n\n"
+                 "VPN: WireGuard on the router, one profile per laptop.\n\n"
+                 "```\nwg-quick up office\n```\n"),
+            dict(title="Pinecrest: server room and firewall", category=pinecrest,
+                 tags="firewall,network", status=ArticleStatus.PUBLISHED,
+                 visibility=ArticleVisibility.INTERNAL, party="PINECREST",
+                 body="The firewall (Netgate 4200) is at **192.168.10.1**; the file server at "
+                 "192.168.10.5.\n\n> Support on the firewall has ended: the renewal is quoted "
+                 "and waiting for the client.\n\nKeys to the server room: front office.\n"),
+            dict(title="Password policy", category=policies, tags="security",
+                 status=ArticleStatus.DRAFT, visibility=ArticleVisibility.SHAREABLE,
+                 body="Draft. At least 14 characters, a password manager for everyone, and "
+                 "multi-factor sign-in on email.\n"),
+        ]  # fmt: skip
+        diagram = store_file(self.s, self.org.id, _diagram(), "office-network.png", "image/png")
+        rows[1]["body"] += f"\n![Office network](/api/files/{diagram.id})\n"
+        for row in rows:
+            party = row.pop("party", None)
+            category = row.pop("category")
+            a = KbArticle(organization_id=self.org.id, category_id=category.id, version=1,
+                          party_id=self.parties[party].id if party else None,
+                          created_by_user_id=user, updated_by_user_id=user, **row)  # fmt: skip
+            if row["title"] == "Office network":
+                a.attachments = [KbAttachment(file_id=diagram.id)]
+            self.s.add(a)
+            self.s.flush()
+            knowledge.add_version(self.s, a, user)
+        self.s.flush()
+
     # -- tax filing and archive -------------------------------------------------------------------
 
     def tax_filing(self) -> None:
@@ -1502,6 +1590,7 @@ class DemoLoader:
         self.expenses()
         self.card_payments_and_statements()
         self.assets()
+        self.articles()
         self.tax_filing()
         self.emails()
         # The oldest two months are archived, as a business would after closing its books.
@@ -1516,6 +1605,7 @@ class DemoLoader:
             "expenses": len(self.s.scalars(select(Expense.id)).all()),
             "bank lines": len(self.s.scalars(select(BankEntry.id)).all()),
             "assets": len(self.s.scalars(select(Asset.id)).all()),
+            "articles": len(self.s.scalars(select(KbArticle.id)).all()),
         }
         return Summary(self.org, counts)
 

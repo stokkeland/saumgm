@@ -48,6 +48,8 @@ class Attachment:
     filename: str
     content: bytes
     content_type: str = "application/octet-stream"
+    # Set for an image shown in the message itself: the HTML refers to it as cid:<inline_id>.
+    inline_id: str | None = None
 
 
 @dataclass
@@ -111,10 +113,7 @@ class ResendBackend:
         if message.reply_to:
             payload["reply_to"] = message.reply_to
         if message.attachments:
-            payload["attachments"] = [
-                {"filename": a.filename, "content": base64.b64encode(a.content).decode("ascii")}
-                for a in message.attachments
-            ]
+            payload["attachments"] = [_resend_attachment(a) for a in message.attachments]
         request = urllib.request.Request(
             RESEND_ENDPOINT,
             data=json.dumps(payload).encode("utf-8"),
@@ -137,6 +136,13 @@ class ResendBackend:
             raise EmailError(f"Could not reach Resend: {reason}") from None
         message_id = body.get("id")
         return str(message_id) if message_id else None
+
+
+def _resend_attachment(a: Attachment) -> dict[str, str]:
+    out = {"filename": a.filename, "content": base64.b64encode(a.content).decode("ascii")}
+    if a.inline_id:
+        out["content_id"] = a.inline_id
+    return out
 
 
 def _resend_error(exc: urllib.error.HTTPError) -> str:

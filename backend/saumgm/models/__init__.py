@@ -25,6 +25,7 @@ from saumgm.models.email import EmailMessage, EmailTemplate
 from saumgm.models.expenses import Expense, ExpenseAttachment, ExpenseLine
 from saumgm.models.files import StoredFile
 from saumgm.models.invoices import Invoice, InvoiceLine, InvoiceRevision, InvoiceTax
+from saumgm.models.knowledge import KbArticle, KbArticleVersion, KbAttachment, KbCategory
 from saumgm.models.organization import NumberSequence, Organization, OrganizationAddress
 from saumgm.models.parties import Party, PartyAddress, PartyContact, PartyRole
 from saumgm.models.party_documents import PartyDocument
@@ -71,6 +72,10 @@ __all__ = [
     "InvoiceLine",
     "InvoiceRevision",
     "InvoiceTax",
+    "KbArticle",
+    "KbArticleVersion",
+    "KbAttachment",
+    "KbCategory",
     "NumberSequence",
     "Organization",
     "OrganizationAddress",

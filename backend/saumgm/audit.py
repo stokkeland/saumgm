@@ -27,8 +27,11 @@ from sqlalchemy.orm import InstanceState, Session, UOWTransaction
 from saumgm.context import AUDIT_ROWS_KEY, get_context
 
 # email_message is a log of its own; sending adds an "email" entry to the record instead.
-NOT_AUDITED = {"audit_log", "auth_session", "email_message"}
+# kb_article_version is the history of an article's text.
+NOT_AUDITED = {"audit_log", "auth_session", "email_message", "kb_article_version"}
 REDACTED = {"password_hash", "totp_secret"}
+# Long texts kept in full elsewhere (an article's versions): the log only says they changed.
+SUMMARIZED = {("kb_article", "body")}
 NOISE = {"created_at", "updated_at"}
 
 # Child table -> (parent table, column holding the parent id)
@@ -42,6 +45,7 @@ PARENTS = {
     "bank_entry": ("bank_account", "bank_account_id"),
     "expense_attachment": ("expense", "expense_id"),
     "asset_attachment": ("asset", "asset_id"),
+    "kb_attachment": ("kb_article", "article_id"),
     "subscription_line": ("subscription", "subscription_id"),
     "subscription_use": ("vendor_subscription", "vendor_subscription_id"),
     "catalog_package_item": ("catalog_package", "package_id"),
@@ -73,12 +77,27 @@ def _value(key: str, value: Any) -> Any:
     return "***" if key in REDACTED and value is not None else jsonable(value)
 
 
+def _summary(value: Any) -> Any:
+    return None if value is None else f"({len(value)} characters)"
+
+
 def _changes(obj: object, action: str) -> dict[str, list[Any]]:
     state: InstanceState[Any] = inspect(obj)  # type: ignore[assignment]  # mapped objects only
+    table = getattr(obj, "__tablename__", None)
     changes: dict[str, list[Any]] = {}
     for attr in state.mapper.column_attrs:
         key = attr.key
         if key in NOISE:
+            continue
+        if (table, key) in SUMMARIZED:
+            history = state.attrs[key].history
+            if action == "create" and getattr(obj, key):
+                changes[key] = [None, _summary(getattr(obj, key))]
+            elif action == "update" and history.has_changes():
+                old = history.deleted[0] if history.deleted else None
+                new = history.added[0] if history.added else None
+                if old != new:
+                    changes[key] = [_summary(old), _summary(new)]
             continue
         if action == "create":
             value = getattr(obj, key)

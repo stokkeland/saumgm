@@ -55,6 +55,7 @@ import { ArchivedBadge, DateText, Money, PageHeader, PaymentStatusBadge } from '
 import { ADDRESS_TYPES, labelOf, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
 import { ContactAssets } from '../assets/AssetPages'
+import { ContactArticles } from '../knowledge/ArticlePages'
 import { ContactDocuments } from './ContactDocuments'
 import { AddressForm, ContactForm, ExemptionForm, PersonForm } from './ContactForm'
 import { RoleBadges } from './ContactsPage'
@@ -545,6 +546,7 @@ export function ContactPage() {
           <Tabs.Tab value="tax">Tax</Tabs.Tab>
           <Tabs.Tab value="documents">Documents</Tabs.Tab>
           <Tabs.Tab value="assets">Assets</Tabs.Tab>
+          <Tabs.Tab value="articles">Articles</Tabs.Tab>
           {isClient && <Tabs.Tab value="invoices">Invoices</Tabs.Tab>}
           {isClient && <Tabs.Tab value="payments">Payments</Tabs.Tab>}
           <Tabs.Tab value="history">History</Tabs.Tab>
@@ -561,6 +563,9 @@ export function ContactPage() {
         </Tabs.Panel>
         <Tabs.Panel value="assets">
           <ContactAssets partyId={contact.id} />
+        </Tabs.Panel>
+        <Tabs.Panel value="articles">
+          <ContactArticles partyId={contact.id} />
         </Tabs.Panel>
         <Tabs.Panel value="invoices">
           <ContactInvoices partyId={contact.id} />
