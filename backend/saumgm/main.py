@@ -37,6 +37,7 @@ from saumgm.api import (
     reports,
     subscriptions,
     tax,
+    vendor_subscriptions,
 )
 from saumgm.api import settings as settings_api
 from saumgm.config import get_settings
@@ -54,6 +55,7 @@ ROUTERS = (
     payments.router,
     expenses.router,
     subscriptions.router,
+    vendor_subscriptions.router,
     tax.router,
     settings_api.router,
     audit.router,

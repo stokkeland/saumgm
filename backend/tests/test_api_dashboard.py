@@ -40,7 +40,7 @@ def test_dashboard_numbers(owner_client: TestClient) -> None:
     )  # fmt: skip
     owner_client.post(
         "/api/subscriptions",
-        json={"party_id": acme["id"], "catalog_item_id": hosting["id"],
+        json={"party_id": acme["id"], "lines": [{"catalog_item_id": hosting["id"]}],
               "start_date": (date.today() + timedelta(days=10)).isoformat(),
               "service_identifier": "acme.example"},
     )  # fmt: skip
@@ -51,4 +51,6 @@ def test_dashboard_numbers(owner_client: TestClient) -> None:
         assert (board["overdue"], board["overdue_invoices"]) == ("100.0000", 1)
     assert (board["undeposited"], board["undeposited_payments"]) == ("20.0000", 1)
     assert board["sales_this_year"] == "150.0000"
-    assert [r["service_identifier"] for r in board["renewals"]] == ["acme.example"]
+    assert [(r["service_identifier"], r["summary"]) for r in board["renewals"]] == [
+        ("acme.example", "Hosting")
+    ]

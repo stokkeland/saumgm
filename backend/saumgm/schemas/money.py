@@ -13,16 +13,14 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Payments, deposits, expenses and subscriptions."""
+"""Payments, deposits and expenses."""
 
 from datetime import date, datetime
-from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from saumgm.enums import PaymentChannel, PaymentMethod, SubscriptionStatus
-from saumgm.schemas.invoices import InvoiceListItem
+from saumgm.enums import PaymentChannel, PaymentMethod
 from saumgm.schemas.types import Amount
 
 
@@ -183,80 +181,6 @@ class ExpenseOut(BaseModel):
     description: str | None
     total: Amount
     lines: list[ExpenseLineOut]
+    vendor_subscription_id: int | None
     archived_at: datetime | None
     legacy_data: dict[str, Any] | None
-
-
-# -- subscriptions --------------------------------------------------------------------------------
-
-
-class SubscriptionCreate(BaseModel):
-    party_id: int
-    catalog_item_id: int
-    quantity: Amount = Field(Decimal(1), gt=0, max_digits=12, decimal_places=4)
-    price_override: Amount | None = _amount(default=None, ge=0)
-    discount_pct: Amount | None = Field(None, ge=0, le=100, decimal_places=4)
-    service_identifier: str | None = Field(None, max_length=255)
-    billing_interval_months: int | None = Field(None, ge=1, le=120)
-    start_date: date
-    next_bill_date: date | None = None
-    end_date: date | None = None
-    auto_renew: bool = True
-    status: SubscriptionStatus = SubscriptionStatus.ACTIVE
-    vendor_party_id: int | None = None
-    vendor_renewal_date: date | None = None
-    unit_cost: Amount | None = _amount(default=None, ge=0)
-    notes: str | None = None
-
-
-class SubscriptionPatch(BaseModel):
-    catalog_item_id: int | None = None
-    quantity: Amount | None = Field(None, gt=0, max_digits=12, decimal_places=4)
-    price_override: Amount | None = _amount(default=None, ge=0)
-    discount_pct: Amount | None = Field(None, ge=0, le=100, decimal_places=4)
-    service_identifier: str | None = Field(None, max_length=255)
-    billing_interval_months: int | None = Field(None, ge=1, le=120)
-    start_date: date | None = None
-    next_bill_date: date | None = None
-    end_date: date | None = None
-    auto_renew: bool | None = None
-    status: SubscriptionStatus | None = None
-    vendor_party_id: int | None = None
-    vendor_renewal_date: date | None = None
-    unit_cost: Amount | None = _amount(default=None, ge=0)
-    notes: str | None = None
-
-
-class SubscriptionOut(BaseModel):
-    id: int
-    party_id: int
-    party_name: str
-    catalog_item_id: int
-    item_name: str
-    quantity: Amount
-    price_override: Amount | None
-    unit_price: Amount
-    discount_pct: Amount | None
-    service_identifier: str | None
-    billing_interval_months: int
-    start_date: date
-    next_bill_date: date | None
-    end_date: date | None
-    auto_renew: bool
-    status: SubscriptionStatus
-    vendor_party_id: int | None
-    vendor_renewal_date: date | None
-    unit_cost: Amount | None
-    notes: str | None
-
-
-class BillingRunRequest(BaseModel):
-    through: date
-    dry_run: bool = False
-
-
-class BillingRunResult(BaseModel):
-    dry_run: bool
-    subscriptions_billed: int
-    lines_created: int
-    invoices: list[InvoiceListItem]

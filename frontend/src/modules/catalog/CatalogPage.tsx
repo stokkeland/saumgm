@@ -25,6 +25,7 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Tabs,
   Text,
   Textarea,
   TextInput,
@@ -43,6 +44,7 @@ import { Money, PageHeader, SearchInput } from '../../components/ui'
 import { ITEM_TYPES, labelOf } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
 import { useUrlState } from '../../lib/useUrlState'
+import { PackagesPanel } from './Packages'
 
 type Item = Schemas['CatalogItemOut']
 const LIMIT = 50
@@ -164,7 +166,7 @@ function ItemForm({ item, onClose }: { item?: Item; onClose: () => void }) {
 export function CatalogPage() {
   const { canEdit } = useAuth()
   const [editing, setEditing] = useState<Item | 'new' | null>(null)
-  const [f, setF] = useUrlState({ q: '', type: '', active: 'true', offset: '0' })
+  const [f, setF] = useUrlState({ tab: 'items', q: '', type: '', active: 'true', offset: '0' })
   const { data, isFetching } = useQuery({
     queryKey: ['catalog', f],
     queryFn: async () =>
@@ -189,57 +191,70 @@ export function CatalogPage() {
         title="Catalog"
         subtitle="Products and services you sell"
         actions={
-          canEdit && (
+          canEdit &&
+          f.tab === 'items' && (
             <Button leftSection={<IconPlus size={16} />} onClick={() => setEditing('new')}>
               New item
             </Button>
           )
         }
       />
-      <Group mb="sm" gap="sm">
-        <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Name, SKU, description" />
-        <Select w={180} value={f.type} onChange={(type) => setF({ type: type ?? '' })} data={[{ value: '', label: 'All types' }, ...ITEM_TYPES]} />
-        <Select
-          w={130}
-          value={f.active}
-          onChange={(active) => setF({ active: active ?? '' })}
-          data={[
-            { value: 'true', label: 'Active' },
-            { value: 'false', label: 'Inactive' },
-            { value: '', label: 'All' },
-          ]}
-        />
-      </Group>
-      <DataTable<Item>
-        rows={data?.items}
-        loading={isFetching}
-        rowKey={(r) => r.id}
-        onRowClick={canEdit ? (r) => setEditing(r) : undefined}
-        page={data && { total: data.total, limit: LIMIT, offset: Number(f.offset), onOffset: (o) => setF({ offset: String(o) }) }}
-        columns={[
-          { key: 'sku', header: 'SKU', render: (r) => r.sku },
-          {
-            key: 'name',
-            header: 'Name',
-            render: (r) => (
-              <Group gap={6}>
-                {r.name}
-                {!r.is_active && <Badge size="xs" color="gray">Inactive</Badge>}
-              </Group>
-            ),
-          },
-          { key: 'type', header: 'Type', render: (r) => labelOf(ITEM_TYPES, r.item_type) },
-          {
-            key: 'interval',
-            header: 'Billing',
-            wide: true,
-            render: (r) => (r.billing_interval_months ? `every ${r.billing_interval_months} mo.` : ''),
-          },
-          { key: 'unit', header: 'Unit', wide: true, render: (r) => r.unit },
-          { key: 'disc', header: 'Disc. %', align: 'right', wide: true, render: (r) => (Number(r.default_discount_pct) ? Number(r.default_discount_pct) : '') },
-          { key: 'price', header: 'Price', align: 'right', render: (r) => <Money value={r.price} /> },
-        ]}
-      />
+      <Tabs value={f.tab} onChange={(tab) => setF({ tab: tab ?? 'items' })} mb="md">
+        <Tabs.List>
+          <Tabs.Tab value="items">Items</Tabs.Tab>
+          <Tabs.Tab value="packages">Packages</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+      {f.tab === 'packages' ? (
+        <PackagesPanel />
+      ) : (
+        <>
+          <Group mb="sm" gap="sm">
+            <SearchInput value={f.q} onChange={(q) => setF({ q })} placeholder="Name, SKU, description" />
+            <Select w={180} value={f.type} onChange={(type) => setF({ type: type ?? '' })} data={[{ value: '', label: 'All types' }, ...ITEM_TYPES]} />
+            <Select
+              w={130}
+              value={f.active}
+              onChange={(active) => setF({ active: active ?? '' })}
+              data={[
+                { value: 'true', label: 'Active' },
+                { value: 'false', label: 'Inactive' },
+                { value: '', label: 'All' },
+              ]}
+            />
+          </Group>
+          <DataTable<Item>
+            rows={data?.items}
+            loading={isFetching}
+            rowKey={(r) => r.id}
+            onRowClick={canEdit ? (r) => setEditing(r) : undefined}
+            page={data && { total: data.total, limit: LIMIT, offset: Number(f.offset), onOffset: (o) => setF({ offset: String(o) }) }}
+            columns={[
+              { key: 'sku', header: 'SKU', render: (r) => r.sku },
+              {
+                key: 'name',
+                header: 'Name',
+                render: (r) => (
+                  <Group gap={6}>
+                    {r.name}
+                    {!r.is_active && <Badge size="xs" color="gray">Inactive</Badge>}
+                  </Group>
+                ),
+              },
+              { key: 'type', header: 'Type', render: (r) => labelOf(ITEM_TYPES, r.item_type) },
+              {
+                key: 'interval',
+                header: 'Billing',
+                wide: true,
+                render: (r) => (r.billing_interval_months ? `every ${r.billing_interval_months} mo.` : ''),
+              },
+              { key: 'unit', header: 'Unit', wide: true, render: (r) => r.unit },
+              { key: 'disc', header: 'Disc. %', align: 'right', wide: true, render: (r) => (Number(r.default_discount_pct) ? Number(r.default_discount_pct) : '') },
+              { key: 'price', header: 'Price', align: 'right', render: (r) => <Money value={r.price} /> },
+            ]}
+          />
+        </>
+      )}
       {editing && <ItemForm item={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />}
     </>
   )

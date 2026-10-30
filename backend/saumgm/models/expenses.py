@@ -36,6 +36,10 @@ class Expense(IdMixin, OrgScopedMixin, ArchivableMixin, LegacyMixin, TimestampMi
     for_party_id: Mapped[int | None] = mapped_column(BigInteger, fk("party.id"), index=True)
     reference: Mapped[str | None] = mapped_column(String(100))
     description: Mapped[str | None] = mapped_column(Text)
+    # Set when the expense was recorded as a payment of a vendor subscription.
+    vendor_subscription_id: Mapped[int | None] = mapped_column(
+        BigInteger, fk("vendor_subscription.id"), index=True
+    )
 
     lines: Mapped[list["ExpenseLine"]] = relationship(
         back_populates="expense", cascade="all, delete-orphan", order_by="ExpenseLine.sort_order"

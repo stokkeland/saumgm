@@ -13,7 +13,8 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Catalog (products and services), revenue categories, tax categories and accounts."""
+"""Catalog (products and services), packages, revenue categories, tax categories and
+accounts."""
 
 from typing import Any
 
@@ -35,13 +36,17 @@ from saumgm.enums import ItemType
 from saumgm.models import (
     Account,
     CatalogItem,
+    CatalogPackage,
+    CatalogPackageItem,
     ExpenseLine,
     InvoiceLine,
+    Organization,
     Party,
     RevenueCategory,
-    Subscription,
+    SubscriptionLine,
     TaxCategory,
 )
+from saumgm.models.base import ZERO
 from saumgm.schemas.catalog import (
     AccountIn,
     AccountOut,
@@ -56,6 +61,14 @@ from saumgm.schemas.catalog import (
     TaxCategoryOut,
     TaxCategoryPatch,
 )
+from saumgm.schemas.subscriptions import (
+    PackageCreate,
+    PackageItemIn,
+    PackageItemOut,
+    PackageOut,
+    PackagePatch,
+)
+from saumgm.services import money
 
 router = APIRouter(tags=["catalog"])
 
@@ -151,12 +164,116 @@ def delete_item(item_id: int, auth: Editor, db: DbSession) -> None:
     used = db.scalar(
         select(
             exists().where(InvoiceLine.catalog_item_id == item.id)
-            | exists().where(Subscription.catalog_item_id == item.id)
+            | exists().where(SubscriptionLine.catalog_item_id == item.id)
+            | exists().where(CatalogPackageItem.catalog_item_id == item.id)
         )
     )
     if used:
-        raise conflict("This item is used on invoices or subscriptions; mark it inactive instead.")
+        raise conflict(
+            "This item is used on invoices, subscriptions or packages; mark it inactive instead."
+        )
     db.delete(item)
+    db.commit()
+
+
+# -- packages -------------------------------------------------------------------------------------
+
+
+def package_out(db: Session, package: CatalogPackage) -> PackageOut:
+    org = db.get(Organization, package.organization_id)
+    assert org is not None
+    items = []
+    for entry in package.items:
+        item = db.get(CatalogItem, entry.catalog_item_id)
+        assert item is not None
+        items.append(
+            PackageItemOut(
+                catalog_item_id=item.id,
+                item_name=item.name,
+                quantity=entry.quantity,
+                price=entry.price,
+                unit_price=entry.price if entry.price is not None else item.price,
+                discount_pct=entry.discount_pct,
+                billing_interval_months=item.billing_interval_months,
+            )
+        )
+    total = sum(
+        (
+            money.line_total(
+                i.unit_price,
+                money.discount_amount(i.unit_price, i.discount_pct or ZERO),
+                i.quantity,
+                org.currency_code,
+            )
+            for i in items
+        ),
+        ZERO,
+    )
+    return PackageOut(
+        id=package.id,
+        name=package.name,
+        description=package.description,
+        is_active=package.is_active,
+        items=items,
+        total=total,
+    )
+
+
+def _package_items(
+    db: Session, org_id: int, items: list[PackageItemIn]
+) -> list[CatalogPackageItem]:
+    return [
+        CatalogPackageItem(
+            sort_order=order,
+            catalog_item_id=get_owned(db, CatalogItem, entry.catalog_item_id, org_id).id,
+            quantity=entry.quantity,
+            price=entry.price,
+            discount_pct=entry.discount_pct,
+        )
+        for order, entry in enumerate(items)
+    ]
+
+
+@router.get("/packages")
+def list_packages(auth: Reader, db: DbSession, active: bool | None = None) -> list[PackageOut]:
+    stmt = select(CatalogPackage).where(CatalogPackage.organization_id == auth.organization_id)
+    if active is not None:
+        stmt = stmt.where(CatalogPackage.is_active == active)
+    return [package_out(db, p) for p in db.scalars(stmt.order_by(CatalogPackage.name))]
+
+
+@router.post("/packages", status_code=status.HTTP_201_CREATED)
+def create_package(body: PackageCreate, auth: Editor, db: DbSession) -> PackageOut:
+    package = CatalogPackage(
+        organization_id=auth.organization_id, **body.model_dump(exclude={"items"})
+    )
+    package.items = _package_items(db, auth.organization_id, body.items)
+    db.add(package)
+    db.flush()
+    db.commit()
+    return package_out(db, package)
+
+
+@router.get("/packages/{package_id}")
+def get_package(package_id: int, auth: Reader, db: DbSession) -> PackageOut:
+    return package_out(db, get_owned(db, CatalogPackage, package_id, auth.organization_id))
+
+
+@router.patch("/packages/{package_id}")
+def update_package(package_id: int, body: PackagePatch, auth: Editor, db: DbSession) -> PackageOut:
+    package = get_owned(db, CatalogPackage, package_id, auth.organization_id)
+    apply_changes(package, body, exclude={"items"})
+    if body.items is not None:
+        package.items = _package_items(db, auth.organization_id, body.items)
+    db.flush()
+    db.commit()
+    return package_out(db, package)
+
+
+@router.delete("/packages/{package_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_package(package_id: int, auth: Editor, db: DbSession) -> None:
+    """Subscriptions filled from a package keep their lines."""
+    db.delete(get_owned(db, CatalogPackage, package_id, auth.organization_id))
     db.commit()
 
 

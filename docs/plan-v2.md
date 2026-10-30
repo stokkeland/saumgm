@@ -278,6 +278,13 @@ depends on, many-to-many. It is information only, never billing logic:
 subscription is created from them and linked. Invoice lines created by earlier billing runs keep
 their link to the subscription.
 
+Built in part E as described, with these details: the billing run makes one invoice per
+subscription by default, and a checkbox combines a client's subscriptions due on the same day;
+packages are under Catalog → Packages and "Add a package" appends their items to the lines; a
+vendor subscription used by several client lines shares its cost equally between the active
+ones (shown per month, with the margin); "paid from" waits for banking (F). The 1.0 unit cost
+of a subscription without a vendor is kept in its notes.
+
 ### I. Reminders: to-do list, digest email, scheduled job
 
 One place that answers "what needs doing", on screen and by email, with **billing clients and

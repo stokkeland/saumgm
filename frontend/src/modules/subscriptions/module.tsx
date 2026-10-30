@@ -15,15 +15,20 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { IconCalendarRepeat } from '@tabler/icons-react'
+import { IconCalendarRepeat, IconRepeat } from '@tabler/icons-react'
 
 import type { AppModule } from '../types'
 import { SubscriptionsPage } from './SubscriptionsPage'
+import { VendorSubscriptionsPage } from './VendorSubscriptionsPage'
 
 export const subscriptionsModule: AppModule = {
   name: 'subscriptions',
   routes: [
     { path: '/subscriptions', element: <SubscriptionsPage /> },
+    { path: '/vendor-subscriptions', element: <VendorSubscriptionsPage /> },
   ],
-  nav: [{ to: '/subscriptions', label: 'Subscriptions', icon: IconCalendarRepeat, section: 'sales', order: 40 }],
+  nav: [
+    { to: '/subscriptions', label: 'Subscriptions', icon: IconCalendarRepeat, section: 'sales', order: 40 },
+    { to: '/vendor-subscriptions', label: 'Vendor subscriptions', icon: IconRepeat, section: 'money', order: 40 },
+  ],
 }
