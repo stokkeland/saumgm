@@ -66,15 +66,17 @@ Each instance gets its own database user, so one instance can never read another
 
 ### 3. Code
 
-```sh
-sudo git clone --branch main git@github.com:stokkeland/saumgm.git /opt/saumgm-acme
-cd /opt/saumgm-acme
-sudo python3 -m venv backend/.venv
-sudo backend/.venv/bin/pip install --upgrade pip
-sudo backend/.venv/bin/pip install -e backend
-```
+As in ubuntu.md step 3, the checkout belongs to your admin account, so git, `venv` and pip
+run without `sudo`:
 
-To run a specific version, check out a tag or branch instead of `main`.
+```sh
+sudo install -d -o "$USER" -g "$USER" /opt/saumgm-acme
+git clone --branch release/v1.0 https://github.com/stokkeland/saumgm.git /opt/saumgm-acme
+cd /opt/saumgm-acme
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install --upgrade pip
+backend/.venv/bin/pip install -e backend
+```
 
 ### 4. Configuration
 
@@ -120,7 +122,7 @@ sudo -u saumgm-acme .venv/bin/python -m saumgm load-demo
 Build it in the instance's own checkout (ubuntu.md step 6), so it matches that instance's API:
 
 ```sh
-cd /opt/saumgm-acme/frontend && sudo npm ci --no-audit --no-fund && sudo npm run build
+cd /opt/saumgm-acme/frontend && npm ci --no-audit --no-fund && npm run build     # as you, no sudo
 ```
 
 ### 7. Service

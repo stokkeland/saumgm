@@ -16,7 +16,7 @@ Browser ──HTTPS──> Apache :443 ─┬─ /            → /opt/saumgm/fr
 
 | Path | What | Owner |
 |---|---|---|
-| `/opt/saumgm` | the code (git checkout), with `backend/.venv` and `frontend/dist` | root |
+| `/opt/saumgm` | the code (git checkout), with `backend/.venv` and `frontend/dist` | your admin account (or root, see step 3) |
 | `/opt/saumgm/backend/.env` | configuration and the database password | root:saumgm, mode 640 |
 | `/var/lib/saumgm/storage` | stored files | saumgm |
 | `/var/backups/saumgm` | nightly backups | root (saumgm group) |
@@ -107,34 +107,50 @@ SQL
 
 ## 3. Code and Python environment
 
-Put the repository in `/opt/saumgm`. Choose one:
+Put the repository in `/opt/saumgm`. This guide is for version 1.0: clone the branch
+`release/v1.0` (1.0 with its fixes; the tag `v1.0.0` is the exact first release). `main` is a
+newer version with its own guide, and 2.0 is on `release/v2.0`. To upgrade later, see
+`docs/upgrading.md` of the newer version.
 
-- **git (recommended; updates become `git pull`).** The GitHub repository is private, so give the
-  server read access with a deploy key:
+The service user only reads the code, so the folder can belong to your own admin account
+(recommended: git, pip and npm then run as you, **without** `sudo`) or to root.
+
+- **Owned by your admin account**, over HTTPS (the repository
+  <https://github.com/stokkeland/saumgm> is public, so no key or login is needed):
   ```sh
-  sudo ssh-keygen -t ed25519 -f /root/.ssh/saumgm_deploy -N ""
-  sudo cat /root/.ssh/saumgm_deploy.pub    # GitHub → repo → Settings → Deploy keys → Add (read-only)
-  printf 'Host github.com\n  IdentityFile /root/.ssh/saumgm_deploy\n' | sudo tee -a /root/.ssh/config
-  sudo git clone --branch main git@github.com:stokkeland/saumgm.git /opt/saumgm
+  sudo apt install -y git                  # if not installed yet
+  sudo install -d -o "$USER" -g "$USER" /opt/saumgm
+  git clone --branch release/v1.0 https://github.com/stokkeland/saumgm.git /opt/saumgm
+  cd /opt/saumgm && git log -1 --oneline   # the version you now have
   ```
-  Deploy from `main`. The work so far is on the branch `dev/initial`; merge it into `main` first
-  (a pull request on GitHub), or clone with `--branch dev/initial` until then.
+  Everything in `/opt/saumgm` must then belong to you, except `backend/.env` (root:saumgm,
+  step 4). Never run `sudo git`, `sudo pip` or `sudo npm` there: the files they create belong
+  to root and git then refuses the repository. `update.sh` runs git, pip and npm as the
+  folder's owner, stops if it finds files owned by someone else, and prints the fix
+  (`sudo chown -R "$USER": /opt/saumgm`, then `.env` back to root:saumgm, mode 640).
+- **Owned by root:** `sudo git clone --branch release/v1.0 https://github.com/stokkeland/saumgm.git /opt/saumgm`,
+  and `sudo` in front of every git, `venv`, pip and npm command below.
 - **Copy from your PC** (Git Bash). Copy without `.venv`, `node_modules`, `.env` or `tmp`:
   ```sh
   rsync -av --exclude .git --exclude .venv --exclude node_modules --exclude tmp \
       --exclude storage --exclude '.env' ./ admin@server:/tmp/saumgm/
-  # then on the server:  sudo mv /tmp/saumgm /opt/saumgm && sudo chown -R root:root /opt/saumgm
+  # then on the server:  sudo mv /tmp/saumgm /opt/saumgm && sudo chown -R "$USER": /opt/saumgm
   ```
 
-Create the Python environment and install the backend:
+Create the Python environment and install the backend, as the folder's owner (no `sudo` when
+that is you):
 
 ```sh
 cd /opt/saumgm
-sudo python3 -m venv backend/.venv
-sudo backend/.venv/bin/pip install --upgrade pip
-sudo backend/.venv/bin/pip install -e backend
-sudo backend/.venv/bin/python -c "import saumgm, reportlab, argon2; print('ok')"
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install --upgrade pip
+backend/.venv/bin/pip install -e backend
+backend/.venv/bin/python -c "import saumgm, reportlab, argon2; print('ok')"
 ```
+
+Database and app commands (`alembic`, `python -m saumgm`) run as the service user,
+`sudo -u saumgm ...`; `apt`, `systemctl`, `mariadb`, Apache and the scripts in `deploy/` with
+`sudo`.
 
 (The `legacy` extra, which provides the Access importer, is not needed on the server. Imports
 run on Windows; the server gets the resulting SQL file, as described in step 5.)
@@ -228,7 +244,7 @@ same.
 
 - **On the server** (Node.js from `install-prereqs.sh --with-node`):
   ```sh
-  cd /opt/saumgm/frontend && sudo npm ci --no-audit --no-fund && sudo npm run build
+  cd /opt/saumgm/frontend && npm ci --no-audit --no-fund && npm run build    # as the folder's owner
   ```
 - **On the PC**, then copy:
   ```sh
@@ -341,8 +357,13 @@ The script:
 If you copy code instead of using git, run it with `--no-pull` (and copy a fresh `frontend/dist`
 if the server has no Node.js).
 
+Run it with `sudo` either way: it runs git, pip and npm as the owner of `/opt/saumgm` (step 3)
+and the rest as root.
+
 Database migrations only ever move forward. Read the release notes (the git log) before
 updating, and keep the backup that the script just made until the new version has run for a day.
+To move to 2.0, follow "From 1.0 to 2.0, step by step" in `docs/upgrading.md` of the
+`release/v2.0` branch (<https://github.com/stokkeland/saumgm/blob/release/v2.0/docs/upgrading.md>).
 
 ## 11. Switching over from Access
 
