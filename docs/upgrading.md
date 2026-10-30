@@ -9,7 +9,7 @@ you start.
 - [Upgrading the development PC](#upgrading-the-development-pc)
 - [Checking the result](#checking-the-result)
 - [Going back](#going-back)
-- [Version notes](#version-notes): [2.0](#20), [1.0](#10)
+- [Version notes](#version-notes): [2.1](#21-in-development), [2.0](#20), [1.0](#10)
 
 New installations follow [deploy/ubuntu.md](deploy/ubuntu.md) and need none of this.
 
@@ -171,6 +171,11 @@ Anything entered after the upgrade is lost, so decide quickly, and keep the back
 version has run for a few days.
 
 ## Version notes
+
+### 2.1 (in development)
+
+Being built on `main` (version `2.1.0.dev0`). Nothing beyond the usual update steps yet; this
+list grows with every merged pull request.
 
 ### 2.0
 
