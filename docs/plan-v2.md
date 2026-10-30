@@ -464,6 +464,13 @@ and in the backend for email and PDF (`markdown-it-py`, MIT). Rendered HTML is s
 
 Later: public share links (a read-only page per article without login), client portal.
 
+Built in part H as described, with these details: the knowledge base sits under Operations,
+its categories are edited by owners and bookkeepers (nothing is seeded); search needs every
+word and finds parts of words, ranked by the title, then MariaDB's full-text relevance; a save
+made on an older version than the latest is refused, and an older version can be restored;
+viewers can read articles and their files; only published, shareable articles can be sent, and
+only the article's own files go along (images inline); deleting an article is the owner's.
+
 ## 4. Decisions
 
 Decided by the owner:

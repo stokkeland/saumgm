@@ -42,7 +42,13 @@ router = APIRouter(tags=["email"])
 
 RecordType = Literal["invoice", "payment"]
 # Kinds with a template the business can change (the test message is fixed).
-EDITABLE = [EmailKind.INVOICE, EmailKind.CREDIT_NOTE, EmailKind.RECEIPT, EmailKind.REPORT]
+EDITABLE = [
+    EmailKind.INVOICE,
+    EmailKind.CREDIT_NOTE,
+    EmailKind.RECEIPT,
+    EmailKind.REPORT,
+    EmailKind.ARTICLE,
+]
 
 
 def _org(db: DbSession, org_id: int) -> Organization:

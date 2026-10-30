@@ -31,19 +31,21 @@ from sqlalchemy.orm import Session
 
 from saumgm import audit
 from saumgm.config import get_settings
-from saumgm.documents import Formatter, invoice_pdf, receipt_pdf
+from saumgm.documents import Formatter, article_pdf, invoice_pdf, receipt_pdf
 from saumgm.email import Attachment, EmailError, Message, get_backend
 from saumgm.enums import EmailKind, EmailStatus, InvoiceKind, InvoiceStatus
 from saumgm.models import (
     EmailMessage,
     EmailTemplate,
     Invoice,
+    KbArticle,
     Organization,
     Party,
     Payment,
     StoredFile,
     User,
 )
+from saumgm.services import knowledge
 from saumgm.services.invoices import balances, bill_to_snapshot
 from saumgm.storage import read_file
 from saumgm.timeutil import today_in
@@ -74,6 +76,10 @@ DEFAULT_TEMPLATES: dict[EmailKind, tuple[str, str]] = {
     EmailKind.REPORT: (
         "{report_title}, {period}",
         "Attached: {report_title} for {period}.\n\n{business_name}",
+    ),
+    EmailKind.ARTICLE: (
+        "{article_title}",
+        'Hello,\n\nPlease see "{article_title}" below.\n\n{business_name}',
     ),
     EmailKind.TEST: (
         "Test message from {business_name}",
@@ -114,6 +120,11 @@ PLACEHOLDERS: dict[EmailKind, dict[str, str]] = {
         "period": "The period it covers, or the day for receivables aging",
         "business_name": "Your business name",
     },
+    EmailKind.ARTICLE: {
+        "article_title": "Title of the article",
+        "client_name": "Contact the article is about, if any",
+        "business_name": "Your business name",
+    },
     EmailKind.TEST: {"business_name": "Your business name"},
 }
 
@@ -133,6 +144,9 @@ class Draft:
     attachments: list[Attachment] = field(default_factory=list)
     # Made from `body` when not given; the digest brings its own, with links.
     html: str | None = None
+    # Content that follows the message the user writes (an article), as HTML and text.
+    appendix_html: str | None = None
+    appendix_text: str | None = None
 
 
 def fill(text: str, values: dict[str, str]) -> str:
@@ -278,6 +292,32 @@ def report_draft(
     )
 
 
+def article_draft(session: Session, org: Organization, article: KbArticle, with_pdf: bool) -> Draft:
+    """A shareable, published article: the message, then the article itself (images inline),
+    optionally with a PDF copy. Goes to the contact it is about, if any."""
+    knowledge.check_sendable(article)
+    party = session.get(Party, article.party_id) if article.party_id else None
+    values = knowledge.placeholders(org, article, party)
+    subject, body, _ = template(session, org.id, EmailKind.ARTICLE)
+    page, text, attachments = knowledge.email_content(session, article)
+    if with_pdf:
+        name = f"{knowledge.file_name(article)}.pdf"
+        attachments.append(Attachment(name, article_pdf(session, org, article), "application/pdf"))
+    to = bill_to_snapshot(party)["bill_to_email"] if party else None
+    return Draft(
+        kind=EmailKind.ARTICLE,
+        entity_type="kb_article",
+        entity_id=str(article.id),
+        to=[to] if to else [],
+        cc=[],
+        subject=fill(subject, values),
+        body=fill(body, values),
+        attachments=attachments,
+        appendix_html=page,
+        appendix_text=text,
+    )
+
+
 def test_draft(session: Session, org: Organization, user: User) -> Draft:
     subject, body, _ = template(session, org.id, EmailKind.TEST)
     values = {"business_name": org.display_name}
@@ -322,6 +362,10 @@ def send(session: Session, org: Organization, draft: Draft, user_id: int | None)
 
     text = draft.body
     page = draft.html or text_to_html(text)
+    if draft.appendix_text:
+        text = f"{text.rstrip()}\n\n{draft.appendix_text}"
+    if draft.appendix_html:
+        page += draft.appendix_html
     redirect = get_settings().email_redirect_to
     deliver_to, deliver_cc = to, cc
     if redirect:

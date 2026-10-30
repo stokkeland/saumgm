@@ -58,9 +58,10 @@ const KIND_LABELS: Record<string, string> = {
   report: 'Report',
   test: 'Test message',
   digest: 'Reminders digest',
+  article: 'Knowledge base article',
 }
 
-const RECORD_LINKS: Record<string, string> = { invoice: '/invoices', payment: '/payments' }
+const RECORD_LINKS: Record<string, string> = { invoice: '/invoices', payment: '/payments', kb_article: '/kb' }
 
 export function EmailPage() {
   const [params, setParams] = useSearchParams()

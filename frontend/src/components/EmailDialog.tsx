@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Alert, Button, Group, Loader, Modal, Stack, TagsInput, Text, Textarea, TextInput } from '@mantine/core'
+import { Alert, Button, Checkbox, Group, Loader, Modal, Stack, TagsInput, Text, Textarea, TextInput } from '@mantine/core'
 import { IconMail, IconPaperclip } from '@tabler/icons-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -33,8 +33,10 @@ type ReportQuery = { date_from?: string; date_to?: string; group?: string; basis
 type Source = {
   key: unknown[]
   compose: () => Promise<Draft>
-  send: (body: Schemas['SendIn']) => Promise<Schemas['MessageOut']>
+  send: (body: Schemas['SendIn'], pdf: boolean) => Promise<Schemas['MessageOut']>
   history?: unknown[]
+  /** Offer a PDF copy as an attachment (an article); the file it would be. */
+  optionalPdf?: string
 }
 
 /** A button that opens the "Send by email" dialog for one record (its PDF goes along). */
@@ -66,6 +68,20 @@ export function ReportEmailButton({ report, query }: { report: ReportName; query
     send: async (body) => unwrap(await api.POST('/api/reports/{report}/email', { params, body })),
   }
   return <EmailDialogButton source={source} label="Email" />
+}
+
+/** A knowledge base article: the message, then the article; a PDF copy if wanted. */
+export function ArticleEmailButton({ articleId, pdfName }: { articleId: number; pdfName: string }) {
+  const path = { article_id: articleId }
+  const source: Source = {
+    key: ['kb-article', articleId],
+    compose: async () => unwrap(await api.GET('/api/kb/articles/{article_id}/email', { params: { path } })),
+    send: async (body, pdf) =>
+      unwrap(await api.POST('/api/kb/articles/{article_id}/email', { params: { path, query: { pdf } }, body })),
+    history: ['history', 'kb_article', String(articleId)],
+    optionalPdf: pdfName,
+  }
+  return <EmailDialogButton source={source} label="Email to…" />
 }
 
 function EmailDialogButton({ source, label }: { source: Source; label: string }) {
@@ -107,8 +123,9 @@ function Composer({ draft, source, onDone }: { draft: Draft; source: Source; onD
   const [cc, setCc] = useState(draft.cc)
   const [subject, setSubject] = useState(draft.subject)
   const [body, setBody] = useState(draft.body)
+  const [pdf, setPdf] = useState(false)
   const send = useMutation({
-    mutationFn: () => source.send({ to, cc, subject, body }),
+    mutationFn: () => source.send({ to, cc, subject, body }, pdf),
     onSuccess: (sent) => {
       notifySaved(sent.redirected_to ? `Sent to ${sent.redirected_to} (redirected)` : `Sent to ${sent.to_addresses}`)
       if (source.history) queryClient.invalidateQueries({ queryKey: source.history })
@@ -137,12 +154,20 @@ function Composer({ draft, source, onDone }: { draft: Draft; source: Source; onD
       <TagsInput label="Cc" value={cc} onChange={(v) => setCc(splitPaste(v))} splitChars={[',', ';', ' ']} />
       <TextInput label="Subject" required value={subject} onChange={(e) => setSubject(e.currentTarget.value)} />
       <Textarea label="Message" required autosize minRows={8} maxRows={20} value={body} onChange={(e) => setBody(e.currentTarget.value)} />
-      {draft.attachments.map((name) => (
+      {source.optionalPdf && (
+        <Text size="xs" c="dimmed">
+          The article follows your message.
+        </Text>
+      )}
+      {[...draft.attachments, ...(pdf && source.optionalPdf ? [source.optionalPdf] : [])].map((name) => (
         <Group key={name} gap={6}>
           <IconPaperclip size={16} />
           <Text size="sm">{name}</Text>
         </Group>
       ))}
+      {source.optionalPdf && (
+        <Checkbox label="Attach a PDF copy" checked={pdf} onChange={(e) => setPdf(e.currentTarget.checked)} />
+      )}
       <Group justify="flex-end">
         <Button variant="default" onClick={onDone}>
           Cancel

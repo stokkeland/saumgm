@@ -25,6 +25,7 @@ import { dashboardModule } from './dashboard/module'
 import { depositsModule } from './deposits/module'
 import { expensesModule } from './expenses/module'
 import { invoicesModule } from './invoices/module'
+import { knowledgeModule } from './knowledge/module'
 import { paymentsModule } from './payments/module'
 import { remindersModule } from './reminders/module'
 import { reportsModule } from './reports/module'
@@ -43,6 +44,7 @@ export const MODULES: AppModule[] = [
   depositsModule,
   expensesModule,
   assetsModule,
+  knowledgeModule,
   reportsModule,
   adminModule,
 ]

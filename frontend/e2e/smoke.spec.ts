@@ -31,6 +31,8 @@ const PAGES = [
   ['/vendor-subscriptions', 'vendor-subscriptions'],
   ['/banking', 'banking'],
   ['/assets', 'assets-list'],
+  ['/kb', 'knowledge-base-list'],
+  ['/kb/categories', 'kb-categories'],
   ['/catalog', 'catalog'],
   ['/catalog?tab=packages', 'catalog-packages'],
   ['/reports', 'reports'],
