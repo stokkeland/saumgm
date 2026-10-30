@@ -79,6 +79,8 @@ class Organization(IdMixin, TimestampMixin, Base):
     remind_to: Mapped[str | None] = mapped_column(String(1000))
     # Bank accounts whose last reconciled statement is older than this many days.
     remind_reconcile_days: Mapped[int] = mapped_column(Integer, default=35, server_default="35")
+    # Asset warranties and support contracts ending within this many days.
+    remind_asset_days: Mapped[int] = mapped_column(Integer, default=30, server_default="30")
 
     addresses: Mapped[list["OrganizationAddress"]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"

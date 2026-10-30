@@ -47,6 +47,7 @@ from saumgm.email import NoSendBackend, use_backend
 from saumgm.enums import (
     AccountType,
     AddressType,
+    AssetStatus,
     BankAccountKind,
     BankEntryStatus,
     BillingTiming,
@@ -67,6 +68,9 @@ from saumgm.enums import (
 )
 from saumgm.models import (
     Account,
+    Asset,
+    AssetAttachment,
+    AssetCategory,
     BankAccount,
     BankEntry,
     CatalogItem,
@@ -1345,6 +1349,85 @@ class DemoLoader:
             entry.status = BankEntryStatus.CLEARED
         self.s.flush()
 
+    # -- assets -----------------------------------------------------------------------------------
+
+    def assets(self) -> None:
+        """The business's own equipment and licenses, and equipment it manages at two clients;
+        one warranty ending soon and one support contract just ended, for the to-do list."""
+        categories = {
+            c.name: c.id
+            for c in self.s.scalars(
+                select(AssetCategory).where(AssetCategory.organization_id == self.org.id)
+            )
+        }
+        hardware = self.s.scalars(
+            select(Expense)
+            .where(Expense.organization_id == self.org.id, Expense.reference.like("AC-%"))
+            .order_by(Expense.expense_date)
+        ).first()
+        t = self.today
+        rows: list[dict[str, Any]] = [
+            dict(name="Office NAS", category="Storage", manufacturer="Synology", model="DS923+",
+                 serial_number="2290QWR7731", location="Office, rack shelf",
+                 purchase_date=t - timedelta(days=340), purchase_price=D("599.99"),
+                 vendor="ALLEGHENY", expense=hardware, warranty_expires=t + timedelta(days=20),
+                 attributes={"capacity": "4 x 4 TB, RAID 5", "ip_address": "10.0.0.20"},
+                 notes="Nightly backups of the office laptops.", receipt=True),
+            dict(name="Work laptop", category="Laptop", manufacturer="Lenovo",
+                 model="ThinkPad T14 Gen 4", serial_number="PF4KX2M1", assigned_to="Owner",
+                 purchase_date=t - timedelta(days=500), purchase_price=D("1349.00"),
+                 vendor="ALLEGHENY", warranty_expires=t + timedelta(days=595),
+                 attributes={"cpu": "Ryzen 7 PRO 7840U", "ram": "32 GB", "os": "Windows 11 Pro"}),
+            dict(name="Spare laptop", category="Laptop", manufacturer="Dell", model="Latitude 5420",
+                 serial_number="9QW3TK3", status=AssetStatus.IN_STOCK, location="Office closet",
+                 attributes={"ram": "16 GB", "os": "Windows 11 Pro"}),
+            dict(name="Office router", category="Network", manufacturer="Ubiquiti",
+                 model="UniFi Dream Machine", serial_number="UDM-7A21C", location="Office",
+                 attributes={"ip_address": "10.0.0.1", "mac_address": "74:ac:b9:12:7a:21"}),
+            dict(name="Microsoft 365 Business", category="Software license",
+                 manufacturer="Microsoft", vendor=None,
+                 attributes={"seats": 3, "renewal_date": (t + timedelta(days=120)).isoformat()}),
+            dict(name="Old desktop", category="Desktop", manufacturer="HP", model="ProDesk 400",
+                 status=AssetStatus.DISPOSED, notes="Recycled; drive wiped and shredded."),
+            dict(name="Firewall", category="Network", owner="PINECREST", manufacturer="Netgate",
+                 model="4200", serial_number="NG4200-1187", location="Server room",
+                 support_ends=t - timedelta(days=6),
+                 attributes={"ip_address": "192.168.10.1"},
+                 notes="Support renewal quoted; waiting for the client."),
+            dict(name="File server", category="Server", owner="PINECREST", manufacturer="Dell",
+                 model="PowerEdge T360", serial_number="7XK2PV4", location="Server room",
+                 warranty_expires=t + timedelta(days=700),
+                 attributes={"cpu": "Xeon E-2434", "ram": "64 GB", "os": "Windows Server 2025",
+                             "ip_address": "192.168.10.5"}),
+            dict(name="Front desk printer", category="Printer", owner="HILLTOP",
+                 manufacturer="Brother", model="HL-L6210DW", serial_number="E78113K4N",
+                 location="Front desk",
+                 attributes={"ip_address": "192.168.1.40"}),
+        ]  # fmt: skip
+        for n, row in enumerate(rows, start=1):
+            owner, vendor = row.pop("owner", "SELF"), row.pop("vendor", None)
+            expense, receipt = row.pop("expense", None), row.pop("receipt", False)
+            asset = Asset(
+                organization_id=self.org.id,
+                tag=f"A-{n:04d}",
+                category_id=categories[row.pop("category")],
+                owner_party_id=self.parties[owner].id,
+                vendor_party_id=self.parties[vendor].id if vendor else None,
+                expense_id=expense.id if expense else None,
+                **row,
+            )
+            if receipt:
+                pdf = _pdf("Receipt", [self.parties["ALLEGHENY"].name, row["name"],
+                                       f"Total: ${row['purchase_price']:,.2f}"])  # fmt: skip
+                stored = store_file(self.s, self.org.id, pdf, "nas-receipt.pdf", "application/pdf")
+                asset.attachments = [AssetAttachment(file_id=stored.id)]
+            self.s.add(asset)
+        self.s.flush()
+        # The next automatic tag follows the demo's own.
+        for _ in rows:
+            next_number(self.s, self.org.id, "asset")
+        self.s.flush()
+
     # -- tax filing and archive -------------------------------------------------------------------
 
     def tax_filing(self) -> None:
@@ -1418,6 +1501,7 @@ class DemoLoader:
         self.deposits()
         self.expenses()
         self.card_payments_and_statements()
+        self.assets()
         self.tax_filing()
         self.emails()
         # The oldest two months are archived, as a business would after closing its books.
@@ -1431,6 +1515,7 @@ class DemoLoader:
             "payments": len(self.s.scalars(select(Payment.id)).all()),
             "expenses": len(self.s.scalars(select(Expense.id)).all()),
             "bank lines": len(self.s.scalars(select(BankEntry.id)).all()),
+            "assets": len(self.s.scalars(select(Asset.id)).all()),
         }
         return Summary(self.org, counts)
 

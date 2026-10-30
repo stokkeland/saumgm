@@ -197,3 +197,20 @@ class BankEntryKind(StrEnum):
     EXPENSE = "expense"
     TRANSFER = "transfer"
     ADJUSTMENT = "adjustment"  # brings the register in line with a statement
+
+
+class AssetStatus(StrEnum):
+    IN_USE = "in_use"
+    IN_STOCK = "in_stock"
+    IN_REPAIR = "in_repair"
+    RETIRED = "retired"  # no longer used, still on hand
+    DISPOSED = "disposed"  # sold, scrapped, returned
+
+
+class AssetFieldType(StrEnum):
+    """Types of a category's extra fields."""
+
+    TEXT = "text"
+    NUMBER = "number"
+    DATE = "date"
+    BOOL = "bool"

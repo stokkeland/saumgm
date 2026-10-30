@@ -41,6 +41,7 @@ def _settings_out(db: DbSession, org: Organization) -> ReminderSettingsOut:
         bill_days=org.remind_bill_days,
         pay_days=org.remind_pay_days,
         reconcile_days=org.remind_reconcile_days,
+        asset_days=org.remind_asset_days,
         recipients=service.split_addresses(org.remind_to),
         owners=service.owners(db, org.id),
         app_url=get_settings().app_url,
@@ -69,6 +70,8 @@ def update_reminder_settings(
         org.remind_pay_days = body.pay_days
     if body.reconcile_days is not None:
         org.remind_reconcile_days = body.reconcile_days
+    if body.asset_days is not None:
+        org.remind_asset_days = body.asset_days
     if body.recipients is not None:
         addresses = [a.strip() for a in body.recipients if a.strip()]
         bad = service.bad_addresses(addresses)

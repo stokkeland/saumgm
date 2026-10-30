@@ -25,6 +25,7 @@ from saumgm.api.deps import Auth, DbSession, Owner, Reader
 from saumgm.documents import deposit_slip_pdf, invoice_pdf, receipt_pdf
 from saumgm.enums import UserRoleType
 from saumgm.models import (
+    AssetAttachment,
     Deposit,
     Invoice,
     InvoiceRevision,
@@ -65,10 +66,12 @@ def _stored(db: DbSession, file_id: int, auth: Auth) -> Response:
 
 @router.get("/files/{file_id}")
 def download(file_id: int, auth: Reader, db: DbSession) -> Response:
-    # Contact documents (W-9s...) have their own audited download for owners and bookkeepers.
-    is_document = select(PartyDocument.id).where(PartyDocument.file_id == file_id).limit(1)
-    if auth.role == UserRoleType.VIEWER and db.scalar(is_document):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Your role does not allow this")
+    # Contact documents (W-9s...) have their own audited download for owners and bookkeepers;
+    # asset attachments (configurations) can hold passwords.
+    if auth.role == UserRoleType.VIEWER:
+        for model in (PartyDocument, AssetAttachment):
+            if db.scalar(select(model.id).where(model.file_id == file_id).limit(1)):
+                raise HTTPException(status.HTTP_403_FORBIDDEN, "Your role does not allow this")
     return _stored(db, file_id, auth)
 
 

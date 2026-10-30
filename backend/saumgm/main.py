@@ -22,6 +22,7 @@ from sqlalchemy.exc import IntegrityError
 
 from saumgm import __version__
 from saumgm.api import (
+    assets,
     audit,
     auth,
     banking,
@@ -57,6 +58,7 @@ ROUTERS = (
     payments.router,
     expenses.router,
     banking.router,
+    assets.router,
     subscriptions.router,
     vendor_subscriptions.router,
     tax.router,

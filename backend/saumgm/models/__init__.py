@@ -17,6 +17,7 @@
 
 from saumgm.db import Base
 from saumgm.models.accounts import Account
+from saumgm.models.assets import Asset, AssetAttachment, AssetCategory
 from saumgm.models.audit import AuditLog
 from saumgm.models.banking import BankAccount, BankEntry, BankReconciliation
 from saumgm.models.catalog import CatalogItem, CatalogPackage, CatalogPackageItem, RevenueCategory
@@ -47,6 +48,9 @@ from saumgm.models.users import AuthSession, User, UserIdentity, UserRole
 
 __all__ = [
     "Account",
+    "Asset",
+    "AssetAttachment",
+    "AssetCategory",
     "AuditLog",
     "AuthSession",
     "BankAccount",

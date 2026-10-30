@@ -31,7 +31,7 @@ class ReminderItem(BaseModel):
 
 
 class ReminderSection(BaseModel):
-    key: str = Field(description="bill, pay, collect, documents, banking")
+    key: str = Field(description="bill, pay, collect, documents, banking, assets")
     title: str
     summary: str
     link: str
@@ -54,6 +54,7 @@ class ReminderSettingsOut(BaseModel):
     bill_days: int
     pay_days: int
     reconcile_days: int
+    asset_days: int
     # Who gets the digest; empty means the owners (listed in `owners`).
     recipients: list[str]
     owners: list[str]
@@ -65,4 +66,5 @@ class ReminderSettingsPatch(BaseModel):
     bill_days: int | None = Field(None, ge=0, le=365)
     pay_days: int | None = Field(None, ge=0, le=365)
     reconcile_days: int | None = Field(None, ge=1, le=365)
+    asset_days: int | None = Field(None, ge=1, le=365)
     recipients: list[str] | None = None

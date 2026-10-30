@@ -54,6 +54,7 @@ import { HistoryPanel } from '../../components/HistoryPanel'
 import { ArchivedBadge, DateText, Money, PageHeader, PaymentStatusBadge } from '../../components/ui'
 import { ADDRESS_TYPES, labelOf, PAYMENT_METHODS } from '../../lib/labels'
 import { notifyError, notifySaved } from '../../lib/notify'
+import { ContactAssets } from '../assets/AssetPages'
 import { ContactDocuments } from './ContactDocuments'
 import { AddressForm, ContactForm, ExemptionForm, PersonForm } from './ContactForm'
 import { RoleBadges } from './ContactsPage'
@@ -543,6 +544,7 @@ export function ContactPage() {
           <Tabs.Tab value="details">Addresses & people</Tabs.Tab>
           <Tabs.Tab value="tax">Tax</Tabs.Tab>
           <Tabs.Tab value="documents">Documents</Tabs.Tab>
+          <Tabs.Tab value="assets">Assets</Tabs.Tab>
           {isClient && <Tabs.Tab value="invoices">Invoices</Tabs.Tab>}
           {isClient && <Tabs.Tab value="payments">Payments</Tabs.Tab>}
           <Tabs.Tab value="history">History</Tabs.Tab>
@@ -556,6 +558,9 @@ export function ContactPage() {
         </Tabs.Panel>
         <Tabs.Panel value="documents">
           <ContactDocuments contact={contact} canEdit={editable} />
+        </Tabs.Panel>
+        <Tabs.Panel value="assets">
+          <ContactAssets partyId={contact.id} />
         </Tabs.Panel>
         <Tabs.Panel value="invoices">
           <ContactInvoices partyId={contact.id} />

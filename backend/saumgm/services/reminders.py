@@ -55,7 +55,7 @@ from saumgm.models import (
     VendorSubscription,
 )
 from saumgm.schemas.reminders import ReminderItem, ReminderSection, RemindersOut
-from saumgm.services import banking, party_documents
+from saumgm.services import assets, banking, party_documents
 from saumgm.services import invoices as invoice_service
 from saumgm.services import subscriptions as subscription_service
 from saumgm.services.emailing import ADDRESS, Draft
@@ -372,13 +372,47 @@ def reconcile(session: Session, org: Organization, today: date) -> Section | Non
     )
 
 
-# The to-do list in order. Assets (G) add theirs here.
+def asset_contracts(session: Session, org: Organization, today: date) -> Section | None:
+    """Warranties and support contracts of assets in use ending soon (or just ended)."""
+    rows = assets.ending(session, org.id, today, org.remind_asset_days)
+    if not rows:
+        return None
+    names = _party_names(session, {a.owner_party_id for a, _, _ in rows if a.owner_party_id})
+    items = []
+    for asset, what, day in rows:
+        label = "warranty" if what == "warranty" else "support contract"
+        owner = names.get(asset.owner_party_id) if asset.owner_party_id else None
+        mine = asset.owner_party_id is None or asset.owner_party_id == org.self_party_id
+        items.append(
+            Item(
+                title=f"{asset.tag} {asset.name}" + ("" if mine or not owner else f" ({owner})"),
+                date=day,
+                link=f"/assets/{asset.id}",
+                note=f"{label} {'ended' if day < today else 'ends'}",
+                flag="expired" if day < today else "expiring",
+            )
+        )
+    are = "is" if len(items) == 1 else "are"
+    contract, contracts = "warranty or support contract", "warranties or support contracts"
+    return Section(
+        key="assets",
+        title="Assets",
+        summary=f"{plural(len(items), contract, contracts)} {are} ending around now "
+        f"(within {plural(org.remind_asset_days, 'day')})",
+        short=plural(len(items), "warranty", "warranties"),
+        link="/assets",
+        items=items,
+    )
+
+
+# The to-do list in order.
 SECTIONS: tuple[Callable[[Session, Organization, date], Section | None], ...] = (
     bill_clients,
     pay_vendors,
     collect,
     documents,
     reconcile,
+    asset_contracts,
 )
 
 

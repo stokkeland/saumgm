@@ -31,6 +31,7 @@ test('a register: entry, card payment by transfer, reconciling with a statement'
     data: { name: cardName, kind: 'credit_card', opening_date: isoInDays(-40), opening_balance: '-100' },
   })
   expect(card.status()).toBe(201)
+  const cardId: number = (await card.json()).id
   let checkingId = 0
 
   try {
@@ -71,7 +72,7 @@ test('a register: entry, card payment by transfer, reconciling with a statement'
     await rec.getByRole('textbox', { name: 'Ending balance' }).fill('875')
     await rec.getByRole('checkbox', { name: /On the statement: E2E bank fee/ }).check()
     await expect(rec.getByText(/Difference:/)).not.toHaveText(/\$0\.00/)
-    await rec.getByRole('checkbox', { name: new RegExp(`On the statement: ${cardName}`) }).check()
+    await rec.getByRole('checkbox', { name: new RegExp(`On the statement: Transfer to ${cardName}`) }).check()
     await expect(rec.getByText(/Difference:/)).toHaveText(/\$0\.00/)
     await screenshot(page, 'bank-reconcile')
     await rec.getByRole('button', { name: 'Reconcile', exact: true }).click()
@@ -85,7 +86,7 @@ test('a register: entry, card payment by transfer, reconciling with a statement'
     await screenshot(page, 'bank-accounts')
   } finally {
     // closed, so they leave the e2e database's lists and reminders alone
-    for (const id of [checkingId, (await card.json()).id]) {
+    for (const id of [checkingId, cardId]) {
       if (id) await page.request.patch(`/api/bank-accounts/${id}`, { headers, data: { is_active: false } })
     }
   }
