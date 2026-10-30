@@ -437,6 +437,12 @@ client's subscription), network discovery or agents.
 contact, defaulting to your business; the asset list filters by owner, and a client's page gets
 an Assets tab.
 
+Built in part G as described, with these details: assets live under a new Operations menu
+section and the categories under Admin (owner); the to-do list's Assets section lists
+warranties and support contracts ending within 30 days, or ended within 30 days, of assets
+still around (in use, in stock, in repair); viewers cannot open asset files (configurations can
+hold passwords); deleting an asset is for mistakes (owner), otherwise it is marked disposed.
+
 ### H. Knowledge base
 
 A simple documentation hub: write articles in Markdown, find them by search, send them to clients.

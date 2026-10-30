@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from saumgm.enums import JurisdictionLevel
 from saumgm.models import (
+    AssetCategory,
     NumberSequence,
     Organization,
     TaxabilityRule,
@@ -62,6 +63,51 @@ TAX_CATEGORIES = [
     ("services", "Labor and professional services", "Consulting, development, repair labor."),
     ("exempt", "Non-taxable", "Never taxed."),
 ]
+
+
+COMPUTER_FIELDS = [
+    ("cpu", "CPU", "text"),
+    ("ram", "RAM", "text"),
+    ("os", "Operating system", "text"),
+]
+NETWORK_FIELDS = [("ip_address", "IP address", "text"), ("mac_address", "MAC address", "text")]
+# Asset categories every new business starts with (Admin -> Asset categories changes them), with
+# their extra fields as (key, label, type).
+ASSET_CATEGORIES: list[tuple[str, list[tuple[str, str, str]]]] = [
+    ("Laptop", COMPUTER_FIELDS),
+    ("Desktop", COMPUTER_FIELDS),
+    ("Server", [*COMPUTER_FIELDS, *NETWORK_FIELDS]),
+    ("Monitor", []),
+    ("Network", NETWORK_FIELDS),  # router, switch, firewall, access point
+    ("Printer", NETWORK_FIELDS[:1]),
+    (
+        "Phone / tablet",
+        [("os", "Operating system", "text"), ("phone_number", "Phone number", "text")],
+    ),
+    ("Storage", [("capacity", "Capacity", "text"), *NETWORK_FIELDS[:1]]),  # NAS, disks
+    ("Peripheral", []),
+    (
+        "Software license",
+        [
+            ("license_key", "License key", "text"),
+            ("seats", "Seats", "number"),
+            ("renewal_date", "Renewal date", "date"),
+        ],
+    ),
+    ("Other", []),
+]
+
+
+def asset_category_rows(organization_id: int) -> list[AssetCategory]:
+    return [
+        AssetCategory(
+            organization_id=organization_id,
+            name=name,
+            sort_order=n * 10,
+            fields=[{"key": k, "label": label, "type": t} for k, label, t in fields],
+        )
+        for n, (name, fields) in enumerate(ASSET_CATEGORIES)
+    ]
 
 
 @dataclass
@@ -164,5 +210,7 @@ def create_organization(session: Session, setup: OrganizationSetup) -> Organizat
                 is_taxable=False,
             )
         )
+    session.flush()
+    session.add_all(asset_category_rows(org.id))
     session.flush()
     return org

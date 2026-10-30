@@ -33,6 +33,7 @@ function SettingsForm({ settings }: { settings: Settings }) {
       bill_days: settings.bill_days,
       pay_days: settings.pay_days,
       reconcile_days: settings.reconcile_days,
+      asset_days: settings.asset_days,
       recipients: settings.recipients.join('\n'),
     },
   })
@@ -44,6 +45,7 @@ function SettingsForm({ settings }: { settings: Settings }) {
             bill_days: Number(values.bill_days),
             pay_days: Number(values.pay_days),
             reconcile_days: Number(values.reconcile_days),
+            asset_days: Number(values.asset_days),
             recipients: values.recipients.split(/[\s,;]+/).filter(Boolean),
           },
         }),
@@ -63,7 +65,7 @@ function SettingsForm({ settings }: { settings: Settings }) {
       <form onSubmit={form.onSubmit((v) => save.mutate(v))}>
         <Stack>
           <Title order={5}>Lead times</Title>
-          <SimpleGrid cols={{ base: 1, sm: 3 }}>
+          <SimpleGrid cols={{ base: 1, sm: 2 }}>
             <NumberInput
               label="Bill clients"
               description="Client subscriptions due for billing within this many days"
@@ -87,6 +89,14 @@ function SettingsForm({ settings }: { settings: Settings }) {
               max={365}
               suffix=" days"
               {...form.getInputProps('reconcile_days')}
+            />
+            <NumberInput
+              label="Asset warranties"
+              description="Warranties and support contracts ending (or ended) within this many days"
+              min={1}
+              max={365}
+              suffix=" days"
+              {...form.getInputProps('asset_days')}
             />
           </SimpleGrid>
           <Text size="sm" c="dimmed">

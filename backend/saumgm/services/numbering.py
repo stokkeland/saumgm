@@ -29,6 +29,7 @@ DEFAULTS = {
     "invoice": ("", 0, 1),
     "credit_note": ("CN-", 0, 1),
     "party": ("", 8, 1),
+    "asset": ("A-", 4, 1),
 }
 
 

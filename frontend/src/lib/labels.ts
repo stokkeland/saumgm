@@ -124,3 +124,26 @@ export const BANK_ENTRY_KINDS = [
   { value: 'transfer', label: 'Transfer' },
   { value: 'adjustment', label: 'Balance adjustment' },
 ]
+
+export const ASSET_STATUSES = [
+  { value: 'in_use', label: 'In use' },
+  { value: 'in_stock', label: 'In stock' },
+  { value: 'in_repair', label: 'In repair' },
+  { value: 'retired', label: 'Retired' },
+  { value: 'disposed', label: 'Disposed' },
+]
+
+export const ASSET_STATUS_COLORS: Record<string, string> = {
+  in_use: 'green',
+  in_stock: 'blue',
+  in_repair: 'orange',
+  retired: 'gray',
+  disposed: 'gray',
+}
+
+export const ASSET_FIELD_TYPES = [
+  { value: 'text', label: 'Text' },
+  { value: 'number', label: 'Number' },
+  { value: 'date', label: 'Date' },
+  { value: 'bool', label: 'Yes / no' },
+]

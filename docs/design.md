@@ -275,6 +275,14 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - The to-do list's **Banking** section lists open accounts whose last reconciled statement (or start) is older than `organization.remind_reconcile_days` (default 35).
 - Later: importing the bank's CSV or OFX file.
 
+### 4.15 Assets (a first step toward a CMDB)
+- `asset` — `tag` (unique; numbered `A-0001` by the `asset` number sequence unless given), `name`, `category_id`, `manufacturer`, `model`, `serial_number`, `status` (in use, in stock, in repair, retired, disposed), `owner_party_id` (the business itself by default, or a client whose equipment is managed; a contact's page has an Assets tab), `location`, `assigned_to` (free text for now), `purchase_date`, `purchase_price`, `vendor_party_id`, `expense_id` (the expense that paid for it), `warranty_expires`, `support_ends`, `notes`, `attributes` (JSON: the category's extra fields).
+- `asset_category` — an editable list (Admin → Asset categories; owner), seeded for every business: Laptop, Desktop, Server, Monitor, Network, Printer, Phone / tablet, Storage, Peripheral, Software license, Other. `fields` defines extra fields `{key, label, type}` (text, number, date, yes/no), e.g. CPU, RAM and OS for computers, license key, seats and renewal date for software, IP and MAC address for network equipment. Values are checked against the fields when saved; changing an asset's category keeps the values of fields both categories have. The search covers the extra fields too.
+- `asset_attachment` — receipts, photos, configuration backups (file storage). Viewers cannot open them (configurations can hold passwords), as with contact documents.
+- Deleting an asset is owner-only and meant for mistakes; equipment sold or scrapped is marked disposed. Retired and disposed assets are not checked for warranties.
+- The to-do list's **Assets** section: warranties and support contracts of assets in use, in stock or in repair that end within `organization.remind_asset_days` (default 30) or ended within as many days.
+- Later: relationships between assets, a maintenance log, links to subscriptions (the server behind a client's hosting), discovery or agents.
+
 ### 4.11 Archiving
 - Invoices, payments, deposits and expenses have `archived_at` (NULL = current). Archived records stay in their tables, keep all links, and count in every report; they are only hidden from everyday lists.
 - Lists default to current records, with a "show archived" toggle (and an `include_archived` / `archived_only` filter on the API). Archived records open read-only; unarchiving is allowed for the owner role.
@@ -293,6 +301,7 @@ Defaults chosen while building: a line with no tax category, or a category witho
 - **Subscriptions** — client subscriptions with lines and packages, the billing run; vendor subscriptions with payments.
 - **Invoices** — list (default: unpaid, not archived), editor (line entry with catalog search, live totals and tax), issue/void/credit note, PDF.
 - **Payments** — receive payment, undeposited funds, deposits + slip (deposited to a bank account).
+- **Assets** — equipment and licenses (own and clients'), with categories, extra fields and files (§4.15).
 - **Bank accounts** — accounts with balances (cards show what is owed), each with its register, transfers and reconciling (§4.14).
 - **Expenses** — list by period/account/vendor, quick entry with receipts.
 - **Reports** — sales by month/client/revenue category, sales tax (by date range or filing period, accrual or cash), expenses by account/vendor/month, profit & loss (with cost of goods and bad debts), receivables aging. Sales and profit & loss count income by invoice date or by payment date (`organization.income_basis`, switchable per report): by payment date, each payment counts when received, without its tax share, spread over the invoice's lines for the category view; unpaid and written-off amounts never count, and credit notes do not count until refunds are recorded. Each report is built once as a `ReportDocument` (documents.py) and comes out as CSV, as a PDF (letterhead, period, basis, page numbers, generated time) or by email with that PDF; downloads and emails are audited. Invoice PDFs, receipts and deposit slips open from their pages. The invoice list with its filters covers the "invoice listing".

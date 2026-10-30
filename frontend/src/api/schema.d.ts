@@ -1096,6 +1096,124 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/asset-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Categories */
+        get: operations["list_categories_api_asset_categories_get"];
+        put?: never;
+        /** Create Category */
+        post: operations["create_category_api_asset_categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/asset-categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Category */
+        delete: operations["delete_category_api_asset_categories__category_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Category
+         * @description Removing a field keeps the values already stored with assets, hidden, until the field
+         *     comes back or the asset is saved with other values.
+         */
+        patch: operations["update_category_api_asset_categories__category_id__patch"];
+        trace?: never;
+    };
+    "/api/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: operations["list_assets_api_assets_get"];
+        put?: never;
+        /** Create Asset */
+        post: operations["create_asset_api_assets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assets/{asset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Asset */
+        get: operations["get_asset_api_assets__asset_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Asset
+         * @description For mistakes; an asset sold or scrapped is marked disposed instead.
+         */
+        delete: operations["delete_asset_api_assets__asset_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Asset */
+        patch: operations["update_asset_api_assets__asset_id__patch"];
+        trace?: never;
+    };
+    "/api/assets/{asset_id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Attachment
+         * @description A receipt, photo or configuration file (any type, at most 20 MB). Viewers cannot open
+         *     them: configurations can hold passwords.
+         */
+        post: operations["add_attachment_api_assets__asset_id__attachments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/assets/{asset_id}/attachments/{attachment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Attachment */
+        delete: operations["remove_attachment_api_assets__asset_id__attachments__attachment_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/subscriptions": {
         parameters: {
             query?: never;
@@ -2392,6 +2510,264 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** AssetAttachmentOut */
+        AssetAttachmentOut: {
+            /** Id */
+            id: number;
+            /** File Id */
+            file_id: number;
+            /** Name */
+            name: string;
+            /** Content Type */
+            content_type: string | null;
+            /** Size */
+            size: number;
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+        };
+        /** AssetCategoryCreate */
+        AssetCategoryCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Sort Order
+             * @default 0
+             */
+            sort_order: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+            /**
+             * Fields
+             * @default []
+             */
+            fields: components["schemas"]["AssetFieldDef"][];
+        };
+        /** AssetCategoryOut */
+        AssetCategoryOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Sort Order */
+            sort_order: number;
+            /** Is Active */
+            is_active: boolean;
+            /** Fields */
+            fields: components["schemas"]["AssetFieldDef"][];
+            /**
+             * Assets
+             * @description How many assets are in it
+             */
+            assets: number;
+        };
+        /** AssetCategoryPatch */
+        AssetCategoryPatch: {
+            /** Name */
+            name?: string | null;
+            /** Sort Order */
+            sort_order?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Fields */
+            fields?: components["schemas"]["AssetFieldDef"][] | null;
+        };
+        /** AssetCreate */
+        AssetCreate: {
+            /** Category Id */
+            category_id?: number | null;
+            /** Manufacturer */
+            manufacturer?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Serial Number */
+            serial_number?: string | null;
+            /** Location */
+            location?: string | null;
+            /** Assigned To */
+            assigned_to?: string | null;
+            /** Purchase Date */
+            purchase_date?: string | null;
+            /** Purchase Price */
+            purchase_price?: number | string | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /**
+             * Expense Id
+             * @description The expense that paid for it
+             */
+            expense_id?: number | null;
+            /** Warranty Expires */
+            warranty_expires?: string | null;
+            /**
+             * Support Ends
+             * @description Support or maintenance contract
+             */
+            support_ends?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Tag
+             * @description Empty: the next number (A-0001)
+             */
+            tag?: string | null;
+            /** Name */
+            name: string;
+            /** @default in_use */
+            status: components["schemas"]["AssetStatus"];
+            /**
+             * Owner Party Id
+             * @description Empty: the business itself
+             */
+            owner_party_id?: number | null;
+            /**
+             * Attributes
+             * @default {}
+             */
+            attributes: {
+                [key: string]: string | number | boolean | null;
+            };
+        };
+        /** AssetFieldDef */
+        AssetFieldDef: {
+            /**
+             * Key
+             * @description Stored name, e.g. ram
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /** @default text */
+            type: components["schemas"]["AssetFieldType"];
+        };
+        /**
+         * AssetFieldType
+         * @description Types of a category's extra fields.
+         * @enum {string}
+         */
+        AssetFieldType: "text" | "number" | "date" | "bool";
+        /** AssetOut */
+        AssetOut: {
+            /** Category Id */
+            category_id?: number | null;
+            /** Manufacturer */
+            manufacturer?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Serial Number */
+            serial_number?: string | null;
+            /** Location */
+            location?: string | null;
+            /** Assigned To */
+            assigned_to?: string | null;
+            /** Purchase Date */
+            purchase_date?: string | null;
+            /** Purchase Price */
+            purchase_price?: string | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /**
+             * Expense Id
+             * @description The expense that paid for it
+             */
+            expense_id?: number | null;
+            /** Warranty Expires */
+            warranty_expires?: string | null;
+            /**
+             * Support Ends
+             * @description Support or maintenance contract
+             */
+            support_ends?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Id */
+            id: number;
+            /** Tag */
+            tag: string;
+            /** Name */
+            name: string;
+            status: components["schemas"]["AssetStatus"];
+            /** Owner Party Id */
+            owner_party_id: number | null;
+            /** Owner Name */
+            owner_name: string | null;
+            /** Category Name */
+            category_name: string | null;
+            /** Vendor Name */
+            vendor_name: string | null;
+            /** Attributes */
+            attributes: {
+                [key: string]: string | number | boolean | null;
+            };
+            /** Attachments */
+            attachments: components["schemas"]["AssetAttachmentOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** AssetPatch */
+        AssetPatch: {
+            /** Category Id */
+            category_id?: number | null;
+            /** Manufacturer */
+            manufacturer?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Serial Number */
+            serial_number?: string | null;
+            /** Location */
+            location?: string | null;
+            /** Assigned To */
+            assigned_to?: string | null;
+            /** Purchase Date */
+            purchase_date?: string | null;
+            /** Purchase Price */
+            purchase_price?: number | string | null;
+            /** Vendor Party Id */
+            vendor_party_id?: number | null;
+            /**
+             * Expense Id
+             * @description The expense that paid for it
+             */
+            expense_id?: number | null;
+            /** Warranty Expires */
+            warranty_expires?: string | null;
+            /**
+             * Support Ends
+             * @description Support or maintenance contract
+             */
+            support_ends?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Tag */
+            tag?: string | null;
+            /** Name */
+            name?: string | null;
+            status?: components["schemas"]["AssetStatus"] | null;
+            /** Owner Party Id */
+            owner_party_id?: number | null;
+            /** Attributes */
+            attributes?: {
+                [key: string]: string | number | boolean | null;
+            } | null;
+        };
+        /**
+         * AssetStatus
+         * @enum {string}
+         */
+        AssetStatus: "in_use" | "in_stock" | "in_repair" | "retired" | "disposed";
         /**
          * AuditActor
          * @enum {string}
@@ -2700,6 +3076,11 @@ export interface components {
          * @enum {string}
          */
         BillingTiming: "advance" | "arrears";
+        /** Body_add_attachment_api_assets__asset_id__attachments_post */
+        Body_add_attachment_api_assets__asset_id__attachments_post: {
+            /** File */
+            file: string;
+        };
         /** Body_add_document_api_contacts__party_id__documents_post */
         Body_add_document_api_contacts__party_id__documents_post: {
             document_type: components["schemas"]["DocumentType"];
@@ -4170,6 +4551,17 @@ export interface components {
             /** Items */
             items?: components["schemas"]["PackageItemIn"][] | null;
         };
+        /** Page[AssetOut] */
+        Page_AssetOut_: {
+            /** Items */
+            items: components["schemas"]["AssetOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
         /** Page[AuditEntry] */
         Page_AuditEntry_: {
             /** Items */
@@ -4792,7 +5184,7 @@ export interface components {
         ReminderSection: {
             /**
              * Key
-             * @description bill, pay, collect, documents, banking
+             * @description bill, pay, collect, documents, banking, assets
              */
             key: string;
             /** Title */
@@ -4816,6 +5208,8 @@ export interface components {
             pay_days: number;
             /** Reconcile Days */
             reconcile_days: number;
+            /** Asset Days */
+            asset_days: number;
             /** Recipients */
             recipients: string[];
             /** Owners */
@@ -4831,6 +5225,8 @@ export interface components {
             pay_days?: number | null;
             /** Reconcile Days */
             reconcile_days?: number | null;
+            /** Asset Days */
+            asset_days?: number | null;
             /** Recipients */
             recipients?: string[] | null;
         };
@@ -8683,6 +9079,353 @@ export interface operations {
             header?: never;
             path: {
                 rec_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_categories_api_asset_categories_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetCategoryOut"][];
+                };
+            };
+        };
+    };
+    create_category_api_asset_categories_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetCategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_category_api_asset_categories__category_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_category_api_asset_categories__category_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetCategoryPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetCategoryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_assets_api_assets_get: {
+        parameters: {
+            query?: {
+                /** @description Tag, name, make, model, serial, place, person, and the extra fields */
+                q?: string | null;
+                category_id?: number | null;
+                status?: components["schemas"]["AssetStatus"][] | null;
+                owner_party_id?: number | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AssetOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_asset_api_assets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_asset_api_assets__asset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_asset_api_assets__asset_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_asset_api_assets__asset_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_attachment_api_assets__asset_id__attachments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_add_attachment_api_assets__asset_id__attachments_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_attachment_api_assets__asset_id__attachments__attachment_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                asset_id: number;
+                attachment_id: number;
             };
             cookie?: never;
         };

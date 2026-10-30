@@ -17,6 +17,7 @@
 
 import type { AppModule } from './types'
 import { adminModule } from './admin/module'
+import { assetsModule } from './assets/module'
 import { bankingModule } from './banking/module'
 import { catalogModule } from './catalog/module'
 import { contactsModule } from './contacts/module'
@@ -41,6 +42,7 @@ export const MODULES: AppModule[] = [
   bankingModule,
   depositsModule,
   expensesModule,
+  assetsModule,
   reportsModule,
   adminModule,
 ]

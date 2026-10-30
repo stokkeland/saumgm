@@ -139,7 +139,8 @@ def test_sections(owner_client: TestClient, busy: date) -> None:
 def test_lead_times(owner_client: TestClient, busy: date) -> None:
     settings = ok(owner_client.get("/api/reminders/settings"))
     assert settings | {"app_url": None} == {
-        "bill_days": 14, "pay_days": 10, "reconcile_days": 35, "recipients": [],
+        "bill_days": 14, "pay_days": 10, "reconcile_days": 35, "asset_days": 30,
+        "recipients": [],
         "owners": ["owner@example.com"],
         "app_url": None,
     }  # fmt: skip

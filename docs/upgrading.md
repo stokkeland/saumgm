@@ -218,6 +218,10 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
   Older deposits can be given an account on their page (if dated after the register starts).
 - The to-do list has a **Banking** section (accounts not reconciled for 35 days; Admin →
   Reminders changes it).
+- New: **Operations → Assets** (equipment and licenses, your own and clients'; a contact's
+  page has an Assets tab) and **Admin → Asset categories**. The upgrade gives every business the
+  default categories (Laptop, Server, Network, Software license...). The to-do list has an
+  **Assets** section for warranties and support contracts ending (30 days; Admin → Reminders).
 - Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →
