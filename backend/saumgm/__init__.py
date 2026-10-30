@@ -15,4 +15,4 @@
 
 """SauMGM - small business management system."""
 
-__version__ = "2.0.0.dev0"
+__version__ = "2.0.0"

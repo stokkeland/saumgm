@@ -9,14 +9,16 @@ you start.
 - [Upgrading the development PC](#upgrading-the-development-pc)
 - [Checking the result](#checking-the-result)
 - [Going back](#going-back)
-- [Version notes](#version-notes): [2.0](#20-in-development), [1.0](#10)
+- [Version notes](#version-notes): [2.0](#20), [1.0](#10)
+
+New installations follow [deploy/ubuntu.md](deploy/ubuntu.md) and need none of this.
 
 ## How versions are published
 
 | Where | What |
 |---|---|
-| `release/vX.Y` branches (`release/v1.0`, later `release/v2.0`) | a released version and its fixes. Servers follow one of these. |
-| tags `vX.Y.Z` (`v1.0.0`, ...) | one exact version |
+| `release/vX.Y` branches (`release/v1.0`, `release/v2.0`) | a released version and its fixes. Servers follow one of these. |
+| tags `vX.Y.Z` (`v1.0.0`, `v2.0.0`, ...) | one exact version |
 | `main` | the next version while it is being built; changes arrive through pull requests |
 
 The running version is in `/api/health` (`"version"`), see [Checking the result](#checking-the-result).
@@ -47,15 +49,54 @@ and it fails if the database schema is not the newest one afterwards.
    ```
 4. [Check the result](#checking-the-result).
 
-**From 1.0 to 2.0**, once `release/v2.0` exists: the update script that came with 1.0 does not
-know `--branch` yet, so the switch is done by hand the first time:
+### From 1.0 to 2.0, step by step
 
-```sh
-cd /opt/saumgm
-git fetch origin                         # with sudo only if root owns /opt/saumgm
-git switch release/v2.0
-sudo deploy/update.sh --no-pull          # backup, packages, migrations, frontend, restart
-```
+Logged in as your admin account. **you** means without `sudo` when `/opt/saumgm` belongs to
+you (`stat -c %U /opt/saumgm` prints your name); if it prints `root`, put `sudo` in front of
+those lines too. **root** means with `sudo`. Never `sudo git` in a folder you own.
+
+1. Read the [2.0 notes](#20) below: what changes, what the upgrade deletes (the `legacy_*`
+   tables) and what to check afterwards.
+2. **root**: add the new settings to `.env` (it belongs to root):
+   ```sh
+   sudo nano /opt/saumgm/backend/.env
+   ```
+   ```ini
+   EMAIL_URL=resend://
+   RESEND_API_KEY=re_...                # Resend → API Keys, "Sending access"
+   APP_URL=https://saumgm.example.com   # the address you open the app at
+   ```
+   Without them 2.0 runs as well; it just sends no email (messages go to the log). Resend needs
+   your domain verified first ([deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration)).
+3. **you**: switch the checkout to 2.0:
+   ```sh
+   cd /opt/saumgm
+   git status                     # must say "nothing to commit"; undo hand edits first
+   git fetch origin
+   git switch release/v2.0
+   git log -1 --oneline           # the 2.0 code is now in place
+   ```
+4. **root**: run the 2.0 update script on the code now there. It backs up the database and
+   files first, then installs the Python packages, runs the migrations, builds the frontend,
+   restarts the API and checks the health:
+   ```sh
+   sudo /opt/saumgm/deploy/update.sh --no-pull
+   ```
+   (Steps 3 and 4 in one: `sudo /opt/saumgm/deploy/update.sh --branch release/v2.0` works
+   when the server has the latest `release/v1.0`, whose script knows `--branch`; the script of
+   the `v1.0.0` tag itself does not.)
+5. **root**: install the timer for the daily reminders digest (new in 2.0; `update.sh` does
+   not install units):
+   ```sh
+   sudo cp /opt/saumgm/deploy/systemd/saumgm-notify.service /opt/saumgm/deploy/systemd/saumgm-notify.timer /etc/systemd/system/
+   sudo systemctl daemon-reload && sudo systemctl enable --now saumgm-notify.timer
+   ```
+6. **In the app** (as an owner): Admin → Email: set the sender and press "Send test"; Admin →
+   Reminders: who gets the digest.
+7. [Check the result](#checking-the-result) and the "After upgrading, check" list in the
+   [2.0 notes](#20).
+
+If anything goes wrong, [go back](#going-back) with the backup from step 4.
 
 **Several instances:** add `--instance NAME` to every `update.sh` call, and use the instance's
 folder (`/opt/saumgm-NAME`). Update the test instance first; see
@@ -122,8 +163,8 @@ Migrations only move forward, so going back to an older version means restoring 
 2. Restore the database and files from `/var/backups/saumgm` (the newest `saumgm-db-...` and
    `saumgm-files-...` from before the upgrade), as in
    [deploy/ubuntu.md, section 9](deploy/ubuntu.md#9-backups).
-3. `cd /opt/saumgm && git switch release/v1.0` (the version you came from; `sudo git` if root
-   owns the folder).
+3. `cd /opt/saumgm && git switch release/v1.0` (the version you came from), as the folder's
+   owner: without `sudo` if it is yours.
 4. `sudo deploy/update.sh --no-pull`
 
 Anything entered after the upgrade is lost, so decide quickly, and keep the backup until the new
@@ -131,10 +172,10 @@ version has run for a few days.
 
 ## Version notes
 
-### 2.0 (in development)
+### 2.0
 
-Being built on `main`; see [plan-v2.md](plan-v2.md). This list grows with every merged pull
-request.
+Released as `release/v2.0`, tag `v2.0.0`; built as described in [plan-v2.md](plan-v2.md). From
+1.0, follow [the steps above](#from-10-to-20-step-by-step).
 
 **New settings (`.env`)**, all optional (without them nothing is sent; messages only go to
 the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
@@ -226,7 +267,7 @@ the log). See [deploy/ubuntu.md, section 4](deploy/ubuntu.md#4-configuration):
   category tree, search, every saved version, images and files, PDF, and "Email to…" for
   published, shareable articles (a contact's page has an Articles tab). Starts empty. The email
   text can be changed in Admin → Email (the new "Knowledge base article" template).
-- Version numbers: `2.0.0.dev0` (backend) and `2.0.0-dev.0` (frontend) during development.
+- Version `2.0.0` (Admin → About and `/api/health`).
 
 **After upgrading, check:** `/api/health` shows `"schema_current":true`; Admin → Email →
 "Send test" arrives (servers with `resend://`); Sales → Subscriptions and Money → Vendor
@@ -239,4 +280,5 @@ prints the digest, and Admin → Reminders → "Send now" delivers one.
 
 The first release (`release/v1.0`, tag `v1.0.0`): everything in
 [design.md](design.md#7-phases) phases 1 to 6, contact documents, demo data, several instances.
-Installed fresh with [deploy/ubuntu.md](deploy/ubuntu.md); no upgrade steps.
+Installed fresh with the `docs/deploy/ubuntu.md` of a `release/v1.0` checkout; no upgrade
+steps.

@@ -86,6 +86,8 @@ End-to-end browser tests (Playwright) run against a separate API and database; s
 See [docs/deploy/ubuntu.md](docs/deploy/ubuntu.md): packages (with a check-and-install script,
 `deploy/install-prereqs.sh`), database, systemd service, Apache vhost with HTTPS, backups, updates
 and the switch-over from Access. The service, vhost, backup and update files are in [deploy/](deploy/).
+Servers run a release branch (`release/v2.0`, tags `v2.0.0` and so on); `main` is the next
+version while it is being built.
 
 Upgrading a server or the development PC to newer code, and the notes per version:
 [docs/upgrading.md](docs/upgrading.md).
