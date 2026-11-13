@@ -96,6 +96,23 @@ Several independent installations on one server (separate businesses, a demo, a 
 each in its own folder with its own database, port, web address and backups:
 [docs/deploy/multiple-instances.md](docs/deploy/multiple-instances.md).
 
+### Command line on the server (password reset and the like)
+
+The app's libraries live in the virtual environment `backend/.venv`, not in the system Python,
+and `backend/.env` (with the database password) is readable only by root and the `saumgm`
+service account. So run the commands as `saumgm`, with the venv's Python, from `backend/`;
+plain `python3 -m saumgm ...` fails with `No module named 'sqlalchemy'`:
+
+```sh
+cd /opt/saumgm/backend
+sudo -u saumgm .venv/bin/python -m saumgm set-password --email example@outlook.com
+```
+
+It asks for the new password twice and signs the user out everywhere. `No user ...` means the
+account has another email address; list them with
+`sudo mariadb saumgm -e "select email from app_user;"`. The other commands (`create-user`,
+`.venv/bin/alembic upgrade head`) work the same way. For an extra instance, use its folder.
+
 ## Demo data
 
 `python -m saumgm load-demo` fills an empty, migrated database with a made-up business: 10
