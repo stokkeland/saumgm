@@ -82,7 +82,7 @@ def _summary(value: Any) -> Any:
 
 
 def _changes(obj: object, action: str) -> dict[str, list[Any]]:
-    state: InstanceState[Any] = inspect(obj)  # type: ignore[assignment]  # mapped objects only
+    state: InstanceState[Any] = inspect(obj)  # type: ignore[assignment, unused-ignore]  # mapped objects only; SQLAlchemy 2.1.8+ types it already
     table = getattr(obj, "__tablename__", None)
     changes: dict[str, list[Any]] = {}
     for attr in state.mapper.column_attrs:
